@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oops! - {{ title }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap');
+        
+        :root {
+            --bg-color: #0f172a;
+            --surface-color: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #38bdf8;
+            --danger: #f87171;
+            --border: #334155;
+            --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'Fira Code', 'Courier New', Courier, monospace;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            background: var(--surface-color);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin: 2rem 0;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: var(--danger);
+            font-size: 2.5rem;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.025em;
+        }
+
+        .message {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .trace-id {
+            display: inline-block;
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .dev-mode-warning {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        .debug-section {
+            border-top: 1px solid var(--border);
+            padding-top: 2rem;
+            margin-top: 2rem;
+        }
+
+        .debug-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .debug-label {
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            margin-bottom: 0.75rem;
+        }
+
+        .debug-value {
+            font-family: var(--font-mono);
+            background: var(--bg-color);
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            color: var(--danger);
+            word-break: break-all;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .file-location {
+            color: var(--accent);
+        }
+
+        .stack-trace {
+            background: var(--bg-color);
+            padding: 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .button {
+            display: inline-block;
+            background: var(--text-primary);
+            color: var(--bg-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: all 0.2s;
+        }
+
+        .button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if debug %}
+            <div class="dev-mode-warning">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                DEVELOPER MODE ACTIVE
+            </div>
+        {% endif %}
+
+        <div class="trace-id">Trace ID: {{ trace_id }}</div>
+
+        <h1>
+            <svg width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            Oops! {{ title }}
+        </h1>
+        
+        <div class="message">
+            {% if not debug %}
+                Something went wrong while processing your request. Please try again or contact support if the issue persists.
+                <br><br>
+                <strong>Error Details:</strong> {{ message }}
+            {% else %}
+                The application encountered an error and could not complete the request. Scroll down for technical details.
+            {% endif %}
+        </div>
+
+        {% if not debug %}
+            <a href="/" class="button">Return to Homepage</a>
+        {% endif %}
+
+        {% if debug %}
+            <div class="debug-section">
+                <div class="debug-item">
+                    <div class="debug-label">Error Message</div>
+                    <div class="debug-value">{{ message }}</div>
+                </div>
+
+                <div class="debug-item">
+                    <div class="debug-label">Location (File & Line)</div>
+                    <div class="debug-value file-location">
+                        {{ file }}:{{ line }}
+                    </div>
+                </div>
+
+                <div class="debug-item">
+                    <div class="debug-label">Stack Trace</div>
+                    <div class="stack-trace">{{ trace }}</div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

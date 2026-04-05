@@ -1,0 +1,64 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{ post.title }} - Green{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="mb-4">
+            <a href="/posts" class="text-success text-decoration-none">&larr; Back to Posts</a>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h1 class="card-title h3">{{ post.title }}</h1>
+                <p class="text-muted small border-bottom pb-3 mb-3">
+                    By <strong>{{ post.author.name|default('Unknown') }}</strong>
+                </p>
+                <div class="card-text fs-5" style="line-height: 1.6;">
+                    {{ post.body|nl2br }}
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <h4 class="mb-3">Comments ({{ post.comments|length }})</h4>
+
+        {% if session().has('user_id') %}
+            <div class="card mb-4 bg-light border-0">
+                <div class="card-body">
+                    <form action="/posts/{{ post.id }}/comments" method="POST">
+                        <div class="mb-2">
+                            <textarea name="content" class="form-control" rows="2" placeholder="Leave a comment..." required></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-sm btn-success">Post Comment</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-secondary py-2">
+                <a href="/login" class="alert-link text-decoration-none">Log in</a> to leave a comment.
+            </div>
+        {% endif %}
+
+        <div class="comments-list">
+            {% for comment in post.comments %}
+                <div class="card mb-2 border-0 shadow-sm">
+                    <div class="card-body py-2">
+                        <div class="d-flex justify-content-between">
+                            <strong class="text-success small">{{ comment.author.name|default('Unknown') }}</strong>
+                        </div>
+                        <p class="mb-0 mt-1">{{ comment.content|nl2br }}</p>
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-muted mt-3">No comments yet. Be the first to share your thoughts!</p>
+            {% endfor %}
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

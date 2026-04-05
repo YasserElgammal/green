@@ -1,0 +1,51 @@
+{% extends 'layout.twig' %}
+
+{% block title %}Posts - Green{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8 mx-auto">
+        <h2 class="mb-3">Community Posts</h2>
+
+        {% if session().has('user_id') %}
+            <div class="card mb-4 border-success">
+                <div class="card-body">
+                    <h5 class="card-title text-success">Create a New Post</h5>
+                    <form action="/posts" method="POST">
+                        <div class="mb-3">
+                            <input type="text" name="title" class="form-control" placeholder="Post Title" required>
+                        </div>
+                        <div class="mb-3">
+                            <textarea name="body" rows="3" class="form-control" placeholder="What's on your mind?" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success">Publish Post</button>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info py-2">
+                <a href="/login" class="alert-link text-decoration-none">Log in</a> to join the conversation and create a post.
+            </div>
+        {% endif %}
+
+        {% for post in posts %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h4 class="card-title">
+                        <a href="/posts/{{ post.id }}" class="text-dark text-decoration-none">{{ post.title }}</a>
+                    </h4>
+                    <p class="card-text text-muted mb-2">
+                        <small>By {{ post.author.name|default('Unknown') }}</small>
+                    </p>
+                    <p class="card-text">{{ post.body|length > 100 ? post.body|slice(0, 100) ~ '...' : post.body }}</p>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <a href="/posts/{{ post.id }}" class="btn btn-sm btn-outline-success">Read More & Comments</a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p class="text-muted">No posts available yet. Be the first to post!</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

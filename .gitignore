@@ -1,0 +1,45 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.backup
+
+# Vendor directory
+/vendor/
+
+# Node modules if using frontend
+/node_modules/
+
+# Logs and cache
+/storage/logs/
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
+
+# Compiled files
+/public/build/
+/public/hot/
+/public/storage/
+/*.log
+
+# IDE & OS files
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Composer
+composer.lock
+
+# PHPUnit
+phpunit.xml
+phpunit.result.cache
+
+# Temporary files
+*.tmp
+*.bak
+*.old
+
+# Tests
+.database/
+.phpunit.cache/

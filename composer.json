@@ -1,0 +1,34 @@
+{
+    "name": "yasser-elgammal/green",
+    "description": "Green Framework Skeleton",
+    "type": "project",
+    "license": "MIT",
+
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+
+    "authors": [
+        {
+            "name": "Yasser Elgammal",
+            "email": "yasser.elgammal@ymail.com"
+        }
+    ],
+
+    "require": {
+        "php": "^8.2",
+        "yasser-elgammal/green-core": "^1.0"
+    },
+
+    "require-dev": {
+        "phpunit/phpunit": "^12.5"
+    }
+}
