@@ -10,7 +10,7 @@
 ```bash
 composer install
 cp .env.example .env
-php -S localhost:8000 -t public
+php green serve
 ```
 
 ### 2. Define a Route
@@ -43,6 +43,7 @@ The framework is divided into several powerful subsystems. Please refer to the *
 - **[Security & Sessions](DOCUMENTATION.md#-6-security--sessions)**: State management and hashing.
 - **[Global Exception Handling](DOCUMENTATION.md#-7-exception-handling--debug-mode)**: Debug Mode and API errors.
 - **[Helper Reference](DOCUMENTATION.md#-8-helper-reference-cheat-sheet)**: Glossary of global functions.
+- **[Console Commands](DOCUMENTATION.md#-9-console-commands)**: CLI tools and generators.
 
 ---
 

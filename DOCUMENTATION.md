@@ -171,11 +171,27 @@ The exception handler automatically detects `application/json` requests and retu
 
 ## 🛠️ 8. Helper Reference Cheat Sheet
 
-| Helper | Returns | Usage |
-| :--- | :--- | :--- |
-| `view(tpl, data)` | `string` | Renders a Twig template. |
-| `response_json(data, status)` | `JsonResponse` | Returns a JSON response. |
-| `session()` | `SessionManager` | Access the session engine. |
-| `redirect(url)` | `RedirectResponse` | Triggers a browser redirect. |
-| `transform(data, transformer)` | `JsonResponse` | Serializes models via Transformers. |
-| `paginate(items, per, page)` | `JsonResponse` | Paginates any array/collection. |
+| Helper                         | Returns            | Usage                               |
+| :----------------------------- | :----------------- | :---------------------------------- |
+| `view(tpl, data)`              | `string`           | Renders a Twig template.            |
+| `response_json(data, status)`  | `JsonResponse`     | Returns a JSON response.            |
+| `session()`                    | `SessionManager`   | Access the session engine.          |
+| `redirect(url)`                | `RedirectResponse` | Triggers a browser redirect.        |
+| `transform(data, transformer)` | `JsonResponse`     | Serializes models via Transformers. |
+| `paginate(items, per, page)`   | `JsonResponse`     | Paginates any array/collection.     |
+
+---
+
+## 🔧 9. Console Commands
+
+Green provides a simple CLI interface for development and code generation.
+
+### 📋 Available Commands
+
+```bash
+php green help               # Display help for a command
+php green list               # List all available commands
+php green serve              # Start development server
+
+php green create:model Car         # Create a new model
+php green create:controller Car    # Create a new controller
