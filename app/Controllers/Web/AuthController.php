@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Web;
 
 use App\Tables\UserTable;
 use YasserElgammal\Green\Http\Request;
