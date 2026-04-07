@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Web;
 
 use YasserElgammal\Green\Routing\Route;
 
-class WebController
+class HomeController
 {
     #[Route('GET', '/')]
     public function home()

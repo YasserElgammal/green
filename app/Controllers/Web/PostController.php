@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Web;
 
 use App\Tables\PostTable;
 use YasserElgammal\Green\Http\Request;
@@ -11,14 +11,21 @@ class PostController
     #[Route('GET', '/posts')]
     public function index()
     {
+        $order = in_array($_GET['order'] ?? '', ['ASC', 'DESC']) ? $_GET['order'] : 'DESC';
+        $perPage  = (int) ($_GET['per_page'] ?? 15);
+
         $postsTable = new PostTable();
         // Load author and comments for eager loading efficiency
         $postsTable->include(['author']);
-        
-        $postsQuery = $postsTable->builder()->orderBy('id', 'DESC');
-        $posts = $postsTable->fetchFromBuilder($postsQuery);
 
-        return view('posts/index', ['posts' => $posts]);
+        $postsQuery = $postsTable->builder()->orderBy('id', strtoupper($order));
+        $result  = $postsTable->paginateFromBuilder($postsQuery, (int) $perPage, (int) ($_GET['page'] ?? 1));
+
+        return view('posts/index', [
+            'posts' => $result['data'],
+            'meta'  => $result['meta'],
+            'order' => $order
+        ]);
     }
 
     #[Route('GET', '/posts/{id}')]
@@ -26,9 +33,9 @@ class PostController
     {
         $postsTable = new PostTable();
         $postsTable->include(['author', 'comments.author']);
-        
+
         $post = $postsTable->fetchById($id);
-        
+
         if (!$post) {
             session()->flash('error', 'Post not found.');
             return redirect('/posts');
