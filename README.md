@@ -8,7 +8,8 @@
 
 ### 1. Installation
 ```bash
-composer install
+composer create-project yasser-elgammal/green app-name
+cd app-name
 cp .env.example .env
 php green serve
 ```
