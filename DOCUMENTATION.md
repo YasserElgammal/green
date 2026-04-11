@@ -195,3 +195,311 @@ php green serve              # Start development server
 
 php green create:model Car         # Create a new model
 php green create:controller Car    # Create a new controller
+```
+
+## 🔧 10. Migrations & Schema Builder
+
+### `migrate` — Run pending migrations
+
+```bash
+php green migrate
+```
+
+Runs all migration files in `database/migrations/` that have not been recorded in the `migrations` table. Groups them into a new **batch**.
+
+```bash
+# Dry-run: print SQL without executing
+php green migrate --dry
+
+# Force: allow DROP operations (disables safe mode)
+php green migrate --force
+
+# Both
+php green migrate --dry --force
+```
+
+**Example output:**
+```
+┌────────────────────────────────────────┐
+│  Green Framework — Migrations          │
+└────────────────────────────────────────┘
+
+[INFO]  Migrated: 2026_01_01_000001_create_users_table
+[INFO]  Migrated: 2026_01_01_000002_add_phone_to_users
+[INFO]  Migrated: 2026_01_01_000003_create_posts_table
+
+[INFO]  Done. 3 migration(s) run.
+```
+
+---
+
+### `migrate:rollback` — Roll back the last batch
+
+```bash
+php green migrate:rollback
+```
+
+Calls `down()` on every migration in the **last batch**, in reverse order.
+
+```bash
+php green migrate:rollback --dry    # preview SQL only
+php green migrate:rollback --force  # allow DROP in down()
+```
+
+---
+
+### `migrate:status` — Show migration status
+
+```bash
+php green migrate:status
+```
+
+```
+┌─────────────────────────────────────────────┐
+│  Green Framework — Migration Status         │
+└─────────────────────────────────────────────┘
+
+  Migration                                     Status
+  ──────────────────────────────────────────────────────
+  2026_01_01_000001_create_users_table          ✔ ran
+  2026_01_01_000002_add_phone_to_users          ✔ ran
+  2026_01_01_000003_create_posts_table          ⏳ pending
+```
+
+---
+
+### `create:migration` — Generate a migration file
+
+```bash
+php green create:migration create_orders_table
+php green create:migration add_phone_to_users
+```
+
+**Does not require a DB connection.**
+
+The table name is automatically inferred from the migration name:
+
+| Migration name | Guessed table |
+|---|---|
+| `create_orders_table` | `orders` |
+| `add_email_to_users` | `users` |
+
+---
+
+## Writing Migrations
+
+Every migration file must:
+- Live in `database/migrations/`
+- Be named `YYYY_MM_DD_HHMMSS_snake_name.php`
+- Contain **one class** whose name is the PascalCase version of the filename suffix
+- Extend `Green\Database\Migrations\Migration`
+- Implement `up()` and `down()`
+
+### Create a table
+
+```php
+use Green\Database\Migrations\Migration;
+use Green\Database\Schema\Blueprint;
+use Green\Database\Schema\Schema;
+
+class CreateUsersTable extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();                            // BIGINT AUTO_INCREMENT PK
+            $table->string('name', 100);
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->string('role', 20)->default('member');
+            $table->boolean('is_active')->default(true);
+            $table->text('bio')->nullable();
+            $table->decimal('balance', 10, 2)->default(0.00);
+            $table->timestamp('email_verified_at')->nullable();
+            $table->timestamps();                    // created_at, updated_at
+            $table->index(['role', 'is_active']);    // composite index
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('users');
+    }
+}
+```
+
+### Alter a table
+
+```php
+public function up(): void
+{
+    Schema::table('users', function (Blueprint $table) {
+        $table->string('phone', 20)->nullable();    // ADD COLUMN
+        $table->modify(Column::string('name', 200)); // MODIFY COLUMN
+        $table->drop('legacy_field');               // DROP COLUMN (blocked in safe mode)
+        $table->index('phone');                     // CREATE INDEX
+    });
+}
+```
+
+---
+
+## Schema Builder Reference
+
+### `Schema::` static methods
+
+| Method | Description |
+|---|---|
+| `Schema::create(table, fn)` | Create a new table |
+| `Schema::table(table, fn)` | Alter an existing table |
+| `Schema::drop(table)` | Drop a table (safe-mode blocked) |
+| `Schema::dropIfExists(table)` | Drop if exists (safe-mode blocked) |
+| `Schema::hasTable(table)` | Check table existence → bool |
+| `Schema::hasColumn(table, col)` | Check column existence → bool |
+| `Schema::setDryRun(bool)` | Enable/disable dry-run mode |
+| `Schema::setSafeMode(bool)` | Enable/disable safe mode |
+| `Schema::getDryRunLog()` | Return collected SQL strings |
+
+### `Blueprint` methods (inside callbacks)
+
+| Method | SQL produced |
+|---|---|
+| `$table->id()` | `BIGINT NOT NULL AUTO_INCREMENT` + PRIMARY KEY |
+| `$table->string(name, len?)` | `VARCHAR(255)` |
+| `$table->integer(name)` | `INT` |
+| `$table->bigInteger(name)` | `BIGINT` |
+| `$table->text(name)` | `TEXT` |
+| `$table->boolean(name)` | `TINYINT(1)` |
+| `$table->timestamp(name)` | `TIMESTAMP` |
+| `$table->date(name)` | `DATE` |
+| `$table->decimal(name, p, s)` | `DECIMAL(p,s)` |
+| `$table->json(name)` | `JSON` |
+| `$table->timestamps()` | `created_at`, `updated_at` both nullable TIMESTAMP |
+| `$table->add(Column)` | Queues ADD COLUMN (in ALTER) |
+| `$table->modify(Column)` | Queues MODIFY COLUMN |
+| `$table->drop(colName)` | Queues DROP COLUMN (safe-mode blocked) |
+| `$table->ensure(Column)` | Smart upsert — see below |
+| `$table->index(cols, name?)` | CREATE INDEX |
+
+### Column modifiers (chainable)
+
+```php
+$table->string('email')
+    ->nullable()           // NULL instead of NOT NULL
+    ->unique()             // UNIQUE constraint
+    ->default('guest')     // DEFAULT value
+    ->autoIncrement();     // AUTO_INCREMENT
+```
+
+---
+
+## Column Types
+
+| Blueprint method | MySQL type | Notes |
+|---|---|---|
+| `id()` | `BIGINT AUTO_INCREMENT` | Always sets PRIMARY KEY |
+| `string(name, len)` | `VARCHAR(len)` | Default len = 255 |
+| `integer(name)` | `INT` | |
+| `bigInteger(name)` | `BIGINT` | |
+| `text(name)` | `TEXT` | |
+| `boolean(name)` | `TINYINT(1)` | Use `->default(true/false)` |
+| `timestamp(name)` | `TIMESTAMP` | |
+| `date(name)` | `DATE` | |
+| `decimal(name, p, s)` | `DECIMAL(p,s)` | Default 8,2 |
+| `json(name)` | `JSON` | MySQL 5.7.8+ |
+
+---
+
+## Advanced Features
+
+### `ensure()` — Idempotent column management
+
+The most powerful feature. Runs a live introspection against `information_schema.COLUMNS` and decides automatically:
+
+```
+Column missing?         → ALTER TABLE … ADD COLUMN
+Column exists, differs? → ALTER TABLE … MODIFY COLUMN
+Column identical?       → (no-op, nothing emitted)
+```
+
+```php
+Schema::table('users', function (Blueprint $table) {
+    // Safe to run in every deploy — only acts when needed
+    $table->ensure(Column::string('phone', 20)->nullable());
+    $table->ensure(Column::boolean('mfa_enabled')->default(false));
+    $table->ensure(Column::text('bio')->nullable());
+});
+```
+
+Useful for: feature-flag columns, platform-agnostic schema sync, re-runnable setup scripts.
+
+---
+
+### Dry-run mode
+
+Preview every SQL statement without touching the database:
+
+```bash
+php green migrate --dry
+```
+
+```
+[WARN]  DRY RUN MODE — no SQL will be executed.
+
+SQL that would be executed:
+  CREATE TABLE `users` (
+    `id` BIGINT AUTO_INCREMENT NOT NULL,
+    `name` VARCHAR(100) NOT NULL,
+    `email` VARCHAR(255) NOT NULL UNIQUE,
+    ...
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+  CREATE INDEX `idx_users_role_is_active` ON `users` (`role`, `is_active`);
+```
+
+The dry-run log is also accessible programmatically:
+
+```php
+Schema::setDryRun(true);
+Schema::create('test', fn($t) => $t->string('x'));
+$sql = Schema::getDryRunLog();  // ['CREATE TABLE `test` ...']
+```
+
+---
+
+### Safe mode
+
+Safe mode is **ON by default**. It blocks all destructive operations:
+
+- `Schema::drop()`
+- `Schema::dropIfExists()`
+- `Blueprint::drop()`
+
+```bash
+# Will throw: "Safe mode: DROP TABLE `users` requires --force."
+php green migrate:rollback
+
+# Permitted
+php green migrate:rollback --force
+```
+
+Programmatic control:
+
+```php
+Schema::setSafeMode(false);   // dangerous — use with care
+```
+
+---
+
+### Batch tracking
+
+Every `php green migrate` call groups all newly-run migrations into one **batch** (integer, auto-incremented). The `migrations` table looks like:
+
+```
+id  migration                                   batch  ran_at
+1   2026_01_01_000001_create_users_table        1      2026-04-01 12:00:00
+2   2026_01_01_000002_add_phone_to_users        1      2026-04-01 12:00:00
+3   2026_01_01_000003_create_posts_table        2      2026-04-11 09:00:00
+```
+
+`migrate:rollback` always reverses the **highest** batch only, in reverse file order.

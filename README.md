@@ -45,6 +45,7 @@ The framework is divided into several powerful subsystems. Please refer to the *
 - **[Global Exception Handling](DOCUMENTATION.md#-7-exception-handling--debug-mode)**: Debug Mode and API errors.
 - **[Helper Reference](DOCUMENTATION.md#-8-helper-reference-cheat-sheet)**: Glossary of global functions.
 - **[Console Commands](DOCUMENTATION.md#-9-console-commands)**: CLI tools and generators.
+- **[Migrations & Schema Builder](DOCUMENTATION.md#-10-migrations--schema-builder)**: Migration workflow, schema operations, dry-run mode, and safe mode.
 
 ---
 
