@@ -2,7 +2,10 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+// Define the project root so relative .env paths resolve correctly.
+define('BASE_PATH', realpath(__DIR__ . '/../'));
+
+$dotenv = Dotenv\Dotenv::createImmutable(BASE_PATH);
 $dotenv->safeLoad();
 
 use YasserElgammal\Green\Application;

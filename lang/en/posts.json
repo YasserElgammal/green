@@ -1,0 +1,31 @@
+{
+    "index": {
+        "title": "Community Posts - Green",
+        "heading": "Community Posts",
+        "create_post": "Create a New Post",
+        "post_title": "Post Title",
+        "post_body": "What's on your mind?",
+        "publish": "Publish Post",
+        "log_in": "Log in",
+        "login_to_join": "to join the conversation and create a post.",
+        "by_author": "By :author",
+        "unknown": "Unknown",
+        "read_more": "Read More & Comments",
+        "no_posts": "No posts available yet. Be the first to post!",
+        "page_info": "Page :current of :total &mdash; :items posts total"
+    },
+    "show": {
+        "title": ":title - Green",
+        "back": "&larr; Back to Posts",
+        "by": "By",
+        "comments_count": {
+            "one": "1 Comment",
+            "other": ":count Comments"
+        },
+        "leave_comment": "Leave a comment...",
+        "post_comment": "Post Comment",
+        "log_in": "Log in",
+        "login_to_comment": "to leave a comment.",
+        "no_comments": "No comments yet. Be the first to share your thoughts!"
+    }
+}

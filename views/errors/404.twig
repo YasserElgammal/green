@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - Page Not Found</title>
+    <title>{{ t('errors.404.title') }}</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         
@@ -93,22 +93,22 @@
 </head>
 <body>
     <div class="container">
-        <h1>404</h1>
-        <h2>Page Not Found</h2>
+        <h1>{{ t('errors.404.heading') }}</h1>
+        <h2>{{ t('errors.404.subheading') }}</h2>
         
         <div class="message">
-            Sorry, the page you are looking for does not exist, has been removed, or is temporarily unavailable.
+            {{ t('errors.404.message') }}
             {% if debug %}
                 <br><br>
-                <em>Debug Info:</em> <span style="font-family: monospace;">{{ message }}</span>
+                <em>{{ t('errors.404.debug_info') }}</em> <span style="font-family: monospace;">{{ message }}</span>
             {% endif %}
         </div>
 
-        <a href="/" class="button">Go Back Home</a>
+        <a href="/" class="button">{{ t('errors.404.go_back') }}</a>
 
         {% if debug %}
             <div class="debug-notice">
-                Trace ID: {{ trace_id }}
+                {{ t('errors.404.trace_id', {'trace_id': trace_id}) }}
             </div>
         {% endif %}
     </div>

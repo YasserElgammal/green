@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oops! - {{ title }}</title>
+    <title>{{ t('errors.oops.title', {'title': title}) }}</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap');
         
@@ -183,47 +183,47 @@
         {% if debug %}
             <div class="dev-mode-warning">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
-                DEVELOPER MODE ACTIVE
+                {{ t('errors.oops.dev_mode') }}
             </div>
         {% endif %}
 
-        <div class="trace-id">Trace ID: {{ trace_id }}</div>
+        <div class="trace-id">{{ t('errors.oops.trace_id', {'trace_id': trace_id}) }}</div>
 
         <h1>
             <svg width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-            Oops! {{ title }}
+            {{ t('errors.oops.heading', {'title': title}) }}
         </h1>
         
         <div class="message">
             {% if not debug %}
-                Something went wrong while processing your request. Please try again or contact support if the issue persists.
+                {{ t('errors.oops.message') }}
                 <br><br>
-                <strong>Error Details:</strong> {{ message }}
+                <strong>{{ t('errors.oops.error_details') }}</strong> {{ message }}
             {% else %}
-                The application encountered an error and could not complete the request. Scroll down for technical details.
+                {{ t('errors.oops.message_debug') }}
             {% endif %}
         </div>
 
         {% if not debug %}
-            <a href="/" class="button">Return to Homepage</a>
+            <a href="/" class="button">{{ t('errors.oops.go_back') }}</a>
         {% endif %}
 
         {% if debug %}
             <div class="debug-section">
                 <div class="debug-item">
-                    <div class="debug-label">Error Message</div>
+                    <div class="debug-label">{{ t('errors.oops.debug_error_message') }}</div>
                     <div class="debug-value">{{ message }}</div>
                 </div>
 
                 <div class="debug-item">
-                    <div class="debug-label">Location (File & Line)</div>
+                    <div class="debug-label">{{ t('errors.oops.debug_location') }}</div>
                     <div class="debug-value file-location">
                         {{ file }}:{{ line }}
                     </div>
                 </div>
 
                 <div class="debug-item">
-                    <div class="debug-label">Stack Trace</div>
+                    <div class="debug-label">{{ t('errors.oops.debug_stack_trace') }}</div>
                     <div class="stack-trace">{{ trace }}</div>
                 </div>
             </div>

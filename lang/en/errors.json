@@ -1,0 +1,24 @@
+{
+    "404": {
+        "title": "404 - Page Not Found",
+        "heading": "404",
+        "subheading": "Page Not Found",
+        "message": "Sorry, the page you are looking for does not exist, has been removed, or is temporarily unavailable.",
+        "debug_info": "Debug Info:",
+        "go_back": "Go Back Home",
+        "trace_id": "Trace ID: :trace_id"
+    },
+    "oops": {
+        "title": "Oops! - :title",
+        "dev_mode": "DEVELOPER MODE ACTIVE",
+        "trace_id": "Trace ID: :trace_id",
+        "heading": "Oops! :title",
+        "message": "Something went wrong while processing your request. Please try again or contact support if the issue persists.",
+        "error_details": "Error Details:",
+        "message_debug": "The application encountered an error and could not complete the request. Scroll down for technical details.",
+        "go_back": "Return to Homepage",
+        "debug_error_message": "Error Message",
+        "debug_location": "Location (File & Line)",
+        "debug_stack_trace": "Stack Trace"
+    }
+}

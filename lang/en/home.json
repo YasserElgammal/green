@@ -1,0 +1,4 @@
+{
+    "welcome": "Welcome to Green Framework",
+    "description": "This is the home page rendered via Twig."
+}

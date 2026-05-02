@@ -503,3 +503,93 @@ id  migration                                   batch  ran_at
 ```
 
 `migrate:rollback` always reverses the **highest** batch only, in reverse file order.
+
+---
+
+## 🌐 11. Translation & Localization
+
+The Green Framework features a powerful, framework-agnostic translation engine.
+
+### Setup and Configuration
+Translations are configured via environment variables in your `.env` file:
+```env
+APP_LOCALE=en
+APP_FALLBACK_LOCALE=en
+APP_LANG_PATH=lang
+APP_TRANSLATION_CACHE_PATH=storage/cache/translations
+```
+
+### Global Helpers
+The engine exposes two primary global helper functions that can be used anywhere, including inside Twig templates:
+
+#### `t(key, replace = [], locale = null)`
+Translates a given string key.
+```php
+// Basic usage
+t('home.welcome');
+
+// With interpolation
+t('layout.hello', ['name' => 'Yasser']);
+```
+
+Inside a Twig template:
+```twig
+<h2>{{ t('home.welcome') }}</h2>
+```
+
+#### `trans_choice(key, count, replace = [], locale = null)`
+Handles language-specific pluralization based on CLDR rules (e.g. English one/other, Arabic 6-form pluralization).
+```php
+trans_choice('posts.show.comments_count', 5, ['count' => 5]);
+```
+
+Inside a Twig template:
+```twig
+<h4>{{ trans_choice('posts.show.comments_count', post.comments|length, {'count': post.comments|length}) }}</h4>
+```
+
+### JSON File Provider
+By default, the framework uses the `JsonFileProvider`. Translations are stored as JSON files inside the `lang/` directory, organized by locale and **group**.
+
+#### Key Resolution Rule
+The **first dot-segment** of a translation key determines the **filename** (group). The remaining segments are the path inside that file:
+
+| Key | File | Lookup path |
+|---|---|---|
+| `t('home.welcome')` | `lang/en/home.json` | `welcome` |
+| `t('auth.login.title')` | `lang/en/auth.json` | `login.title` |
+| `t('errors.oops.heading')` | `lang/en/errors.json` | `oops.heading` |
+| `t('welcome')` *(no dot)* | `lang/en/messages.json` | `welcome` |
+
+> **Note:** Keys with no dot default to the `messages` group.
+
+#### Directory Structure
+```
+lang/
+├── en/
+│   ├── home.json
+│   ├── auth.json
+│   ├── layout.json
+│   ├── errors.json
+│   └── posts.json
+└── ar/
+    ├── home.json
+    └── ...
+```
+
+#### Example: `lang/en/home.json`
+```json
+{
+    "welcome": "Welcome to Green Framework",
+    "description": "This is the home page rendered via Twig."
+}
+```
+
+#### Example: `lang/en/layout.json`
+```json
+{
+    "hello": "Hello, :name",
+    "login": "Login",
+    "logout": "Logout"
+}
+```

@@ -1,11 +1,11 @@
 {% extends 'layout.twig' %}
 
-{% block title %}Register - Green{% endblock %}
+{% block title %}{{ t('auth.register.title') }}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <h2 class="mb-4 text-center">Register</h2>
+        <h2 class="mb-4 text-center">{{ t('auth.register.heading') }}</h2>
 
         {% set error = session().getFlash('error') %}
         {% if error %}
@@ -14,21 +14,21 @@
 
         <form action="/register" method="POST">
             <div class="mb-3">
-                <label for="name" class="form-label">Name</label>
+                <label for="name" class="form-label">{{ t('auth.register.name') }}</label>
                 <input type="text" class="form-control" id="name" name="name" required>
             </div>
             <div class="mb-3">
-                <label for="email" class="form-label">Email address</label>
+                <label for="email" class="form-label">{{ t('auth.register.email') }}</label>
                 <input type="email" class="form-control" id="email" name="email" required>
             </div>
             <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
+                <label for="password" class="form-label">{{ t('auth.register.password') }}</label>
                 <input type="password" class="form-control" id="password" name="password" minlength="4" required>
             </div>
-            <button type="submit" class="btn btn-success w-100">Create Account</button>
+            <button type="submit" class="btn btn-success w-100">{{ t('auth.register.submit') }}</button>
         </form>
         <div class="mt-3 text-center">
-            <small>Already have an account? <a href="/login" class="text-success">Login here</a></small>
+            <small>{{ t('auth.register.already_have_account') }} <a href="/login" class="text-success">{{ t('auth.register.login_here') }}</a></small>
         </div>
     </div>
 </div>
