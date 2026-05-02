@@ -1,32 +1,32 @@
 {% extends 'layout.twig' %}
 
-{% block title %}Community Posts - Green
+{% block title %}{{ t('posts.index.title') }}
 {% endblock %}
 
 {% block content %}
 	<div class="row mb-4">
 		<div class="col-md-8 mx-auto">
-			<h2 class="mb-3">Community Posts</h2>
+			<h2 class="mb-3">{{ t('posts.index.heading') }}</h2>
 
 			{% if session().has('user_id') %}
 				<div class="card mb-4 border-success">
 					<div class="card-body">
-						<h5 class="card-title text-success">Create a New Post</h5>
+						<h5 class="card-title text-success">{{ t('posts.index.create_post') }}</h5>
 						<form action="/posts" method="POST">
 							<div class="mb-3">
-								<input type="text" name="title" class="form-control" placeholder="Post Title" required>
+								<input type="text" name="title" class="form-control" placeholder="{{ t('posts.index.post_title') }}" required>
 							</div>
 							<div class="mb-3">
-								<textarea name="body" rows="3" class="form-control" placeholder="What's on your mind?" required></textarea>
+								<textarea name="body" rows="3" class="form-control" placeholder="{{ t('posts.index.post_body') }}" required></textarea>
 							</div>
-							<button type="submit" class="btn btn-success">Publish Post</button>
+							<button type="submit" class="btn btn-success">{{ t('posts.index.publish') }}</button>
 						</form>
 					</div>
 				</div>
 			{% else %}
 				<div class="alert alert-info py-2">
-					<a href="/login" class="alert-link text-decoration-none">Log in</a>
-					to join the conversation and create a post.
+					<a href="/login" class="alert-link text-decoration-none">{{ t('posts.index.log_in') }}</a>
+					{{ t('posts.index.login_to_join') }}
 				</div>
 			{% endif %}
 
@@ -40,8 +40,7 @@
 						</h4>
 
 						<p class="card-text text-muted mb-2">
-							<small>By
-								{{ post.author.name|default('Unknown') }}</small>
+							<small>{{ t('posts.index.by_author', {'author': post.author.name|default(t('posts.index.unknown'))}) }}</small>
 						</p>
 
 						<p class="card-text">
@@ -50,13 +49,13 @@
 
 						<div class="d-flex justify-content-between align-items-center mt-3">
 							<a href="/posts/{{ post.id }}" class="btn btn-sm btn-outline-success">
-								Read More & Comments
+								{{ t('posts.index.read_more') }}
 							</a>
 						</div>
 					</div>
 				</div>
 			{% else %}
-				<p class="text-muted">No posts available yet. Be the first to post!</p>
+				<p class="text-muted">{{ t('posts.index.no_posts') }}</p>
 			{% endfor %}
 
 			{% if meta.total_pages > 1 %}
@@ -97,13 +96,7 @@
 				</nav>
 
 				<p class="text-center text-muted small">
-					Page
-					{{ meta.current_page }}
-					of
-					{{ meta.total_pages }}
-					&mdash;
-					{{ meta.total_items }}
-					posts total
+					{{ t('posts.index.page_info', {'current': meta.current_page, 'total': meta.total_pages, 'items': meta.total_items})|raw }}
 				</p>
 			{% endif %}
 		</div>

@@ -20,15 +20,15 @@
 			<div class="container d-flex justify-content-between align-items-center">
 				<h1 class="h4 mb-0"><a href="/" class="text-white text-decoration-none">Green</a></h1>
                 <nav>
-                    <a href="/posts" class="text-white text-decoration-none me-3">Posts</a>
+                    <a href="/posts" class="text-white text-decoration-none me-3">{{ t('layout.posts') }}</a>
                     {% if session().has('user_id') %}
-                        <span class="text-light me-3 small">Hello, {{ session().get('user_name') }}</span>
+                        <span class="text-light me-3 small">{{ t('layout.hello', {'name': session().get('user_name')}) }}</span>
                         <form action="/logout" method="POST" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-outline-light border-0">Logout</button>
+                            <button type="submit" class="btn btn-sm btn-outline-light border-0">{{ t('layout.logout') }}</button>
                         </form>
                     {% else %}
-                        <a href="/login" class="text-white text-decoration-none me-3">Login</a>
-                        <a href="/register" class="btn btn-sm btn-light text-success fw-bold">Register</a>
+                        <a href="/login" class="text-white text-decoration-none me-3">{{ t('layout.login') }}</a>
+                        <a href="/register" class="btn btn-sm btn-light text-success fw-bold">{{ t('layout.register') }}</a>
                     {% endif %}
                 </nav>
 			</div>
@@ -56,7 +56,7 @@
 				<div class="container text-center text-muted small">
 					©
 					{{ "now"|date("Y") }}
-					Green. All rights reserved.
+					{{ t('layout.rights_reserved') }}
 				</div>
 			</footer>
 
