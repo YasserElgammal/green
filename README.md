@@ -2,6 +2,8 @@
 
 **Green** is a lightweight, modern PHP framework built with PHP 8.2+ features, focusing on simplicity, speed, and developer experience. It leverages **PHP Attributes** for routing and follows a **Table Gateway** architecture.
 
+> **Note:** This repository contains the **application skeleton**. The core framework engine is located at [YasserElgammal/green-core](https://github.com/YasserElgammal/green-core).
+
 ---
 
 ## ⚡ Quick Start
