@@ -13,6 +13,7 @@
         {% endif %}
 
         <form action="/register" method="POST">
+            {{ csrf_field() }}
             <div class="mb-3">
                 <label for="name" class="form-label">{{ t('auth.register.name') }}</label>
                 <input type="text" class="form-control" id="name" name="name" required>

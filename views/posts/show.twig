@@ -29,6 +29,7 @@
             <div class="card mb-4 bg-light border-0">
                 <div class="card-body">
                     <form action="/posts/{{ post.id }}/comments" method="POST">
+                        {{ csrf_field() }}
                         <div class="mb-2">
                             <textarea name="content" class="form-control" rows="2" placeholder="{{ t('posts.show.leave_comment') }}" required></textarea>
                         </div>

@@ -24,6 +24,7 @@
                     {% if session().has('user_id') %}
                         <span class="text-light me-3 small">{{ t('layout.hello', {'name': session().get('user_name')}) }}</span>
                         <form action="/logout" method="POST" class="d-inline">
+                            {{ csrf_field() }}
                             <button type="submit" class="btn btn-sm btn-outline-light border-0">{{ t('layout.logout') }}</button>
                         </form>
                     {% else %}

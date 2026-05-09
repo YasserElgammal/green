@@ -13,6 +13,7 @@
 					<div class="card-body">
 						<h5 class="card-title text-success">{{ t('posts.index.create_post') }}</h5>
 						<form action="/posts" method="POST">
+						{{ csrf_field() }}
 							<div class="mb-3">
 								<input type="text" name="title" class="form-control" placeholder="{{ t('posts.index.post_title') }}" required>
 							</div>

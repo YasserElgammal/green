@@ -11,6 +11,8 @@ $dotenv->safeLoad();
 use YasserElgammal\Green\Application;
 use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\View\View;
+use YasserElgammal\Green\Http\Middleware\CsrfMiddleware;
+use YasserElgammal\Green\Security\Csrf\CsrfConfig;
 
 // Initialize View engine
 View::init(__DIR__ . '/../views');
@@ -19,6 +21,14 @@ $app = new Application();
 
 // Add global middleware
 $app->router->addGlobalMiddleware(\App\Middleware\LoggingMiddleware::class);
+
+// CSRF protection — load config and register middleware
+$csrfConfig = new CsrfConfig(
+    file_exists(__DIR__ . '/../config/csrf.php')
+        ? require __DIR__ . '/../config/csrf.php'
+        : []
+);
+$app->router->addGlobalMiddleware(new CsrfMiddleware($csrfConfig));
 
 // Load routes
 require_once __DIR__ . '/../routes/web.php';
