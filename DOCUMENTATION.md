@@ -153,6 +153,83 @@ $hasher = new PasswordHasher();
 $hash = $hasher->hash('secret');
 ```
 
+### 6.3 CSRF Protection
+
+Green includes built-in Cross-Site Request Forgery (CSRF) protection. It is enabled by default for all state-changing HTTP methods (`POST`, `PUT`, `PATCH`, `DELETE`).
+
+#### How It Works
+1. The `CsrfMiddleware` is registered globally in `public/index.php`.
+2. Configuration lives in `config/csrf.php`.
+3. Every form that uses a state-changing method must include a CSRF token pair.
+4. The middleware validates the token on each request and throws a `TokenMismatchException` (HTTP 419) on failure.
+
+#### Twig Forms
+Add `{{ csrf_field() }}` inside every `POST` / `PUT` / `PATCH` / `DELETE` form:
+
+```twig
+<form method="POST" action="/posts">
+    {{ csrf_field() }}
+
+    <input type="text" name="title">
+    <button type="submit">Save</button>
+</form>
+```
+
+> **Important:** Do **not** add `{{ csrf_field() }}` to `GET` forms.
+
+#### Using the Raw Token (Advanced)
+If you need access to the token values (e.g. for AJAX), generate the token **once** and store it:
+
+```twig
+{% set csrf = csrf_token() %}
+<meta name="csrf-id" content="{{ csrf.id }}">
+<meta name="csrf-token" content="{{ csrf.token }}">
+```
+
+> **Warning:** Each call to `csrf_token()` generates a **new** token. Never call it multiple times for the same form — always store the result in a variable first.
+
+#### AJAX / Fetch Requests
+Read the token from a `<meta>` tag or a rendered attribute, then send it via headers:
+
+```javascript
+const csrfId    = document.querySelector('meta[name="csrf-id"]').content;
+const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+fetch('/posts', {
+    method: 'POST',
+    headers: {
+        'X-CSRF-ID': csrfId,
+        'X-CSRF-TOKEN': csrfToken,
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ title: 'Hello World' }),
+});
+```
+
+#### Configuration (`config/csrf.php`)
+
+| Key            | Default           | Description                                  |
+| :------------- | :---------------- | :------------------------------------------- |
+| `enabled`      | `true`            | Toggle CSRF protection on/off                |
+| `ttl`          | `1800`            | Token lifetime in seconds (30 min)           |
+| `max_tokens`   | `50`              | Max active tokens per session                |
+| `session_key`  | `_csrf_tokens`    | Session storage key                          |
+| `id_input`     | `_csrf_id`        | Hidden input name for the token ID           |
+| `token_input`  | `_csrf_token`     | Hidden input name for the token value        |
+| `id_header`    | `X-CSRF-ID`       | Request header for AJAX token ID             |
+| `token_header` | `X-CSRF-TOKEN`    | Request header for AJAX token value          |
+| `except`       | `['/webhooks/*']` | Paths excluded from CSRF verification        |
+
+#### Excluding Routes
+Add path patterns to the `except` array in `config/csrf.php`. A trailing `*` matches any sub-path:
+
+```php
+'except' => [
+    '/webhooks/*',
+    '/api/public/*',
+],
+```
+
 ---
 
 ## ⚠️ 7. Exception Handling & Debug Mode
@@ -179,6 +256,8 @@ The exception handler automatically detects `application/json` requests and retu
 | `redirect(url)`                | `RedirectResponse` | Triggers a browser redirect.        |
 | `transform(data, transformer)` | `JsonResponse`     | Serializes models via Transformers. |
 | `paginate(items, per, page)`   | `JsonResponse`     | Paginates any array/collection.     |
+| `csrf_token()`                 | `array`            | Generates a CSRF `{id, token}` pair.|
+| `csrf_field()`                 | `string` (HTML)    | Outputs two hidden CSRF inputs.     |
 
 ---
 

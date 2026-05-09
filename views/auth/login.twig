@@ -13,6 +13,7 @@
         {% endif %}
 
         <form action="/login" method="POST">
+            {{ csrf_field() }}
             <div class="mb-3">
                 <label for="email" class="form-label">{{ t('auth.login.email') }}</label>
                 <input type="email" class="form-control" id="email" name="email" required>
