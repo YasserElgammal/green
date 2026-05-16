@@ -86,6 +86,45 @@ $posts = new PostTable();
 $results = $posts->include('author,comments.author')->fetchAll();
 ```
 
+### 3.4 CRUD Operations
+
+Green provides a streamlined way to perform Create, Read, Update, and Delete operations via the `Table` class.
+
+#### Create
+```php
+$postsTable = new PostTable();
+$id = $postsTable->insert([
+    'title' => 'My New Post',
+    'body' => 'Post content here',
+    'user_id' => 1
+]);
+```
+
+#### Read
+```php
+// Fetch by ID
+$post = $postsTable->fetchById($id);
+
+// Fetch all
+$allPosts = $postsTable->fetchAll();
+
+// Custom Queries using QueryBuilder
+$query = $postsTable->builder()->where('status', 'published');
+$publishedPosts = $postsTable->fetchAllFromBuilder($query);
+```
+
+#### Update
+```php
+$postsTable->update($id, [
+    'title' => 'Updated Title'
+]);
+```
+
+#### Delete
+```php
+$postsTable->delete($id);
+```
+
 ---
 
 ## 🌐 4. API Layer: Transformers & Pagination
@@ -670,5 +709,113 @@ lang/
     "hello": "Hello, :name",
     "login": "Login",
     "logout": "Logout"
+}
+```
+
+---
+
+## 🔍 12. Include Query Language (IQL)
+
+Green Core ships with a built-in **Include Query Language** that lets API consumers control exactly how relations are loaded — with limits, ordering, column selection, and filtering — all from a single string.
+
+### 12.1 Quick Start
+
+```php
+// Simple (unchanged — fully backward compatible)
+$table->include('comments,roles');
+
+// Advanced — with constraints
+$table->include('comments(limit:5,order:desc)');
+
+// Nested — with operations at every level
+$table->include('comments(limit:5,order:desc).author(select:id|name)');
+
+// Mixed — simple + advanced in one call
+$table->include('comments(limit:5).author(select:id|name),roles');
+```
+
+### 12.2 Syntax Reference
+
+#### Basic Relations
+
+```
+include('comments')              → Load comments
+include('comments,roles')        → Load comments and roles
+include('comments.author')       → Load comments, then load author on each comment
+```
+
+#### Operations
+
+Operations are placed inside parentheses after a relation name:
+
+```
+relation(operation:value)
+relation(op1:value1,op2:value2)
+```
+
+#### Available Operations
+
+| Operation | Syntax | Description |
+|-----------|--------|-------------|
+| **limit** | `limit:N` | Limit results to N rows |
+| **offset** | `offset:N` | Skip first N rows |
+| **order** | `order:asc` | Order by primary key ASC/DESC |
+| | `order:column\|direction` | Order by specific column |
+| **select** | `select:col1\|col2\|col3` | Select specific columns only |
+| **filter** | `filter:column=value` | Filter by column value |
+
+> **Note:** The pipe `|` character is used as a separator within values because commas separate operations.
+
+#### Examples
+
+```php
+// Get latest 5 comments
+$table->include('comments(limit:5,order:desc)');
+
+// Get comments with only id and content columns
+$table->include('comments(select:id|content)');
+
+// Get active comments ordered by creation date
+$table->include('comments(filter:status=active,order:created_at|desc)');
+
+// Get 10 comments with their authors (only id and name)
+$table->include('comments(limit:10).author(select:id|name)');
+
+// Pagination-like: skip 10, take 5
+$table->include('comments(limit:5,offset:10)');
+
+// Multiple relations, mixed syntax
+$table->include('comments(limit:5,order:desc).author(select:id|name),roles');
+```
+
+---
+
+## 📝 14. Error Handling & Logger System
+
+Green includes a centralized, zero-manual-intervention error system that automatically captures exceptions, warnings, and fatal errors.
+
+### 14.1 Automatic Error Capture
+The global `ExceptionHandler` catches all unhandled exceptions and normalizes them into a unified structure. These errors are automatically forwarded to the **Logger**. 
+
+### 14.2 The Logger System
+The `Logger` is a pluggable, driver-based system (e.g., file-based, Papertrail, etc.). It provides deduplication, rate limiting, and loop prevention to ensure execution safety.
+
+You can also use the Logger manually to record events:
+
+```php
+use YasserElgammal\Green\Logging\Logger;
+
+class PaymentService {
+    public function __construct(private readonly Logger $logger) {}
+
+    public function process() {
+        $this->logger->info('Payment processing started', ['user_id' => 1]);
+        
+        try {
+            // Logic...
+        } catch (\Exception $e) {
+            $this->logger->error('Payment failed', ['exception' => $e]);
+        }
+    }
 }
 ```

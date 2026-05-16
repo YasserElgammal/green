@@ -1,8 +1,72 @@
 {% extends "layout.twig" %}
 
-{% block title %}{{ title }}{% endblock %}
+{% block title %}Welcome to Green Framework{% endblock %}
 
 {% block content %}
-    <h2>{{ t('home.welcome') }}</h2>
-    <p>{{ t('home.description') }}</p>
+    <div class="row w-100 align-items-center justify-content-center text-center animate-fade-in-up">
+        <div class="col-lg-10 col-xl-8">
+
+            <h1 class="display-2 fw-bolder text-dark mb-4" style="letter-spacing: -1px; line-height: 1.1;">
+                Welcome to <span class="text-success position-relative">Green<svg class="position-absolute w-100" style="bottom: -10px; left: 0; height: 12px; z-index: -1; fill: rgba(16, 185, 129, 0.2);" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0 50 Q 50 100 100 50 L 100 100 L 0 100 Z"></path></svg></span>
+            </h1>
+            
+            <p class="lead text-muted mb-5 fs-4 mx-auto" style="max-width: 700px; line-height: 1.6;">
+                A lightweight, modern PHP boilerplate crafted by Yasser Elgammal. 
+                Seamlessly integrates advanced architectural patterns in a blazing-fast core.
+            </p>
+
+            <div class="d-flex gap-3 flex-wrap justify-content-center mb-5">
+                <span class="badge bg-white text-success border border-success rounded-pill px-4 py-2 fs-6 fw-medium shadow-sm"><i class="bi bi-database me-1"></i> Table Gateway DB</span>
+                <span class="badge bg-white text-success border border-success rounded-pill px-4 py-2 fs-6 fw-medium shadow-sm"><i class="bi bi-filetype-html me-1"></i> Twig Templating</span>
+                <span class="badge bg-white text-success border border-success rounded-pill px-4 py-2 fs-6 fw-medium shadow-sm"><i class="bi bi-hdd-network me-1"></i> Drive Storage</span>
+                <span class="badge bg-white text-success border border-success rounded-pill px-4 py-2 fs-6 fw-medium shadow-sm"><i class="bi bi-bug me-1"></i> Error Kernel</span>
+            </div>
+            
+            <div class="d-flex gap-3 justify-content-center mt-2">
+                <a href="/posts" class="btn btn-green rounded-pill px-5 py-3 fs-5 shadow-sm border-0 d-inline-flex align-items-center" style="transition: transform 0.3s ease;">
+                    <i class="bi bi-rocket-takeoff-fill me-2 fs-4"></i> Explore the Blog
+                </a>
+                <a href="https://github.com/YasserElgammal/green" target="_blank" class="btn btn-github-custom rounded-pill px-5 py-3 fs-5 bg-white text-dark border shadow-sm d-inline-flex align-items-center" style="transition: all 0.3s ease;">
+                    <i class="bi bi-github me-2 fs-4"></i> View on GitHub
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <style>
+        /* Prevent scrolling by fitting the main container exactly between header and footer */
+        main.container {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            height: calc(100vh - 140px); /* 100vh minus header (~70px) and footer (~70px) */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Custom hover for GitHub button */
+        .btn-github-custom:hover {
+            background-color: #24292e !important;
+            color: #ffffff !important;
+            border-color: #24292e !important;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+        }
+    </style>
 {% endblock %}

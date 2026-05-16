@@ -5,6 +5,7 @@ namespace App\Controllers\Web;
 use App\Tables\PostTable;
 use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\Routing\Route;
+use YasserElgammal\Green\Drive\Drive;
 
 class PostController
 {
@@ -60,10 +61,19 @@ class PostController
             return redirect('/posts');
         }
 
+        $imagePath = null;
+        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            $fileContent = file_get_contents($_FILES['image']['tmp_name']);
+            $filename = 'uploads/posts/' . uniqid() . '_' . basename($_FILES['image']['name']);
+            drive()->put($filename, $fileContent);
+            $imagePath = $filename;
+        }
+
         $postsTable = new PostTable();
         $postsTable->insert([
             'title' => $title,
             'body' => $body,
+            'image' => $imagePath,
             'user_id' => session()->get('user_id'),
         ]);
 

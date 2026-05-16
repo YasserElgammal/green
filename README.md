@@ -49,6 +49,7 @@ The framework is divided into several powerful subsystems. Please refer to the *
 - **[Console Commands](DOCUMENTATION.md#-9-console-commands)**: CLI tools and generators.
 - **[Migrations & Schema Builder](DOCUMENTATION.md#-10-migrations--schema-builder)**: Migration workflow, schema operations, dry-run mode, and safe mode.
 - **[Translation & Localization](DOCUMENTATION.md#-11-translation--localization)**: Global helpers, multiple providers, caching, and pluralization.
+- **[Include Query Language](DOCUMENTATION.md#-12-include-query-language-iql)**: Advanced relation loading with limits, ordering, filtering, and column selection.
 
 ---
 
@@ -56,7 +57,7 @@ The framework is divided into several powerful subsystems. Please refer to the *
 
 - ✅ **PHP 8.2+ Attributes**: No more clunky routing files.
 - ✅ **Table Gateway**: Clean separation of state (Model) and logic (Table).
-- ✅ **Eager Loading**: Simple `include('relation')` to solve N+1.
+- ✅ **Eager Loading & IQL**: Simple `include('relation')` to solve N+1, with an advanced query language for limits, ordering, filtering, and column selection.
 - ✅ **Smart Transformers**: Nested API responses made easy.
 - ✅ **Auto-Validation**: Type-hint payloads for instant validation.
 - ✅ **Twig Templates**: Native Twig integration for clean views.
