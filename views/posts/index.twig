@@ -1,105 +1,142 @@
 {% extends 'layout.twig' %}
 
-{% block title %}{{ t('posts.index.title') }}
-{% endblock %}
+{% block title %}{{ t('posts.index.title') }}{% endblock %}
 
 {% block content %}
-	<div class="row mb-4">
-		<div class="col-md-8 mx-auto">
-			<h2 class="mb-3">{{ t('posts.index.heading') }}</h2>
+    <div class="row g-4">
+        {# Left Column: Create Post #}
+        <div class="col-lg-4 order-lg-2">
+            <div class="sticky-top" style="top: 100px;">
+                {% if session().has('user_id') %}
+                    <div class="glass-card p-4">
+                        <div class="d-flex align-items-center mb-4">
+                            <i class="bi bi-pencil-square text-success fs-4 me-2"></i>
+                            <h5 class="mb-0 fw-bold">{{ t('posts.index.create_post') }}</h5>
+                        </div>
+                        <form action="/posts" method="POST" enctype="multipart/form-data">
+                            {{ csrf_field() }}
+                            <div class="form-floating mb-3">
+                                <input type="text" name="title" class="form-control rounded-4 shadow-sm border-0" id="postTitle" placeholder="{{ t('posts.index.post_title') }}" required style="background: rgba(255,255,255,0.8);">
+                                <label for="postTitle" class="text-muted"><i class="bi bi-type-h1 me-1"></i> {{ t('posts.index.post_title') }}</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <textarea name="body" class="form-control rounded-4 shadow-sm border-0" id="postBody" placeholder="{{ t('posts.index.post_body') }}" style="height: 140px; background: rgba(255,255,255,0.8);" required></textarea>
+                                <label for="postBody" class="text-muted"><i class="bi bi-textarea-t me-1"></i> {{ t('posts.index.post_body') }}</label>
+                            </div>
+                            <div class="mb-4 bg-white bg-opacity-50 p-3 rounded-4 shadow-sm">
+                                <label for="postImageInput" class="form-label small fw-bold text-muted mb-2 d-block">
+                                    <i class="bi bi-image me-1 text-success"></i> Add Cover Image
+                                </label>
+                                <input type="file" name="image" class="form-control rounded-pill form-control-sm border-0 shadow-sm" accept="image/*" id="postImageInput">
+                                <div class="mt-3 text-center">
+                                    <img id="postImagePreview" src="#" alt="Preview" class="img-fluid rounded-4 shadow-sm" style="display: none; max-height: 180px; object-fit: cover; width: 100%;">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-green w-100 rounded-pill py-2 shadow-sm fs-6">
+                                <i class="bi bi-send-fill me-1"></i> {{ t('posts.index.publish') }}
+                            </button>
+                        </form>
+                        
+                        <script>
+                        document.getElementById('postImageInput').addEventListener('change', function(event) {
+                            const [file] = event.target.files;
+                            if (file) {
+                                const preview = document.getElementById('postImagePreview');
+                                preview.src = URL.createObjectURL(file);
+                                preview.style.display = 'block';
+                            }
+                        });
+                        </script>
+                    </div>
+                {% else %}
+                    <div class="glass-card p-5 text-center">
+                        <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex justify-content-center align-items-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-lock-fill text-success fs-1"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">{{ t('posts.index.login_to_join') }}</h4>
+                        <p class="text-muted mb-4 fw-medium">Join our growing community to share your thoughts and ideas with the world.</p>
+                        <a href="/login" class="btn btn-green w-100 rounded-pill py-2 shadow-sm">{{ t('posts.index.log_in') }}</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
 
-			{% if session().has('user_id') %}
-				<div class="card mb-4 border-success">
-					<div class="card-body">
-						<h5 class="card-title text-success">{{ t('posts.index.create_post') }}</h5>
-						<form action="/posts" method="POST">
-						{{ csrf_field() }}
-							<div class="mb-3">
-								<input type="text" name="title" class="form-control" placeholder="{{ t('posts.index.post_title') }}" required>
-							</div>
-							<div class="mb-3">
-								<textarea name="body" rows="3" class="form-control" placeholder="{{ t('posts.index.post_body') }}" required></textarea>
-							</div>
-							<button type="submit" class="btn btn-success">{{ t('posts.index.publish') }}</button>
-						</form>
-					</div>
-				</div>
-			{% else %}
-				<div class="alert alert-info py-2">
-					<a href="/login" class="alert-link text-decoration-none">{{ t('posts.index.log_in') }}</a>
-					{{ t('posts.index.login_to_join') }}
-				</div>
-			{% endif %}
+        {# Right Column: Posts List #}
+        <div class="col-lg-8 order-lg-1">
+            <h2 class="mb-4 fw-bolder d-flex align-items-center" style="color: var(--green-dark);">
+                <i class="bi bi-collection-play-fill me-2 text-success"></i>
+                {{ t('posts.index.heading') }}
+            </h2>
 
-			{% for post in posts %}
-				<div class="card mb-3">
-					<div class="card-body">
-						<h4 class="card-title mb-2">
-							<a href="/posts/{{ post.id }}" class="text-dark text-decoration-none">
-								{{ post.title }}
-							</a>
-						</h4>
+            <div class="row g-4">
+                {% for post in posts %}
+                    <div class="col-md-6">
+                        <div class="glass-card h-100 d-flex flex-column overflow-hidden border-0">
+                            {% if post.image %}
+                                <div class="position-relative" style="height: 220px; overflow: hidden;">
+                                    <img src="/{{ post.image }}" class="w-100 h-100" style="object-fit: cover; transition: transform 0.6s ease;" alt="Post Image" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+                                </div>
+                            {% else %}
+                                <div class="d-flex justify-content-center align-items-center" style="height: 220px; background: linear-gradient(135deg, var(--green-light) 0%, #a7f3d0 100%);">
+                                    <i class="bi bi-journal-richtext text-success" style="font-size: 4rem; opacity: 0.4;"></i>
+                                </div>
+                            {% endif %}
 
-						<p class="card-text text-muted mb-2">
-							<small>{{ t('posts.index.by_author', {'author': post.author.name|default(t('posts.index.unknown'))}) }}</small>
-						</p>
+                            <div class="p-4 d-flex flex-column flex-grow-1 bg-white bg-opacity-50">
+                                <h4 class="mb-3 fw-bold" style="line-height: 1.4;">
+                                    <a href="/posts/{{ post.id }}" class="text-decoration-none" style="color: var(--text-main); transition: color 0.2s ease;" onmouseover="this.style.color='var(--green-primary)'" onmouseout="this.style.color='var(--text-main)'">
+                                        {{ post.title }}
+                                    </a>
+                                </h4>
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-success text-white rounded-circle d-flex justify-content-center align-items-center me-2 shadow-sm" style="width: 36px; height: 36px; font-size: 15px; font-weight: bold;">
+                                        {{ post.author.name|default('U')|first|upper }}
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <small class="text-dark fw-bold">{{ t('posts.index.by_author', {'author': post.author.name|default(t('posts.index.unknown'))}) }}</small>
+                                        <small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-clock me-1"></i>Recently published</small>
+                                    </div>
+                                </div>
+                                <p class="text-muted mb-4 flex-grow-1" style="font-size: 0.95rem; line-height: 1.6;">
+                                    {{ post.body|length > 110 ? post.body|slice(0, 110) ~ '...' : post.body }}
+                                </p>
+                                <a href="/posts/{{ post.id }}" class="btn btn-green-outline w-100 rounded-pill py-2 mt-auto shadow-sm">
+                                    {{ t('posts.index.read_more') }} <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-12">
+                        <div class="glass-card p-5 text-center border-0">
+                            <i class="bi bi-inbox text-muted mb-3" style="font-size: 4rem;"></i>
+                            <h3 class="text-dark fw-bold mb-2">{{ t('posts.index.no_posts') }}</h3>
+                            <p class="text-muted">There are no articles published yet. Be the first to share something!</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
 
-						<p class="card-text">
-							{{ post.body|length > 100 ? post.body|slice(0, 100) ~ '...' : post.body }}
-						</p>
-
-						<div class="d-flex justify-content-between align-items-center mt-3">
-							<a href="/posts/{{ post.id }}" class="btn btn-sm btn-outline-success">
-								{{ t('posts.index.read_more') }}
-							</a>
-						</div>
-					</div>
-				</div>
-			{% else %}
-				<p class="text-muted">{{ t('posts.index.no_posts') }}</p>
-			{% endfor %}
-
-			{% if meta.total_pages > 1 %}
-				<nav aria-label="Posts pagination">
-					<ul
-						class="pagination justify-content-center">
-
-						{# Previous #}
-						<li class="page-item {{ not meta.has_prev ? 'disabled' }}">
-							{% if not meta.has_prev %}
-								<span class="page-link">«</span>
-							{% else %}
-								<a class="page-link" href="?page={{ meta.current_page - 1 }}&order={{ order }}">«</a>
-							{% endif %}
-						</li>
-
-						{# Page numbers #}
-						{% for p in 1..meta.total_pages %}
-							<li class="page-item {{ p == meta.current_page ? 'active' }}">
-								{% if p == meta.current_page %}
-									<span class="page-link">{{ p }}</span>
-								{% else %}
-									<a class="page-link" href="?page={{ p }}&order={{ order }}">{{ p }}</a>
-								{% endif %}
-							</li>
-						{% endfor %}
-
-						{# Next #}
-						<li class="page-item {{ not meta.has_next ? 'disabled' }}">
-							{% if not meta.has_next %}
-								<span class="page-link">»</span>
-							{% else %}
-								<a class="page-link" href="?page={{ meta.current_page + 1 }}&order={{ order }}">»</a>
-							{% endif %}
-						</li>
-
-					</ul>
-				</nav>
-
-				<p class="text-center text-muted small">
-					{{ t('posts.index.page_info', {'current': meta.current_page, 'total': meta.total_pages, 'items': meta.total_items})|raw }}
-				</p>
-			{% endif %}
-		</div>
-	</div>
+            {% if meta.total_pages > 1 %}
+                <nav aria-label="Posts pagination" class="mt-5 pt-3">
+                    <ul class="pagination justify-content-center gap-2">
+                        <li class="page-item {{ not meta.has_prev ? 'disabled' }}">
+                            <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm" style="width: 40px; height: 40px;" href="{% if meta.has_prev %}?page={{ meta.current_page - 1 }}&order={{ order }}{% else %}#{% endif %}"><i class="bi bi-chevron-left"></i></a>
+                        </li>
+                        {% for p in 1..meta.total_pages %}
+                            <li class="page-item {{ p == meta.current_page ? 'active' }}">
+                                <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm {% if p == meta.current_page %}bg-success text-white fw-bold{% else %}text-dark fw-medium{% endif %}" style="width: 40px; height: 40px;" href="?page={{ p }}&order={{ order }}">{{ p }}</a>
+                            </li>
+                        {% endfor %}
+                        <li class="page-item {{ not meta.has_next ? 'disabled' }}">
+                            <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm" style="width: 40px; height: 40px;" href="{% if meta.has_next %}?page={{ meta.current_page + 1 }}&order={{ order }}{% else %}#{% endif %}"><i class="bi bi-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+                <p class="text-center text-muted small mt-3 fw-medium">
+                    {{ t('posts.index.page_info', {'current': meta.current_page, 'total': meta.total_pages, 'items': meta.total_items})|raw }}
+                </p>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}
