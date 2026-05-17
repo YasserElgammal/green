@@ -313,6 +313,7 @@ php green serve              # Start development server
 
 php green create:model Car         # Create a new model
 php green create:controller Car    # Create a new controller
+php green translation:clear  # Clear all cached translations
 ```
 
 ## 🔧 10. Migrations & Schema Builder
@@ -711,6 +712,18 @@ lang/
     "logout": "Logout"
 }
 ```
+
+### Translation Caching & CLI
+
+To optimize performance, Green caches parsed translations.
+
+If you make modifications to your JSON translation files, you can easily clear the cache using the dedicated CLI command:
+
+```bash
+php green translation:clear
+```
+
+This will safely remove all cached translation files so that changes to your JSON strings are picked up immediately on the next request.
 
 ---
 
