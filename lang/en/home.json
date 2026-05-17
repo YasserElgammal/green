@@ -1,4 +1,6 @@
 {
     "welcome": "Welcome to Green Framework",
-    "description": "This is the home page rendered via Twig."
+    "description": "A lightweight, modern PHP boilerplate crafted by Yasser Elgammal. Seamlessly integrates advanced architectural patterns in a blazing-fast core.",
+    "explore_blog": "Explore the Blog",
+    "view_on_github": "View on GitHub"
 }
