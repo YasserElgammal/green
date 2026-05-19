@@ -21,17 +21,4 @@ class RegisterPayload extends Payload
         ];
     }
 
-    /**
-     * Get custom messages for validator errors.
-     *
-     * @return array
-     */
-    public function messages(): array
-    {
-        return [
-            'name'     => 'Please provide your full name.',
-            'email'    => 'A valid email address is required.',
-            'password' => 'Password must be at least 6 characters long.',
-        ];
-    }
 }
