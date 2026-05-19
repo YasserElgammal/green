@@ -2,6 +2,7 @@
 
 namespace App\Controllers\Web;
 
+use App\Payloads\RegisterPayload;
 use App\Tables\UserTable;
 use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\Http\Response;
@@ -16,17 +17,13 @@ class AuthController
     }
 
     #[Route('POST', '/register')]
-    public function register(Request $request)
+    public function register(RegisterPayload $payload)
     {
-        $name = $request->input('name');
-        $email = $request->input('email');
-        $password = $request->input('password');
-
-        if (!$name || !$email || !$password) {
-            // Basic validation
-            session()->flash('error', 'All fields are required.');
-            return redirect('/register');
-        }
+        $data = $payload->validated();
+        
+        $name = $data['name'];
+        $email = $data['email'];
+        $password = $data['password'];
 
         $users = new UserTable();
         

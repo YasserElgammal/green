@@ -15,23 +15,10 @@ class RegisterPayload extends Payload
     public function rules(): array
     {
         return [
-            'name'     => v::stringType()->notEmpty(),
-            'email'    => v::email()->notEmpty(),
-            'password' => v::stringType()->length(6, null),
+            'name'     => v::stringType()->length(3, 255)->notEmpty(),
+            'email'    => v::email()->length(3, 255)->notEmpty(),
+            'password' => v::stringType()->length(3, null)->notEmpty(),
         ];
     }
 
-    /**
-     * Get custom messages for validator errors.
-     *
-     * @return array
-     */
-    public function messages(): array
-    {
-        return [
-            'name'     => 'Please provide your full name.',
-            'email'    => 'A valid email address is required.',
-            'password' => 'Password must be at least 6 characters long.',
-        ];
-    }
 }

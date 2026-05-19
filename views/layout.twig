@@ -125,6 +125,44 @@
             backdrop-filter: blur(12px);
             border-top: 1px solid var(--glass-border);
         }
+
+        /* Custom Premium Inputs */
+        .form-control-custom {
+            background: rgba(255, 255, 255, 0.5) !important;
+            border: 1px solid rgba(16, 185, 129, 0.2) !important;
+            border-radius: 0.75rem !important;
+            padding: 0.75rem 1rem !important;
+            color: var(--text-main) !important;
+            transition: all 0.3s ease !important;
+        }
+        .form-control-custom:focus {
+            background: rgba(255, 255, 255, 0.9) !important;
+            border-color: var(--green-primary) !important;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15) !important;
+            outline: 0 !important;
+        }
+        
+        .form-label-custom {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        .auth-icon-container {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--green-light) 0%, rgba(16, 185, 129, 0.2) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem auto;
+            color: var(--green-dark);
+            font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -166,9 +204,12 @@
     <main class="container my-5">
         {% set success = session().getFlash('success') %}
         {% if success %}
-            <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-4" role="alert">
-                <i class="bi bi-check-circle-fill me-2"></i> {{ success[0] }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <!-- Toast Notification -->
+            <div class="position-fixed end-0 p-3" style="z-index: 1100; max-width: 400px; width: 100%; top: 80px;">
+                <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-4" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i> {{ success[0] }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
             </div>
         {% endif %}
 

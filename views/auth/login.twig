@@ -3,27 +3,75 @@
 {% block title %}{{ t('auth.login.title') }}{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <h2 class="mb-4 text-center">{{ t('auth.login.heading') }}</h2>
-
-        {% set error = session().getFlash('error') %}
-        {% if error %}
-            <div class="alert alert-danger">{{ error[0] }}</div>
-        {% endif %}
-
-        <form action="/login" method="POST">
-            {{ csrf_field() }}
-            <div class="mb-3">
-                <label for="email" class="form-label">{{ t('auth.login.email') }}</label>
-                <input type="email" class="form-control" id="email" name="email" required>
+<div class="row justify-content-center my-4">
+    <div class="col-md-5">
+        <div class="glass-card p-5 border-0 shadow-lg position-relative overflow-hidden">
+            <!-- Top Gradient Bar -->
+            <div class="position-absolute top-0 start-0 w-100" style="height: 5px; background: linear-gradient(90deg, var(--green-primary), var(--green-dark));"></div>
+            
+            <!-- Auth Badge Icon -->
+            <div class="auth-icon-container">
+                <i class="bi bi-shield-lock-fill"></i>
             </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">{{ t('auth.login.password') }}</label>
-                <input type="password" class="form-control" id="password" name="password" required>
+
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h2 class="fw-bold mb-1" style="background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    {{ t('auth.login.heading') }}
+                </h2>
+                <p class="text-muted small">{{ t('auth.login.subheading') }}</p>
             </div>
-            <button type="submit" class="btn btn-success w-100">{{ t('auth.login.submit') }}</button>
-        </form>
+
+            <!-- Error Alerts -->
+            {% set error = session().getFlash('error') %}
+            {% if error %}
+                <div class="alert alert-danger shadow-sm border-0 rounded-4 d-flex align-items-center mb-4" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                    <div>
+                        {% if error is iterable %}
+                            {% for err in error %}
+                                <div>{{ err }}</div>
+                            {% endfor %}
+                        {% else %}
+                            {{ error }}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Form -->
+            {% set formErrors = session().getFlash('errors') %}
+            <form action="/login" method="POST">
+                {{ csrf_field() }}
+                <div class="mb-3">
+                    <label for="email" class="form-label-custom">{{ t('auth.login.email') }}</label>
+                    <div class="position-relative">
+                        <input type="email" class="form-control form-control-custom ps-4 {% if formErrors.email %}is-invalid{% endif %}" id="email" name="email" required placeholder="name@example.com">
+                        {% if formErrors.email %}
+                            <div class="invalid-feedback d-block fw-medium mt-1">{{ formErrors.email[0] }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="password" class="form-label-custom">{{ t('auth.login.password') }}</label>
+                    <div class="position-relative">
+                        <input type="password" class="form-control form-control-custom ps-4 {% if formErrors.password %}is-invalid{% endif %}" id="password" name="password" required placeholder="••••••••">
+                        {% if formErrors.password %}
+                            <div class="invalid-feedback d-block fw-medium mt-1">{{ formErrors.password[0] }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-green rounded-pill w-100 py-2.5 fw-bold shadow-sm transition-all">{{ t('auth.login.submit') }}</button>
+            </form>
+
+            <!-- Bottom Redirect -->
+            <div class="mt-4 text-center">
+                <small class="text-muted">
+                    {{ t('auth.login.no_account') }} <a href="/register" class="text-success fw-semibold text-decoration-none hover-underline">{{ t('auth.login.register_here') }}</a>
+                </small>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
