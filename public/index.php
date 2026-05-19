@@ -13,7 +13,7 @@ use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\View\View;
 use YasserElgammal\Green\Http\Middleware\CsrfMiddleware;
 use YasserElgammal\Green\Security\Csrf\CsrfConfig;
-use App\Middleware\{LoggingMiddleware, LocaleMiddleware};
+use App\Middleware\{LoggingMiddleware, LocaleMiddleware, ValidationExceptionMiddleware};
 
 // Initialize View engine
 View::init(__DIR__ . '/../views');
@@ -21,6 +21,7 @@ View::init(__DIR__ . '/../views');
 $app = new Application();
 
 // Add global middleware
+$app->router->addGlobalMiddleware(ValidationExceptionMiddleware::class);
 $app->router->addGlobalMiddleware(LoggingMiddleware::class);
 $app->router->addGlobalMiddleware(LocaleMiddleware::class);
 

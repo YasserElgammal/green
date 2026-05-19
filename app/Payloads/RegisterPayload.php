@@ -15,9 +15,9 @@ class RegisterPayload extends Payload
     public function rules(): array
     {
         return [
-            'name'     => v::stringType()->notEmpty(),
-            'email'    => v::email()->notEmpty(),
-            'password' => v::stringType()->length(6, null),
+            'name'     => v::stringType()->length(3, 255)->notEmpty(),
+            'email'    => v::email()->length(3, 255)->notEmpty(),
+            'password' => v::stringType()->length(3, null)->notEmpty(),
         ];
     }
 

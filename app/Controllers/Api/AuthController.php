@@ -30,6 +30,15 @@ class AuthController
     {
         $data = $payload->validated();
 
+        $users = new UserTable();
+        $users->insert([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => password_hash($data['password'], PASSWORD_DEFAULT),
+        ]);
+
+        //TODO send verification email
+
         return response_json([
             'message' => 'User registered successfully!',
             'user'    => [
