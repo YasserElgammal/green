@@ -32,5 +32,9 @@
     "{{name}} must not contain whitespace": "{{name}} must not contain whitespace.",
     "{{name}} must validate against \"{{regex}}\"": "{{name}} must validate against \"{{regex}}\".",
     "{{name}} must be true": "{{name}} must be true.",
-    "{{name}} must be false": "{{name}} must be false."
+    "avatar": "Avatar",
+    "current_password": "Current password",
+    "new_password": "New password",
+    "confirm_password": "Confirm new password",
+    "email_in_use": "Email address is already in use"
 }

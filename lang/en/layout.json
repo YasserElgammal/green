@@ -1,4 +1,6 @@
 {
+    "home": "Home",
+    "profile": "Profile",
     "posts": "Posts",
     "hello": "Hello, :name",
     "logout": "Logout",

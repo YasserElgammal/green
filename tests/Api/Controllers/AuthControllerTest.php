@@ -31,7 +31,9 @@ class AuthControllerTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
 
         $data = json_decode($response->getContent(), true);
-        $this->assertEquals('Test User', $data['data']['name']);
+        $this->assertArrayHasKey('access_token', $data);
+        $this->assertArrayHasKey('refresh_token', $data);
+        $this->assertEquals('Bearer', $data['token_type']);
     }
 
     public function testLoginFails(): void

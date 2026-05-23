@@ -72,6 +72,10 @@
         .nav-link-custom:hover {
             color: var(--green-primary);
         }
+        .nav-link-custom.active {
+            color: var(--green-primary);
+            font-weight: 700;
+        }
 
         .btn-green {
             background-color: var(--green-primary);
@@ -174,7 +178,8 @@
                 <i class="bi bi-leaf-fill me-1 text-success"></i>Green
             </a>
             <nav class="d-flex align-items-center">
-                <a href="/posts" class="text-decoration-none me-4 nav-link-custom">{{ t('layout.posts') }}</a>
+                <a href="/" class="text-decoration-none me-4 nav-link-custom {% if current_route() == '/' %}active{% endif %}">{{ t('layout.home') }}</a>
+                <a href="/posts" class="text-decoration-none me-4 nav-link-custom {% if current_route() == '/posts' %}active{% endif %}">{{ t('layout.posts') }}</a>
                 
                 <div class="dropdown me-4">
                     <button class="btn btn-sm btn-green-outline dropdown-toggle rounded-pill px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -186,16 +191,27 @@
                     </ul>
                 </div>
 
-                {% if session().has('user_id') %}
-                    <span class="text-muted me-3 small fw-medium">{{ t('layout.hello', {'name': session().get('user_name')}) }}</span>
-                    <form action="/logout" method="POST" class="d-inline">
-                        {{ csrf_field() }}
-                        <button type="submit" class="btn btn-sm btn-green-outline rounded-pill px-3">{{ t('layout.logout') }}</button>
-                    </form>
-                {% else %}
-                    <a href="/login" class="text-decoration-none me-3 nav-link-custom">{{ t('layout.login') }}</a>
-                    <a href="/register" class="btn btn-sm btn-green rounded-pill px-4">{{ t('layout.register') }}</a>
-                {% endif %}
+{% if session().has('user_id') %}
+    <div class="d-flex align-items-center me-3">
+        {% if session().get('user_avatar') %}
+            <a href="/profile" class="me-2">
+                <img src="{{ '/' ~ session().get('user_avatar') }}" alt="Avatar" class="rounded-circle" style="width:40px;height:40px;object-fit:cover;">
+            </a>
+        {% else %}
+            <a href="/profile" class="me-2">
+                <i class="bi bi-person-circle text-muted" style="font-size:1.5rem;"></i>
+            </a>
+        {% endif %}
+        <a href="/profile" class="text-muted small fw-medium text-decoration-none">{{ t('layout.hello', {'name': session().get('user_name')}) }}</a>
+    </div>
+    <form action="/logout" method="POST" class="d-inline">
+        {{ csrf_field() }}
+        <button type="submit" class="btn btn-sm btn-green-outline rounded-pill px-3">{{ t('layout.logout') }}</button>
+    </form>
+{% else %}
+    <a href="/login" class="text-decoration-none me-3 nav-link-custom">{{ t('layout.login') }}</a>
+    <a href="/register" class="btn btn-sm btn-green rounded-pill px-4">{{ t('layout.register') }}</a>
+{% endif %}
             </nav>
         </div>
     </header>
@@ -204,10 +220,21 @@
     <main class="container my-5">
         {% set success = session().getFlash('success') %}
         {% if success %}
-            <!-- Toast Notification -->
+            <!-- Success Toast -->
             <div class="position-fixed end-0 p-3" style="z-index: 1100; max-width: 400px; width: 100%; top: 80px;">
                 <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-4" role="alert">
                     <i class="bi bi-check-circle-fill me-2"></i> {{ success[0] }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        {% endif %}
+
+        {% set error = session().getFlash('error') %}
+        {% if error %}
+            <!-- Error Toast -->
+            <div class="position-fixed end-0 p-3" style="z-index: 1100; max-width: 400px; width: 100%; top: 80px;">
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-4" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error[0] }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             </div>

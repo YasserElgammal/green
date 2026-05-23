@@ -2,7 +2,7 @@
 
 namespace App\Controllers\Api;
 
-use App\Middleware\AuthMiddleware;
+use App\Middleware\TokenAuthMiddleware;
 use App\Tables\UserTable;
 use App\Transformers\UserTransformer;
 use YasserElgammal\Green\Http\JsonResponse;
@@ -46,7 +46,7 @@ class UserController
         );
     }
 
-    #[Route('POST', '/api/users', [AuthMiddleware::class])]
+    #[Route('POST', '/api/users', [TokenAuthMiddleware::class])]
     public function store(Request $request): JsonResponse
     {
         $users = new UserTable();
@@ -60,7 +60,7 @@ class UserController
         return TransformerResponse::item($user, new UserTransformer(), 201);
     }
 
-    #[Route('PUT', '/api/users/{id}', [AuthMiddleware::class])]
+    #[Route('PUT', '/api/users/{id}', [TokenAuthMiddleware::class])]
     public function update(int $id, Request $request): JsonResponse
     {
         $users = new UserTable();
@@ -82,7 +82,7 @@ class UserController
         );
     }
 
-    #[Route('DELETE', '/api/users/{id}', [AuthMiddleware::class])]
+    #[Route('DELETE', '/api/users/{id}', [TokenAuthMiddleware::class])]
     public function destroy(int $id): JsonResponse
     {
         $users = new UserTable();

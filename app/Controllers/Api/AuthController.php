@@ -22,7 +22,42 @@ class AuthController
             return response_json(['error' => 'Unauthorized'], 401);
         }
 
-        return TransformerResponse::item($user, new UserTransformer());
+        $token = auth()->issueToken($user);
+        $refreshToken = auth()->issueRefreshToken($user);
+
+        return response_json([
+            'access_token'  => $token,
+            'refresh_token' => $refreshToken,
+            'token_type'    => 'Bearer',
+            'expires_in'    => (int) ($_ENV['JWT_TTL'] ?? 3600),
+        ]);
+    }
+
+    #[Route('POST', '/api/refresh')]
+    public function refresh(Request $request): JsonResponse
+    {
+        $refreshToken = $request->input('refresh_token');
+
+        if (!$refreshToken) {
+            return response_json(['error' => 'Refresh token is required.'], 422);
+        }
+
+        $user = auth()->verifyRefreshToken($refreshToken);
+
+        if (!$user) {
+            return response_json(['error' => 'Invalid refresh token.'], 401);
+        }
+
+        // Issue new tokens (rotate refresh token for security)
+        $newAccessToken  = auth()->issueToken($user);
+        $newRefreshToken = auth()->issueRefreshToken($user);
+
+        return response_json([
+            'access_token'  => $newAccessToken,
+            'refresh_token' => $newRefreshToken,
+            'token_type'    => 'Bearer',
+            'expires_in'    => (int) ($_ENV['JWT_TTL'] ?? 3600),
+        ]);
     }
 
     #[Route('POST', '/api/register')]

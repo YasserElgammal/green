@@ -13,6 +13,7 @@ class UserTransformer extends Transformer
             'id'         => (int) $model->id,
             'name'       => $model->name,
             'email'      => $model->email,
+            'avatar'     => $model->avatar,
             'created_at' => $model->created_at,
         ];
     }
