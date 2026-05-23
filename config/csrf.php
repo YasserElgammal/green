@@ -98,7 +98,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | URIs listed here are excluded from CSRF verification. Use a trailing
-    | wildcard (*) to match entire path prefixes (e.g. '/api/public/*').
+    | wildcard (*) to match entire path prefixes (e.g. '/api/*').
     |
     | Typical exclusions: payment webhooks, third-party callbacks, and
     | public API endpoints that rely on token-based auth instead.
@@ -106,7 +106,7 @@ return [
     */
     'except' => [
         '/webhooks/*',
-        '/api/public/*',
+        '/api/*',
     ],
 
 ];

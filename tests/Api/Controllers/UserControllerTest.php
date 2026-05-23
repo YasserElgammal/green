@@ -26,7 +26,8 @@ class UserControllerTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
 
         $data = json_decode($response->getContent(), true);
-        $this->assertCount(2, $data['data']);
+        $this->assertTrue($data['success']);
+        $this->assertCount(2, $data['data']['items']);
     }
 
     public function testIndexSupportsPagination(): void
@@ -46,8 +47,9 @@ class UserControllerTest extends TestCase
 
         $data = json_decode($response->getContent(), true);
 
-        $this->assertCount(5, $data['data']);
-        $this->assertEquals(22, $data['meta']['total_items']);
+        $this->assertTrue($data['success']);
+        $this->assertCount(5, $data['data']['items']);
+        $this->assertEquals(22, $data['data']['meta']['total_items']);
     }
 
     public function testShowReturnsSingleUser(): void
@@ -58,7 +60,8 @@ class UserControllerTest extends TestCase
 
         $data = json_decode($response->getContent(), true);
 
-        $this->assertEquals(1, $data['data']['id']);
+        $this->assertTrue($data['success']);
+        $this->assertEquals(1, $data['data']['item']['id']);
     }
 
     public function testStoreCreatesUser(): void
@@ -92,7 +95,8 @@ class UserControllerTest extends TestCase
 
         $data = json_decode($response->getContent(), true);
 
-        $this->assertEquals('Updated Name', $data['data']['name']);
+        $this->assertTrue($data['success']);
+        $this->assertEquals('Updated Name', $data['data']['item']['name']);
     }
 
     public function testDestroyDeletesUser(): void

@@ -4,7 +4,6 @@ namespace App\Middleware;
 
 use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\Http\Response;
-use YasserElgammal\Green\Http\JsonResponse;
 use YasserElgammal\Green\Http\ValidationException;
 use YasserElgammal\Green\Middleware\MiddlewareInterface;
 
@@ -20,10 +19,7 @@ class ValidationExceptionMiddleware implements MiddlewareInterface
             $expectsJson = str_contains($accept, 'application/json') || str_starts_with($path, '/api');
 
             if ($expectsJson) {
-                return new JsonResponse([
-                    'error' => 'Validation error',
-                    'errors' => $e->getErrors(),
-                ], 422);
+                return api()->error('Validation failed.', $e->getErrors(), 422);
             }
 
             $errors = $e->getErrors();

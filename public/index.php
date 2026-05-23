@@ -13,6 +13,7 @@ use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\View\View;
 use YasserElgammal\Green\Http\Middleware\CsrfMiddleware;
 use YasserElgammal\Green\Security\Csrf\CsrfConfig;
+use App\Exceptions\Handler;
 use App\Middleware\{LoggingMiddleware, LocaleMiddleware, ValidationExceptionMiddleware};
 
 // Initialize View engine
@@ -42,7 +43,7 @@ $request = Request::capture();
 try {
     $response = $app->handle($request);
 } catch (\Throwable $e) {
-    $handler = new \YasserElgammal\Green\Exceptions\ExceptionHandler();
+    $handler = new Handler();
     $response = $handler->handle($e, $request);
 }
 

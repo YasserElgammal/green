@@ -1,0 +1,108 @@
+{# views/profile/index.twig #}
+{% extends "layout.twig" %}
+
+{% block title %}{{ t('profile.title') }}{% endblock %}
+
+{% block content %}
+{% set formErrors = session().getFlash('errors') %}
+
+<div class="glass-card p-4 mb-5">
+    <h2 class="mb-4">{{ t('profile.title') }}</h2>
+    <ul class="nav nav-tabs" id="profileTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab" aria-controls="info" aria-selected="true">{{ t('profile.profile_info') }}</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">{{ t('profile.change_password') }}</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link text-danger" id="delete-tab" data-bs-toggle="tab" data-bs-target="#delete" type="button" role="tab" aria-controls="delete" aria-selected="false">{{ t('profile.delete_account') }}</button>
+        </li>
+    </ul>
+    <div class="tab-content pt-4" id="profileTabContent">
+        <!-- Profile Info Tab -->
+        <div class="tab-pane fade show active" id="info" role="tabpanel" aria-labelledby="info-tab">
+            <form action="/profile" method="POST" enctype="multipart/form-data" class="row g-3">
+                {{ csrf_field() }}
+                <div class="col-md-6">
+                    <label class="form-label-custom" for="name">{{ t('profile.name') }}</label>
+                    <input type="text" class="form-control form-control-custom {% if formErrors.name %}is-invalid{% endif %}" id="name" name="name" value="{{ user.name }}" required>
+                    {% if formErrors.name %}
+                        <div class="invalid-feedback d-block fw-medium mt-1">{{ formErrors.name[0] }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label-custom" for="email">{{ t('profile.email') }}</label>
+                    <input type="email" class="form-control form-control-custom {% if formErrors.email %}is-invalid{% endif %}" id="email" name="email" value="{{ user.email }}" required>
+                    {% if formErrors.email %}
+                        <div class="invalid-feedback d-block fw-medium mt-1">{{ formErrors.email[0] }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-12">
+                    <label class="form-label-custom" for="avatar">{{ t('profile.avatar') }}</label>
+                    {% if user.avatar %}
+                        <div class="mb-2">
+                            <img src="{{ '/' ~ user.avatar }}" alt="Avatar" class="rounded-circle shadow-sm" style="max-height:120px;max-width:120px;object-fit:cover;">
+                        </div>
+                    {% endif %}
+                    <input type="file" class="form-control form-control-custom" id="avatar" name="avatar" accept="image/*">
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-green">{{ t('profile.save') }}</button>
+                </div>
+            </form>
+        </div>
+        <!-- Change Password Tab -->
+        <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
+            <form action="/profile/password" method="POST" class="row g-3">
+                {{ csrf_field() }}
+                <div class="col-12">
+                    <label class="form-label-custom" for="current_password">{{ t('profile.current_password') }}</label>
+                    <input type="password" class="form-control form-control-custom {% if formErrors.current_password %}is-invalid{% endif %}" id="current_password" name="current_password" required>
+                    {% if formErrors.current_password %}
+                        <div class="invalid-feedback d-block fw-medium mt-1">{{ formErrors.current_password[0] }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-12">
+                    <label class="form-label-custom" for="password">{{ t('profile.new_password') }}</label>
+                    <input type="password" class="form-control form-control-custom {% if formErrors.password %}is-invalid{% endif %}" id="password" name="password" required minlength="6">
+                    {% if formErrors.password %}
+                        <div class="invalid-feedback d-block fw-medium mt-1">{{ formErrors.password[0] }}</div>
+                    {% endif %}
+                    <small class="text-muted mt-1 d-block"><i class="bi bi-info-circle me-1"></i>{{ t('profile.password_hint')}}</small>
+                </div>
+                <div class="col-12">
+                    <label class="form-label-custom" for="confirm_password">{{ t('profile.confirm_password') }}</label>
+                    <input type="password" class="form-control form-control-custom {% if formErrors.confirm_password %}is-invalid{% endif %}" id="confirm_password" name="confirm_password" required minlength="6">
+                    {% if formErrors.confirm_password %}
+                        <div class="invalid-feedback d-block fw-medium mt-1">{{ formErrors.confirm_password[0] }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-green">{{ t('profile.save') }}</button>
+                </div>
+            </form>
+        </div>
+        <!-- Delete Account Tab -->
+        <div class="tab-pane fade" id="delete" role="tabpanel" aria-labelledby="delete-tab">
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">{{ t('profile.delete_confirm_title') }}</h4>
+                <p>{{ t('profile.delete_confirm_msg') }}</p>
+            </div>
+            <form action="/profile/delete" method="POST" class="row g-3">
+                {{ csrf_field() }}
+                <div class="col-12">
+                    <label class="form-label-custom" for="delete_password">{{ t('profile.current_password') }}</label>
+                    <input type="password" class="form-control form-control-custom {% if formErrors.password %}is-invalid{% endif %}" id="delete_password" name="password" required>
+                    {% if formErrors.password %}
+                        <div class="invalid-feedback d-block fw-medium mt-1">{{ formErrors.password[0] }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-danger">{{ t('profile.delete_permanently') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

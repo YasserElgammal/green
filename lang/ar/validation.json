@@ -32,5 +32,9 @@
     "{{name}} must not contain whitespace": "يجب ألا يحتوي {{name}} على مسافات فارغة.",
     "{{name}} must validate against \"{{regex}}\"": "صيغة {{name}} غير صالحة.",
     "{{name}} must be true": "يجب أن تكون قيمة {{name}} صحيحة (True).",
-    "{{name}} must be false": "يجب أن تكون قيمة {{name}} خاطئة (False)."
+        "avatar": "الصورة الرمزية",
+    "current_password": "كلمة المرور الحالية",
+    "new_password": "كلمة المرور الجديدة",
+    "confirm_password": "تأكيد كلمة المرور الجديدة",
+    "email_in_use": "البريد الإلكتروني مستخدم بالفعل"
 }

@@ -2,13 +2,12 @@
 
 namespace App\Controllers\Api;
 
-use App\Middleware\AuthMiddleware;
+use App\Middleware\TokenAuthMiddleware;
 use App\Tables\UserTable;
 use App\Transformers\UserTransformer;
 use YasserElgammal\Green\Http\JsonResponse;
 use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\Routing\Route;
-use YasserElgammal\Green\Transformer\TransformerResponse;
 
 class UserController
 {
@@ -22,13 +21,13 @@ class UserController
         $perPage = (int) ($request->input('per_page') ?: 15);
 
         if ($request->input('page') !== null) {
-            return TransformerResponse::paginated(
+            return api()->paginated(
                 $users->paginate($perPage, $page),
                 new UserTransformer()
             );
         }
 
-        return TransformerResponse::collection(
+        return api()->collection(
             $users->fetchAll(),
             new UserTransformer()
         );
@@ -40,13 +39,13 @@ class UserController
         $users = new UserTable();
         $users->include(['posts.comments', 'roles']);
 
-        return TransformerResponse::item(
+        return api()->item(
             $users->fetchByIdOrFail($id),
             new UserTransformer()
         );
     }
 
-    #[Route('POST', '/api/users', [AuthMiddleware::class])]
+    #[Route('POST', '/api/users', [TokenAuthMiddleware::class])]
     public function store(Request $request): JsonResponse
     {
         $users = new UserTable();
@@ -57,10 +56,10 @@ class UserController
             'password' => password_hash($request->input('password') ?: 'secret', PASSWORD_DEFAULT),
         ]);
 
-        return TransformerResponse::item($user, new UserTransformer(), 201);
+        return api()->item($user, new UserTransformer(), 'User created successfully.', 201);
     }
 
-    #[Route('PUT', '/api/users/{id}', [AuthMiddleware::class])]
+    #[Route('PUT', '/api/users/{id}', [TokenAuthMiddleware::class])]
     public function update(int $id, Request $request): JsonResponse
     {
         $users = new UserTable();
@@ -76,18 +75,19 @@ class UserController
 
         $users->update($id, array_filter($data));
 
-        return TransformerResponse::item(
+        return api()->item(
             $users->fetchByIdOrFail($id),
-            new UserTransformer()
+            new UserTransformer(),
+            'User updated successfully.'
         );
     }
 
-    #[Route('DELETE', '/api/users/{id}', [AuthMiddleware::class])]
+    #[Route('DELETE', '/api/users/{id}', [TokenAuthMiddleware::class])]
     public function destroy(int $id): JsonResponse
     {
         $users = new UserTable();
         $users->deleteById($id);
 
-        return response_json(['message' => "User [{$id}] deleted."]);
+        return api()->success("User [{$id}] deleted.");
     }
 }

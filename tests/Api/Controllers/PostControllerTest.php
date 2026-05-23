@@ -27,8 +27,9 @@ class PostControllerTest extends TestCase
 
         $data = json_decode($response->getContent(), true);
 
-        $this->assertCount(1, $data['data']);
-        $this->assertEquals('Test Post', $data['data'][0]['title']);
+        $this->assertTrue($data['success']);
+        $this->assertCount(1, $data['data']['items']);
+        $this->assertEquals('Test Post', $data['data']['items'][0]['title']);
     }
 
     public function testShowReturnsSinglePost(): void
@@ -39,6 +40,7 @@ class PostControllerTest extends TestCase
 
         $data = json_decode($response->getContent(), true);
 
-        $this->assertEquals(1, $data['data']['id']);
+        $this->assertTrue($data['success']);
+        $this->assertEquals(1, $data['data']['item']['id']);
     }
 }

@@ -15,7 +15,11 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        // 1. Setup in-memory SQLite connection
+        // 1. Setup Environment
+        $_ENV['JWT_SECRET'] = 'test-secret-key-that-is-long-enough-32-chars-for-hs256';
+        $_ENV['JWT_TTL'] = 3600;
+
+        // 2. Setup in-memory SQLite connection
         $connectionParams = [
             'driver' => 'pdo_sqlite',
             'memory' => true,
@@ -48,6 +52,8 @@ abstract class TestCase extends BaseTestCase
                 name TEXT NOT NULL,
                 email TEXT NOT NULL UNIQUE,
                 password TEXT NOT NULL,
+                avatar TEXT,
+                refresh_token TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         ");

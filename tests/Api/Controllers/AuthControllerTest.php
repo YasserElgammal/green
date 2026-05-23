@@ -31,7 +31,10 @@ class AuthControllerTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
 
         $data = json_decode($response->getContent(), true);
-        $this->assertEquals('Test User', $data['data']['name']);
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('access_token', $data['data']);
+        $this->assertArrayHasKey('refresh_token', $data['data']);
+        $this->assertEquals('Bearer', $data['data']['token_type']);
     }
 
     public function testLoginFails(): void
@@ -60,12 +63,13 @@ class AuthControllerTest extends TestCase
 
         $response = $this->controller->register($payload);
 
-        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals(201, $response->getStatusCode());
 
         $data = json_decode((string) $response->getContent(), true);
 
+        $this->assertTrue($data['success']);
         $this->assertEquals('User registered successfully!', $data['message']);
-        $this->assertEquals('New User', $data['user']['name']);
-        $this->assertEquals('new@example.com', $data['user']['email']);
+        $this->assertEquals('New User', $data['data']['user']['name']);
+        $this->assertEquals('new@example.com', $data['data']['user']['email']);
     }
 }

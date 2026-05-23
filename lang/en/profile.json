@@ -1,0 +1,29 @@
+{
+    "title": "Profile Settings",
+    "profile_info": "Profile Information",
+    "profile_info_sub": "Update your account's profile information and email address.",
+    "change_password": "Change Password",
+    "change_password_sub": "Ensure your account is using a secure password.",
+    "delete_account": "Delete Account",
+    "delete_account_sub": "Permanently delete your account. Once your account is deleted, all of its data will be permanently removed.",
+    "name": "Name",
+    "email": "Email address",
+    "avatar": "Avatar",
+    "current_password": "Current Password",
+    "new_password": "New Password",
+    "confirm_password": "Confirm New Password",
+    "save": "Save Changes",
+    "delete_confirm_title": "Are you sure you want to delete your account?",
+    "delete_confirm_msg": "Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.",
+    "cancel": "Cancel",
+    "delete_permanently": "Delete Account",
+    "success_updated": "Profile updated successfully.",
+    "success_password": "Password changed successfully.",
+    "success_deleted": "Your account has been deleted permanently.",
+    "error_current_password": "The provided current password does not match our records.",
+    "error_email_in_use": "Email address is already in use.",
+    "password_hint": "Minimum 6 characters",
+    "validation": {
+        "confirm_password_match": "The password confirmation does not match."
+    }
+}

@@ -5,7 +5,8 @@ use App\Controllers\Web\{
     CommentController,
     HomeController,
     PostController,
-    LangController
+    LangController,
+    ProfileController
 };
 
 /** @var \YasserElgammal\Green\Application $app */
@@ -14,3 +15,4 @@ $app->router->registerRoutesFromController(AuthController::class);
 $app->router->registerRoutesFromController(PostController::class);
 $app->router->registerRoutesFromController(CommentController::class);
 $app->router->registerRoutesFromController(LangController::class);
+$app->router->registerRoutesFromController(ProfileController::class);

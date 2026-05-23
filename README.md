@@ -19,12 +19,14 @@ php green serve
 ### 2. Define a Route
 ```php
 class PostController {
-    #[Route('GET', '/posts/{id}')]
+    #[Route('GET', '/posts/{id}', middleware: [AuthMiddleware::class, LocaleMiddleware::class])]
     public function show(int $id) {
         return view('posts/show', ['id' => $id]);
     }
 }
 ```
+
+Pass route middleware as an array; add multiple middleware classes in the order they should run.
 
 ### 3. Database Access
 ```php
@@ -50,6 +52,7 @@ The framework is divided into several powerful subsystems. Please refer to the *
 - **[Migrations & Schema Builder](DOCUMENTATION.md#-10-migrations--schema-builder)**: Migration workflow, schema operations, dry-run mode, and safe mode.
 - **[Translation & Localization](DOCUMENTATION.md#-11-translation--localization)**: Global helpers, multiple providers, caching, and pluralization.
 - **[Include Query Language](DOCUMENTATION.md#-12-include-query-language-iql)**: Advanced relation loading with limits, ordering, filtering, and column selection.
+- **[Connect](DOCUMENTATION.md#13-connect-external-http-apis)**: Outgoing HTTP requests for third-party APIs and services.
 
 ---
 
@@ -61,6 +64,7 @@ The framework is divided into several powerful subsystems. Please refer to the *
 - ✅ **Smart Transformers**: Nested API responses made easy.
 - ✅ **Auto-Validation**: Type-hint payloads for instant validation.
 - ✅ **Twig Templates**: Native Twig integration for clean views.
+- ✅ **Connect**: Simple outgoing HTTP requests for payments, CRMs, messaging APIs, and other services.
 - ✅ **Debug UI**: Premium dark-mode error pages.
 
 ---
