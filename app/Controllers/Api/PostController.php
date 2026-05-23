@@ -7,7 +7,6 @@ use App\Transformers\PostTransformer;
 use YasserElgammal\Green\Http\JsonResponse;
 use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\Routing\Route;
-use YasserElgammal\Green\Transformer\TransformerResponse;
 
 class PostController
 {
@@ -20,7 +19,7 @@ class PostController
         $page    = (int) ($request->input('page') ?: 1);
         $perPage = (int) ($request->input('per_page') ?: 15);
 
-        return TransformerResponse::paginated(
+        return api()->paginated(
             $posts->paginate($perPage, $page),
             new PostTransformer()
         );
@@ -32,7 +31,7 @@ class PostController
         $posts = new PostTable();
         $posts->include(['author', 'comments.likes']);
 
-        return TransformerResponse::item(
+        return api()->item(
             $posts->fetchByIdOrFail($id),
             new PostTransformer()
         );

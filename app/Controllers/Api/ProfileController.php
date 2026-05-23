@@ -12,7 +12,6 @@ use App\Transformers\UserTransformer;
 use YasserElgammal\Green\Http\JsonResponse;
 use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\Routing\Route;
-use YasserElgammal\Green\Transformer\TransformerResponse;
 
 class ProfileController
 {
@@ -26,7 +25,7 @@ class ProfileController
     #[Route('GET', '/api/profile', [TokenAuthMiddleware::class])]
     public function show(Request $request): JsonResponse
     {
-        return TransformerResponse::item(
+        return api()->item(
             $request->getAttribute('user'),
             new UserTransformer()
         );
@@ -41,7 +40,7 @@ class ProfileController
         $usersTable = new UserTable();
         $existing = $usersTable->fetchFirst('email', $data['email']);
         if ($existing && $existing->id !== $user->id) {
-            return response_json(['error' => 'Email already in use.'], 422);
+            return api()->fieldError('email', 'Email already in use.', 422);
         }
 
         // Standard PUT request typically doesn't contain files, but check files just in case
@@ -51,7 +50,7 @@ class ProfileController
 
         $updatedUser = $usersTable->fetchById($user->id);
 
-        return TransformerResponse::item($updatedUser, new UserTransformer());
+        return api()->item($updatedUser, new UserTransformer(), 'Profile updated successfully.');
     }
 
     #[Route('POST', '/api/profile', [TokenAuthMiddleware::class])]
@@ -64,7 +63,7 @@ class ProfileController
         $usersTable = new UserTable();
         $existing = $usersTable->fetchFirst('email', $data['email']);
         if ($existing && $existing->id !== $user->id) {
-            return response_json(['error' => 'Email already in use.'], 422);
+            return api()->fieldError('email', 'Email already in use.', 422);
         }
 
         $avatarFile = $_FILES['avatar'] ?? null;
@@ -73,7 +72,7 @@ class ProfileController
 
         $updatedUser = $usersTable->fetchById($user->id);
 
-        return TransformerResponse::item($updatedUser, new UserTransformer());
+        return api()->item($updatedUser, new UserTransformer(), 'Profile updated successfully.');
     }
 
     #[Route('PUT', '/api/profile/password', [TokenAuthMiddleware::class])]
@@ -89,10 +88,10 @@ class ProfileController
         );
 
         if (!$success) {
-            return response_json(['error' => 'The provided current password does not match our records.'], 422);
+            return api()->fieldError('current_password', 'The provided current password does not match our records.', 422);
         }
 
-        return response_json(['message' => 'Password changed successfully.']);
+        return api()->success('Password changed successfully.');
     }
 
     #[Route('DELETE', '/api/profile', [TokenAuthMiddleware::class])]
@@ -104,12 +103,12 @@ class ProfileController
         $success = $this->profileService->deleteAccount($user->id, $data['password']);
 
         if (!$success) {
-            return response_json(['error' => 'The provided current password does not match our records.'], 422);
+            return api()->fieldError('password', 'The provided current password does not match our records.', 422);
         }
 
         // Clear web session if any exists
         session()->flush();
 
-        return response_json(['message' => 'Account deleted successfully.']);
+        return api()->success('Account deleted successfully.');
     }
 }

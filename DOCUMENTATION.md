@@ -29,15 +29,25 @@ Green automatically injects common dependencies into your controller methods:
 Routes are defined using PHP 8 Attributes directly above controller methods.
 
 ```php
-#[Route('GET', '/posts/{id}', middleware: [AuthMiddleware::class])]
+#[Route('GET', '/posts/{id}', middleware: [AuthMiddleware::class, LocaleMiddleware::class])]
 public function show(int $id) { ... }
+```
+
+The `middleware` argument accepts an array, so a route can run one or more middleware classes in order:
+
+```php
+#[Route('GET', '/users/{id}', middleware: [AuthMiddleware::class, AuditMiddleware::class])]
+public function show(Request $request, int $id): array
+{
+    // ...
+}
 ```
 
 ### 2.2 Middleware Pipeline
 Middleware must implement `YasserElgammal\Green\Middleware\MiddlewareInterface`.
 
 - **Global Middleware**: Defined in `public/index.php` via `$app->router->addGlobalMiddleware()`.
-- **Route Middleware**: Defined in the `#[Route]` attribute.
+- **Route Middleware**: Defined in the `#[Route]` attribute using the `middleware` array.
 
 ### 2.3 Redirects
 Use the `redirect($url)` helper to return a `RedirectResponse`.
@@ -297,6 +307,7 @@ The exception handler automatically detects `application/json` requests and retu
 | `paginate(items, per, page)`   | `JsonResponse`     | Paginates any array/collection.     |
 | `csrf_token()`                 | `array`            | Generates a CSRF `{id, token}` pair.|
 | `csrf_field()`                 | `string` (HTML)    | Outputs two hidden CSRF inputs.     |
+| `connect()`                    | `Connect`          | Sends outgoing HTTP requests to external APIs. |
 
 ---
 
@@ -800,6 +811,226 @@ $table->include('comments(limit:5,offset:10)');
 // Multiple relations, mixed syntax
 $table->include('comments(limit:5,order:desc).author(select:id|name),roles');
 ```
+
+---
+
+## 13. Connect: External HTTP APIs
+
+Connect is Green's lightweight subsystem for making outgoing HTTP requests to external services such as payment gateways, messaging providers, CRMs, ERPs, shipping APIs, and webhooks.
+
+Connect is separate from `Http\Request` and `Http\Response`. The `Http` namespace handles incoming requests to your application, while Connect handles outgoing requests from your application to third-party services.
+
+### Configuration
+
+Connect uses a plain PHP config file:
+
+```txt
+config/connect.php
+```
+
+Example:
+
+```php
+<?php
+
+return [
+    'default' => 'default',
+
+    'connections' => [
+        'default' => [
+            'driver' => 'symfony',
+            'base_url' => '',
+            'timeout' => 10,
+            'connect_timeout' => 5,
+            'headers' => [
+                'Accept' => 'application/json',
+            ],
+        ],
+
+        'payments' => [
+            'driver' => 'symfony',
+            'base_url' => $_ENV['PAYMENTS_BASE_URL'] ?? 'https://api.example.com',
+            'timeout' => 15,
+            'headers' => [
+                'Accept' => 'application/json',
+            ],
+        ],
+    ],
+];
+```
+
+Recommended `.env` values:
+
+```env
+CONNECT_DEFAULT=default
+CONNECT_CONFIG=config/connect.php
+CONNECT_TIMEOUT=10
+CONNECT_CONNECT_TIMEOUT=5
+
+PAYMENTS_BASE_URL=https://api.example.com
+PAYMENTS_TOKEN=
+```
+
+### Basic Usage
+
+Use the `connect()` helper anywhere in your application code:
+
+```php
+$response = connect()->get('https://api.example.com/users');
+
+if ($response->successful()) {
+    $users = $response->json();
+}
+```
+
+### Named Connections
+
+Use named connections for services your application calls often:
+
+```php
+$response = connect()
+    ->connection('payments')
+    ->withToken($_ENV['PAYMENTS_TOKEN'])
+    ->post('/charges', [
+        'amount' => 1000,
+        'currency' => 'usd',
+    ]);
+```
+
+The final URL is built from the connection `base_url` plus the request path.
+
+### Supported Methods
+
+```php
+connect()->get('/customers', ['page' => 1]);
+connect()->post('/customers', ['name' => 'Green User']);
+connect()->put('/customers/1', ['name' => 'Updated']);
+connect()->patch('/customers/1', ['status' => 'active']);
+connect()->delete('/customers/1');
+```
+
+### Headers and Authentication
+
+```php
+$response = connect()
+    ->connection('crm')
+    ->withHeaders([
+        'X-Tenant' => 'green',
+    ])
+    ->withToken($token)
+    ->acceptJson()
+    ->get('/contacts');
+```
+
+For basic authentication:
+
+```php
+$response = connect()
+    ->connection('erp')
+    ->withBasicAuth($username, $password)
+    ->get('/orders');
+```
+
+### Timeouts and Retries
+
+```php
+$response = connect()
+    ->connection('shipping')
+    ->timeout(10)
+    ->connectTimeout(3)
+    ->retry(3, 200)
+    ->post('/labels', [
+        'order_id' => 123,
+    ]);
+```
+
+The second argument to `retry()` is the sleep time between attempts in milliseconds.
+
+By default, retries are applied to transport-level failures such as connection errors and timeouts. To retry based on an HTTP response, pass a callback:
+
+```php
+$response = connect()
+    ->connection('shipping')
+    ->retry(3, 200, fn ($response, $exception) => $response?->serverError() ?? false)
+    ->get('/health');
+```
+
+### Working with Responses
+
+Connect returns a `ConnectResponse` object:
+
+```php
+$response = connect()->get('/health');
+
+$response->status();       // 200
+$response->body();         // raw response body
+$response->json();         // decoded JSON array
+$response->json('id');     // value from decoded JSON
+$response->header('Date'); // response header
+```
+
+Status helpers:
+
+```php
+$response->ok();
+$response->successful();
+$response->redirect();
+$response->clientError();
+$response->serverError();
+$response->failed();
+```
+
+HTTP `4xx` and `5xx` responses do not throw automatically. If you want failed responses to throw a `RequestException`, call:
+
+```php
+$response = connect()
+    ->connection('payments')
+    ->post('/charges', $data)
+    ->throw();
+```
+
+Transport-level failures such as DNS errors, refused connections, and timeouts throw Connect exceptions immediately.
+
+### Testing with Fakes
+
+Connect includes a fake driver for tests:
+
+```php
+$fake = connect()->fake('payments');
+
+$fake->respondJson(['id' => 'charge_123'], 201);
+
+$response = connect()
+    ->connection('payments')
+    ->post('/charges', ['amount' => 1000]);
+
+$fake->assertSent('POST', '/charges');
+$fake->assertSentCount(1);
+```
+
+You can also assert that no external calls were made:
+
+```php
+$fake = connect()->fake();
+
+// run code...
+
+$fake->assertNothingSent();
+```
+
+### Explicit Manager Usage
+
+For advanced setup, use the manager directly:
+
+```php
+$manager = $app->getConnectManager();
+
+$manager->extend('custom', function (array $config) {
+    return new CustomConnectDriver($config);
+});
+```
+
+Connect follows Green's subsystem style: explicit managers, small drivers, no global service container, and no hidden dependency injection magic.
 
 ---
 

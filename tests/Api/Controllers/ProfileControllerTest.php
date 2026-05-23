@@ -45,8 +45,9 @@ class ProfileControllerTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
 
         $data = json_decode($response->getContent(), true);
-        $this->assertEquals($user->name, $data['data']['name']);
-        $this->assertEquals($user->email, $data['data']['email']);
+        $this->assertTrue($data['success']);
+        $this->assertEquals($user->name, $data['data']['item']['name']);
+        $this->assertEquals($user->email, $data['data']['item']['email']);
     }
 
     public function testUpdateProfileSuccessfully(): void
@@ -69,8 +70,9 @@ class ProfileControllerTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
 
         $data = json_decode($response->getContent(), true);
-        $this->assertEquals('Updated API User', $data['data']['name']);
-        $this->assertEquals('updatedapi@example.com', $data['data']['email']);
+        $this->assertTrue($data['success']);
+        $this->assertEquals('Updated API User', $data['data']['item']['name']);
+        $this->assertEquals('updatedapi@example.com', $data['data']['item']['email']);
 
         // Assert DB state
         $updatedUser = $this->userTable->fetchByIdOrFail(1);
@@ -97,7 +99,9 @@ class ProfileControllerTest extends TestCase
         $this->assertEquals(422, $response->getStatusCode());
 
         $data = json_decode($response->getContent(), true);
-        $this->assertEquals('Email already in use.', $data['error']);
+        $this->assertFalse($data['success']);
+        $this->assertEquals('Email already in use.', $data['message']);
+        $this->assertEquals('Email already in use.', $data['errors']['email'][0]);
     }
 
     public function testUpdateWithPostSuccessfully(): void
@@ -120,8 +124,9 @@ class ProfileControllerTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
 
         $data = json_decode($response->getContent(), true);
-        $this->assertEquals('Updated API User 2', $data['data']['name']);
-        $this->assertEquals('updatedapi2@example.com', $data['data']['email']);
+        $this->assertTrue($data['success']);
+        $this->assertEquals('Updated API User 2', $data['data']['item']['name']);
+        $this->assertEquals('updatedapi2@example.com', $data['data']['item']['email']);
     }
 
     public function testChangePasswordSuccessfully(): void
@@ -144,6 +149,7 @@ class ProfileControllerTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
 
         $data = json_decode($response->getContent(), true);
+        $this->assertTrue($data['success']);
         $this->assertEquals('Password changed successfully.', $data['message']);
 
         // Assert DB state
@@ -171,7 +177,9 @@ class ProfileControllerTest extends TestCase
         $this->assertEquals(422, $response->getStatusCode());
 
         $data = json_decode($response->getContent(), true);
-        $this->assertEquals('The provided current password does not match our records.', $data['error']);
+        $this->assertFalse($data['success']);
+        $this->assertEquals('The provided current password does not match our records.', $data['message']);
+        $this->assertEquals('The provided current password does not match our records.', $data['errors']['current_password'][0]);
     }
 
     public function testDestroySuccessfully(): void
@@ -192,6 +200,7 @@ class ProfileControllerTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
 
         $data = json_decode($response->getContent(), true);
+        $this->assertTrue($data['success']);
         $this->assertEquals('Account deleted successfully.', $data['message']);
 
         // Assert DB state
@@ -217,6 +226,8 @@ class ProfileControllerTest extends TestCase
         $this->assertEquals(422, $response->getStatusCode());
 
         $data = json_decode($response->getContent(), true);
-        $this->assertEquals('The provided current password does not match our records.', $data['error']);
+        $this->assertFalse($data['success']);
+        $this->assertEquals('The provided current password does not match our records.', $data['message']);
+        $this->assertEquals('The provided current password does not match our records.', $data['errors']['password'][0]);
     }
 }

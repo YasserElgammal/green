@@ -4,7 +4,7 @@ use App\Controllers\Api\{
     AuthController,
     PostController,
     UserController,
-    ProfileController
+    ProfileController,
 };
 
 /** @var \YasserElgammal\Green\Application $app */

@@ -50,7 +50,13 @@ class TokenAuthMiddlewareTest extends TestCase
         $response = $this->middleware->handle(new Request(), fn () => new Response('ok'));
 
         $this->assertSame(401, $response->getStatusCode());
-        $this->assertSame(['error' => 'Unauthorized'], json_decode($response->getContent(), true));
+        $this->assertSame([
+            'success' => false,
+            'message' => 'Unauthorized.',
+            'errors' => [
+                'authorization' => ['A valid bearer token is required.'],
+            ],
+        ], json_decode($response->getContent(), true));
     }
 
     public function testInvalidBearerTokenReturnsUnauthorized(): void
@@ -62,6 +68,12 @@ class TokenAuthMiddlewareTest extends TestCase
         $response = $this->middleware->handle($request, fn () => new Response('ok'));
 
         $this->assertSame(401, $response->getStatusCode());
-        $this->assertSame(['error' => 'Unauthorized'], json_decode($response->getContent(), true));
+        $this->assertSame([
+            'success' => false,
+            'message' => 'Unauthorized.',
+            'errors' => [
+                'authorization' => ['The bearer token is invalid or expired.'],
+            ],
+        ], json_decode($response->getContent(), true));
     }
 }

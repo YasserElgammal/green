@@ -13,7 +13,7 @@ class TokenAuthMiddleware implements MiddlewareInterface
         $authHeader = $request->header('Authorization');
 
         if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
-            return api_error('Unauthorized.', [
+            return api()->error('Unauthorized.', [
                 'authorization' => ['A valid bearer token is required.'],
             ], 401);
         }
@@ -22,7 +22,7 @@ class TokenAuthMiddleware implements MiddlewareInterface
         $user = auth()->resolveFromJwt($token);
 
         if (!$user) {
-            return api_error('Unauthorized.', [
+            return api()->error('Unauthorized.', [
                 'authorization' => ['The bearer token is invalid or expired.'],
             ], 401);
         }
