@@ -7,7 +7,8 @@
     <div class="col-lg-8 mx-auto">
         {# Back Button #}
         <div class="mb-4">
-            <a href="/posts" class="btn btn-sm btn-light rounded-pill shadow-sm text-success fw-bold d-inline-flex align-items-center">
+            <a href="/posts"
+                class="btn btn-sm btn-light rounded-pill shadow-sm text-success fw-bold d-inline-flex align-items-center">
                 <i class="bi bi-arrow-left me-2"></i> {{ t('posts.show.back')|raw }}
             </a>
         </div>
@@ -15,39 +16,44 @@
         {# Hero Post Section #}
         <div class="glass-card overflow-hidden border-0 mb-5">
             {% if post.image %}
-                <div class="position-relative" style="height: 400px;">
-                    <img src="/{{ post.image }}" class="w-100 h-100" style="object-fit: cover;" alt="Post Image">
-                    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,0.8) 100%);"></div>
-                    <div class="position-absolute bottom-0 start-0 w-100 p-5 text-white">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="bg-white text-success rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm" style="width: 45px; height: 45px; font-size: 20px; font-weight: bold;">
-                                {{ post.author.name|default('U')|first|upper }}
-                            </div>
-                            <div>
-                                <h6 class="mb-0 fw-bold">{{ post.author.name|default(t('posts.index.unknown')) }}</h6>
-                                <small class="text-white-50"><i class="bi bi-calendar3 me-1"></i> Published recently</small>
-                            </div>
-                        </div>
-                        <h1 class="display-5 fw-bolder mb-0 text-shadow">{{ post.title }}</h1>
-                    </div>
-                </div>
-            {% else %}
-                <div class="p-5 text-center bg-white" style="border-bottom: 4px solid var(--green-primary);">
-                    <div class="d-flex justify-content-center align-items-center mb-4">
-                        <div class="bg-success text-white rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm" style="width: 50px; height: 50px; font-size: 22px; font-weight: bold;">
+            <div class="position-relative" style="height: 400px;">
+                <img src="/{{ post.image }}" class="w-100 h-100" style="object-fit: cover;" alt="Post Image">
+                <div class="position-absolute top-0 start-0 w-100 h-100"
+                    style="background: linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,0.8) 100%);"></div>
+                <div class="position-absolute bottom-0 start-0 w-100 p-5 text-white">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-white text-success rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm"
+                            style="width: 45px; height: 45px; font-size: 20px; font-weight: bold;">
                             {{ post.author.name|default('U')|first|upper }}
                         </div>
-                        <div class="text-start">
-                            <h6 class="mb-0 fw-bold text-dark">{{ post.author.name|default(t('posts.index.unknown')) }}</h6>
-                            <small class="text-muted"><i class="bi bi-calendar3 me-1"></i> Published recently</small>
+                        <div>
+                            <h6 class="mb-0 fw-bold">{{ post.author.name|default(t('posts.index.unknown')) }}</h6>
+                            <small class="text-white-50"><i class="bi bi-calendar3 me-1"></i>
+                                {{post.created_at|date("Y/m/d")}}</small>
                         </div>
                     </div>
-                    <h1 class="display-5 fw-bolder mb-0 text-dark">{{ post.title }}</h1>
+                    <h1 class="display-5 fw-bolder mb-0 text-shadow">{{ post.title }}</h1>
                 </div>
+            </div>
+            {% else %}
+            <div class="p-5 text-center bg-white" style="border-bottom: 4px solid var(--green-primary);">
+                <div class="d-flex justify-content-center align-items-center mb-4">
+                    <div class="bg-success text-white rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm"
+                        style="width: 50px; height: 50px; font-size: 22px; font-weight: bold;">
+                        {{ post.author.name|default('U')|first|upper }}
+                    </div>
+                    <div class="text-start">
+                        <h6 class="mb-0 fw-bold text-dark">{{ post.author.name|default(t('posts.index.unknown')) }}</h6>
+                        <small class="text-muted"><i class="bi bi-calendar3 me-1"></i> {{post.created_at|date("Y/m/d")}}</small>
+                    </div>
+                </div>
+                <h1 class="display-5 fw-bolder mb-0 text-dark">{{ post.title }}</h1>
+            </div>
             {% endif %}
 
             {# Post Body #}
-            <div class="p-5 bg-white bg-opacity-75" style="font-size: 1.15rem; line-height: 1.8; color: var(--text-main);">
+            <div class="p-5 bg-white bg-opacity-75"
+                style="font-size: 1.15rem; line-height: 1.8; color: var(--text-main);">
                 {{ post.body|nl2br }}
             </div>
         </div>
@@ -66,57 +72,62 @@
 
         {# Comment Form #}
         {% if session().has('user_id') %}
-            <div class="glass-card p-4 mb-5 border-0">
-                <div class="d-flex align-items-start">
-                    <div class="bg-success text-white rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm flex-shrink-0" style="width: 40px; height: 40px; font-size: 16px; font-weight: bold;">
-                        {{ session().get('user_name')|first|upper }}
-                    </div>
-                    <form action="/posts/{{ post.id }}/comments" method="POST" class="flex-grow-1">
-                        {{ csrf_field() }}
-                        <div class="form-floating mb-3">
-                            <textarea name="content" class="form-control rounded-4 border-0 shadow-sm" id="commentContent" placeholder="{{ t('posts.show.leave_comment') }}" style="height: 100px; background: rgba(255,255,255,0.8);" required></textarea>
-                            <label for="commentContent" class="text-muted">{{ t('posts.show.leave_comment') }}</label>
-                        </div>
-                        <div class="text-end">
-                            <button type="submit" class="btn btn-green rounded-pill px-4 shadow-sm">
-                                <i class="bi bi-send-fill me-1"></i> {{ t('posts.show.post_comment') }}
-                            </button>
-                        </div>
-                    </form>
+        <div class="glass-card p-4 mb-5 border-0">
+            <div class="d-flex align-items-start">
+                <div class="bg-success text-white rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm flex-shrink-0"
+                    style="width: 40px; height: 40px; font-size: 16px; font-weight: bold;">
+                    {{ session().get('user_name')|first|upper }}
                 </div>
+                <form action="/posts/{{ post.id }}/comments" method="POST" class="flex-grow-1">
+                    {{ csrf_field() }}
+                    <div class="form-floating mb-3">
+                        <textarea name="content" class="form-control rounded-4 border-0 shadow-sm" id="commentContent"
+                            placeholder="{{ t('posts.show.leave_comment') }}"
+                            style="height: 100px; background: rgba(255,255,255,0.8);" required></textarea>
+                        <label for="commentContent" class="text-muted">{{ t('posts.show.leave_comment') }}</label>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-green rounded-pill px-4 shadow-sm">
+                            <i class="bi bi-send-fill me-1"></i> {{ t('posts.show.post_comment') }}
+                        </button>
+                    </div>
+                </form>
             </div>
+        </div>
         {% else %}
-            <div class="glass-card p-4 text-center mb-5 border-0">
-                <i class="bi bi-chat-dots text-muted fs-2 mb-2 d-block"></i>
-                <p class="text-muted mb-3">{{ t('posts.show.login_to_comment') }}</p>
-                <a href="/login" class="btn btn-green-outline rounded-pill px-4">{{ t('posts.show.log_in') }}</a>
-            </div>
+        <div class="glass-card p-4 text-center mb-5 border-0">
+            <i class="bi bi-chat-dots text-muted fs-2 mb-2 d-block"></i>
+            <p class="text-muted mb-3">{{ t('posts.show.login_to_comment') }}</p>
+            <a href="/login" class="btn btn-green-outline rounded-pill px-4">{{ t('posts.show.log_in') }}</a>
+        </div>
         {% endif %}
 
         {# Comments List #}
         <div class="comments-list position-relative">
             {% for comment in post.comments %}
-                <div class="glass-card p-4 mb-3 border-0">
-                    <div class="d-flex align-items-start">
-                        <div class="bg-light text-success rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm flex-shrink-0 border" style="width: 40px; height: 40px; font-size: 16px; font-weight: bold;">
-                            {{ comment.author.name|default(t('posts.index.unknown'))|first|upper }}
+            <div class="glass-card p-4 mb-3 border-0">
+                <div class="d-flex align-items-start">
+                    <div class="bg-light text-success rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm flex-shrink-0 border"
+                        style="width: 40px; height: 40px; font-size: 16px; font-weight: bold;">
+                        {{ comment.author.name|default(t('posts.index.unknown'))|first|upper }}
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center mb-1">
+                            <strong class="text-dark me-2">{{ comment.author.name|default(t('posts.index.unknown'))
+                                }}</strong>
+                            <small class="text-muted" style="font-size: 0.75rem;">Just now</small>
                         </div>
-                        <div>
-                            <div class="d-flex align-items-center mb-1">
-                                <strong class="text-dark me-2">{{ comment.author.name|default(t('posts.index.unknown')) }}</strong>
-                                <small class="text-muted" style="font-size: 0.75rem;">Just now</small>
-                            </div>
-                            <p class="mb-0 text-muted" style="line-height: 1.5;">{{ comment.content|nl2br }}</p>
-                        </div>
+                        <p class="mb-0 text-muted" style="line-height: 1.5;">{{ comment.content|nl2br }}</p>
                     </div>
                 </div>
+            </div>
             {% else %}
-                <div class="text-center py-5">
-                    <p class="text-muted fs-5 mb-0">{{ t('posts.show.no_comments') }}</p>
-                </div>
+            <div class="text-center py-5">
+                <p class="text-muted fs-5 mb-0">{{ t('posts.show.no_comments') }}</p>
+            </div>
             {% endfor %}
         </div>
-        
+
     </div>
 </div>
 {% endblock %}

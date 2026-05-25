@@ -16,7 +16,7 @@
     },
     "show": {
         "title": ":title - Green",
-        "back": "&larr; Back to Posts",
+        "back": "Back to Posts",
         "by": "By",
         "comments_count": {
             "one": "1 Comment",
