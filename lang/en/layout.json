@@ -6,5 +6,11 @@
     "logout": "Logout",
     "login": "Login",
     "register": "Register",
+    "theme": {
+        "toggle": "Choose theme",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+    },
     "rights_reserved": "Green. All rights reserved."
 }

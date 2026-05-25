@@ -2,13 +2,35 @@
 
 namespace App\Exceptions;
 
+use App\Exceptions\Contracts\ErrorResponderInterface;
 use Throwable;
 use YasserElgammal\Green\Exceptions\ExceptionHandler;
 use YasserElgammal\Green\Http\JsonResponse;
+use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\Http\ValidationException;
 
-class ApiExceptionHandler extends ExceptionHandler
+class ApiExceptionHandler extends ExceptionHandler implements ErrorResponderInterface
 {
+    public function __construct(
+        private ?ErrorStatusResolver $statusResolver = null,
+    ) {
+        $this->statusResolver ??= new ErrorStatusResolver();
+    }
+
+    public function handle(Throwable $e, Request $request): JsonResponse
+    {
+        return $this->renderJson($e, $this->statusResolver->resolve($e), $this->isDebug());
+    }
+
+    public function handleStatus(int $statusCode): JsonResponse
+    {
+        $title = $this->getErrorTitle($statusCode);
+
+        return api()->error($title, [
+            'exception' => [$title],
+        ], $statusCode);
+    }
+
     protected function renderJson(Throwable $e, int $statusCode, bool $isDebug): JsonResponse
     {
         if ($e instanceof ValidationException) {

@@ -69,5 +69,11 @@ The framework is divided into several powerful subsystems. Please refer to the *
 
 ---
 
+## Contributing
+
+Contributions are welcome. Please read the [Contributing Guide](CONTRIBUTING.md) before opening an issue or pull request.
+
+---
+
 ## 📜 License
 Green Framework is open-sourced under the [MIT License](LICENSE).

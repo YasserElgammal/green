@@ -2,14 +2,34 @@
 
 namespace App\Exceptions;
 
+use App\Exceptions\Contracts\ErrorResponderInterface;
 use Throwable;
 use YasserElgammal\Green\Exceptions\ExceptionHandler;
+use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\Http\Response;
 use YasserElgammal\Green\Http\ValidationException;
 use YasserElgammal\Green\View\View;
 
-class WebExceptionHandler extends ExceptionHandler
+class WebExceptionHandler extends ExceptionHandler implements ErrorResponderInterface
 {
+    public function __construct(
+        private ?ErrorStatusResolver $statusResolver = null,
+        private ?ErrorViewResolver $viewResolver = null,
+    ) {
+        $this->statusResolver ??= new ErrorStatusResolver();
+        $this->viewResolver ??= new ErrorViewResolver();
+    }
+
+    public function handle(Throwable $e, Request $request): Response
+    {
+        return $this->renderHtml($e, $this->statusResolver->resolve($e), $this->isDebug());
+    }
+
+    public function handleStatus(int $statusCode): Response
+    {
+        return $this->renderErrorPage($statusCode);
+    }
+
     protected function renderHtml(Throwable $e, int $statusCode, bool $isDebug): Response
     {
         if ($e instanceof ValidationException && $isDebug === false) {
@@ -22,45 +42,66 @@ class WebExceptionHandler extends ExceptionHandler
             return redirect($_SERVER['HTTP_REFERER'] ?? '/');
         }
 
+        if ($isDebug) {
+            return $this->renderDebugException($e, $statusCode);
+        }
+
+        return $this->renderErrorPage($statusCode);
+    }
+
+    private function renderDebugException(Throwable $e, int $statusCode): Response
+    {
         $viewParameters = [
             'title' => $this->getErrorTitle($statusCode),
-            'message' => $isDebug ? $e->getMessage() : $this->cleanMessage($e->getMessage()),
-            'debug' => $isDebug,
+            'message' => $e->getMessage(),
+            'debug' => true,
             'status_code' => $statusCode,
             'trace_id' => uniqid('ERR_'),
+            'exception' => $e,
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
         ];
 
-        if ($isDebug) {
-            $viewParameters['exception'] = $e;
-            $viewParameters['file'] = $e->getFile();
-            $viewParameters['line'] = $e->getLine();
-            $viewParameters['trace'] = $e->getTraceAsString();
+        try {
+            return new Response(View::render('errors/oops', $viewParameters), $statusCode);
+        } catch (Throwable) {
+            $content = "Oops! Something went wrong.\n\n";
+            $content .= "Error: {$e->getMessage()} in {$e->getFile()} on line {$e->getLine()}";
+
+            return new Response($content, $statusCode, ['Content-Type' => 'text/plain']);
         }
+    }
+
+    private function renderErrorPage(int $statusCode): Response
+    {
+        $viewParameters = [
+            'code' => $statusCode,
+            'status_code' => $statusCode,
+            'home_url' => '/',
+            'show_home_button' => true,
+            'show_back_button' => true,
+        ];
 
         $viewName = $this->errorViewName($statusCode);
 
         try {
             return new Response(View::render($viewName, $viewParameters), $statusCode);
         } catch (Throwable) {
-            $content = "Oops! Something went wrong.\n\n";
-
-            if ($isDebug) {
-                $content .= "Error: {$e->getMessage()} in {$e->getFile()} on line {$e->getLine()}";
-            }
-
-            return new Response($content, $statusCode, ['Content-Type' => 'text/plain']);
+            return new Response(
+                "{$statusCode} {$this->getErrorTitle($statusCode)}",
+                $statusCode,
+                ['Content-Type' => 'text/plain']
+            );
         }
     }
 
     private function errorViewName(int $statusCode): string
     {
-        $specificViewPath = (defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__, 2))
-            . "/views/errors/{$statusCode}.twig";
-
-        if (file_exists($specificViewPath)) {
-            return "errors/{$statusCode}";
+        if ($this->viewResolver->hasView($statusCode)) {
+            return $this->viewResolver->view($statusCode);
         }
 
-        return 'errors/oops';
+        return 'errors/layout';
     }
 }

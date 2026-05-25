@@ -13,7 +13,7 @@ use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\View\View;
 use YasserElgammal\Green\Http\Middleware\CsrfMiddleware;
 use YasserElgammal\Green\Security\Csrf\CsrfConfig;
-use App\Exceptions\Handler;
+use App\Exceptions\{ApiExceptionHandler, ErrorStatusResolver, ErrorViewResolver, Handler, WebExceptionHandler};
 use App\Middleware\{LoggingMiddleware, LocaleMiddleware, ValidationExceptionMiddleware};
 
 // Initialize View engine
@@ -39,11 +39,17 @@ require_once __DIR__ . '/../routes/web.php';
 require_once __DIR__ . '/../routes/api.php';
 
 $request = Request::capture();
+$statusResolver = new ErrorStatusResolver();
+$viewResolver = new ErrorViewResolver();
+$handler = new Handler(
+    new ApiExceptionHandler($statusResolver),
+    new WebExceptionHandler($statusResolver, $viewResolver)
+);
 
 try {
     $response = $app->handle($request);
+    $response = $handler->handleResponse($response, $request);
 } catch (\Throwable $e) {
-    $handler = new Handler();
     $response = $handler->handle($e, $request);
 }
 
