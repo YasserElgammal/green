@@ -96,7 +96,44 @@ $posts = new PostTable();
 $results = $posts->include('author,comments.author')->fetchAll();
 ```
 
-### 3.4 CRUD Operations
+### 3.4 Relation Aggregations
+Green provides native support for executing aggregate functions (`COUNT`, `EXISTS`, `SUM`, `AVG`, `MIN`, `MAX`) on related tables. These can be executed programmatically using fluent methods on the `Table` class.
+
+All aggregation methods accept a single relation name (or format of `relation:column` where required) or an array of relations. The computed values are automatically type-casted and attached to the parent models as attributes (accessible as dynamic properties).
+
+#### Programmatic Aggregation API
+
+| Method | Argument Format | Result Type | Target Attribute Name |
+| :--- | :--- | :--- | :--- |
+| `includeCount(string\|array $relations)` | `relation` | `int` | `{relation}_count` |
+| `includeExists(string\|array $relations)` | `relation` | `bool` | `{relation}_exists` |
+| `includeSum(string\|array $relations)` | `relation:column` | `float` | `{relation}_sum_{column}` |
+| `includeAvg(string\|array $relations)` | `relation:column` | `float\|null` | `{relation}_avg_{column}` |
+| `includeMin(string\|array $relations)` | `relation:column` | `mixed` | `{relation}_min_{column}` |
+| `includeMax(string\|array $relations)` | `relation:column` | `mixed` | `{relation}_max_{column}` |
+
+#### Usage Examples
+
+```php
+$postsTable = new PostTable();
+
+$posts = $postsTable
+    ->includeCount('comments')          // sets comments_count (int)
+    ->includeExists('likes')            // sets likes_exists (bool)
+    ->includeAvg('reviews:rating')      // sets reviews_avg_rating (float/null)
+    ->includeMin('orders:total')        // sets orders_min_total (mixed)
+    ->includeMax('orders:total')        // sets orders_max_total (mixed)
+    ->fetchAll();
+```
+
+You can also pass arrays to perform multiple calculations at once:
+```php
+$postsTable->includeCount(['comments', 'likes'])
+           ->includeSum(['orders:total', 'orders:tax'])
+           ->fetchAll();
+```
+
+### 3.5 CRUD Operations
 
 Green provides a streamlined way to perform Create, Read, Update, and Delete operations via the `Table` class.
 
@@ -787,6 +824,12 @@ relation(op1:value1,op2:value2)
 | | `order:column\|direction` | Order by specific column |
 | **select** | `select:col1\|col2\|col3` | Select specific columns only |
 | **filter** | `filter:column=value` | Filter by column value |
+| **count** | `count` | Counts related rows. Generates `{relation}_count` attribute. |
+| **exists** | `exists` | Checks if any related rows exist. Generates `{relation}_exists` (boolean). |
+| **sum** | `sum:col` | Sums a numeric column. Generates `{relation}_sum_{col}` attribute. |
+| **avg** | `avg:col` | Averages a numeric column. Generates `{relation}_avg_{col}` (float/null) attribute. |
+| **min** | `min:col` | Minimum value of a column. Generates `{relation}_min_{col}` attribute. |
+| **max** | `max:col` | Maximum value of a column. Generates `{relation}_max_{col}` attribute. |
 
 > **Note:** The pipe `|` character is used as a separator within values because commas separate operations.
 
@@ -810,7 +853,16 @@ $table->include('comments(limit:5,offset:10)');
 
 // Multiple relations, mixed syntax
 $table->include('comments(limit:5,order:desc).author(select:id|name),roles');
+
+// Dynamic aggregation with limits (mixed syntax)
+$table->include('comments(limit:5,count)'); // computes comments_count and loads first 5 comments
+
+// Check if likes exist, and calculate total price of orders
+$table->include('likes(exists),orders(sum:price)');
 ```
+
+#### ⚡ Aggregation-Only Optimization
+If an include query contains **only** aggregation operations (e.g. `comments(count)` or `likes(exists),orders(sum:total)`) and no other constraints or child relations, the framework **skips loading the relation records entirely**. It only runs the highly optimized batch aggregation query and attaches the results directly to the parent models, which avoids unnecessary database memory and hydration overhead.
 
 ---
 

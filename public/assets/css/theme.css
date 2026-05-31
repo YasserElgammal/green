@@ -329,6 +329,16 @@ html[data-theme="dark"] .form-select {
     opacity: 0.82;
 }
 
+.form-control::file-selector-button {
+    background-color: var(--surface-color);
+    color: var(--text-main);
+    border: 0;
+}
+
+.form-control:hover::file-selector-button {
+    background-color: var(--surface-soft);
+}
+
 html[data-theme="dark"] .form-control::placeholder {
     color: #cbd5e1;
     opacity: 0.7;

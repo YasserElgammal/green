@@ -27,7 +27,7 @@
     ],
     "require": {
         "php": "^8.2",
-        "yasser-elgammal/green-core": "^1.6",
+        "yasser-elgammal/green-core": "^1.7",
         "firebase/php-jwt": "^7.0"
     },
     "require-dev": {

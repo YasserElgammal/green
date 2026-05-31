@@ -33,7 +33,7 @@ class PostController
     public function show(int $id)
     {
         $postsTable = new PostTable();
-        $postsTable->include(['author', 'comments.author']);
+        $postsTable->include('author,comments.author,comments.likes(count)');
 
         $post = $postsTable->fetchById($id);
 
