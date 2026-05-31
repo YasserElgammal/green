@@ -80,11 +80,11 @@
                 </div>
                 <form action="/posts/{{ post.id }}/comments" method="POST" class="flex-grow-1">
                     {{ csrf_field() }}
-                    <div class="form-floating mb-3">
+                    <div class="mb-3">
                         <textarea name="content" class="form-control rounded-4 border-0 shadow-sm" id="commentContent"
                             placeholder="{{ t('posts.show.leave_comment') }}"
-                            style="height: 100px; background: rgba(255,255,255,0.8);" required></textarea>
-                        <label for="commentContent" class="text-muted">{{ t('posts.show.leave_comment') }}</label>
+                            aria-label="{{ t('posts.show.leave_comment') }}"
+                            style="height: 100px;" required></textarea>
                     </div>
                     <div class="text-end">
                         <button type="submit" class="btn btn-green rounded-pill px-4 shadow-sm">
@@ -118,6 +118,18 @@
                             <small class="text-muted" style="font-size: 0.75rem;">Just now</small>
                         </div>
                         <p class="mb-0 text-muted" style="line-height: 1.5;">{{ comment.content|nl2br }}</p>
+
+                        {# Comment Likes #}
+                        <div class="mt-2 d-flex align-items-center">
+                            <form action="/comments/{{ comment.id }}/like" method="POST" class="d-inline">
+                                {{ csrf_field() }}
+                                <button type="submit" class="btn btn-sm btn-link text-decoration-none p-0 text-success d-flex align-items-center gap-1">
+                                    <i class="bi bi-hand-thumbs-up-fill text-success"></i>
+                                    <span class="fw-bold">{{ comment.likes_count|default(0) }}</span>
+                                    <span class="text-muted fs-7 ms-1">Likes</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
