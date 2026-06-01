@@ -29,7 +29,7 @@
                         <div>
                             <h6 class="mb-0 fw-bold">{{ post.author.name|default(t('posts.index.unknown')) }}</h6>
                             <small class="text-white-50"><i class="bi bi-calendar3 me-1"></i>
-                                {{post.created_at|date("Y/m/d")}}</small>
+                                {{post.created_at|date("Y/m/d H:i:s")}}</small>
                         </div>
                     </div>
                     <h1 class="display-5 fw-bolder mb-0 text-shadow">{{ post.title }}</h1>

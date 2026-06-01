@@ -18,6 +18,7 @@ abstract class TestCase extends BaseTestCase
         // 1. Setup Environment
         $_ENV['JWT_SECRET'] = 'test-secret-key-that-is-long-enough-32-chars-for-hs256';
         $_ENV['JWT_TTL'] = 3600;
+        auth()->logout();
 
         // 2. Setup in-memory SQLite connection
         $connectionParams = [
@@ -52,6 +53,7 @@ abstract class TestCase extends BaseTestCase
                 name TEXT NOT NULL,
                 email TEXT NOT NULL UNIQUE,
                 password TEXT NOT NULL,
+                is_admin INTEGER NOT NULL DEFAULT 0,
                 avatar TEXT,
                 refresh_token TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -64,7 +66,9 @@ abstract class TestCase extends BaseTestCase
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
                 title TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'draft',
                 body TEXT NOT NULL,
+                image TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
             )
@@ -121,11 +125,12 @@ abstract class TestCase extends BaseTestCase
     {
         $password = password_hash('password', PASSWORD_DEFAULT);
         $this->connection->insert('users', ['name' => 'Test User', 'email' => 'test@example.com', 'password' => $password]);
-        $this->connection->insert('users', ['name' => 'Admin User', 'email' => 'admin@example.com', 'password' => $password]);
+        $this->connection->insert('users', ['name' => 'Admin User', 'email' => 'admin@example.com', 'password' => $password, 'is_admin' => 1]);
         
         $this->connection->insert('posts', [
             'user_id' => 1,
             'title'   => 'Test Post',
+            'status'  => 'published',
             'body'    => 'This is a test post body.'
         ]);
     }

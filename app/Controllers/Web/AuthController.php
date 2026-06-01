@@ -38,12 +38,18 @@ class AuthController
             'name' => $name,
             'email' => $email,
             'password' => password_hash($password, PASSWORD_DEFAULT),
+            'is_admin' => $this->isFirstRegisteredUser($users) ? 1 : 0,
         ]);
 
         auth()->login($user);
         session()->flash('success', 'Registration successful!');
 
         return redirect('/');
+    }
+
+    private function isFirstRegisteredUser(UserTable $users): bool
+    {
+        return !$users->exists();
     }
 
     #[Route('GET', '/login', [GuestMiddleware::class])]

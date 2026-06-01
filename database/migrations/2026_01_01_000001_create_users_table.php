@@ -13,6 +13,7 @@ class CreateUsersTable extends Migration
             $table->string('name', 255);
             $table->string('email')->unique();
             $table->string('password');
+            $table->boolean('is_admin')->default(false);
             $table->string('avatar')->nullable();
             $table->string('refresh_token', 255)->nullable()->unique();
             $table->timestamps(); // created_at, updated_at

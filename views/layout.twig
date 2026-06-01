@@ -41,6 +41,12 @@
                 <nav class="navbar-menu d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center ms-lg-auto mt-3 mt-lg-0">
                 <a href="/" class="text-decoration-none me-lg-4 mb-2 mb-lg-0 nav-link-custom {% if current_route() == '/' %}active{% endif %}">{{ t('layout.home') }}</a>
                 <a href="/posts" class="text-decoration-none me-lg-4 mb-2 mb-lg-0 nav-link-custom {% if current_route() == '/posts' %}active{% endif %}">{{ t('layout.posts') }}</a>
+                {% if session().has('user_id') %}
+                    <a href="/my-posts" class="text-decoration-none me-lg-4 mb-2 mb-lg-0 nav-link-custom {% if current_route() == '/my-posts' %}active{% endif %}">{{ t('layout.my_posts') }}</a>
+                {% endif %}
+                {% if session().get('user_is_admin') %}
+                    <a href="/admin" class="text-decoration-none me-lg-4 mb-2 mb-lg-0 nav-link-custom {% if current_route() == '/admin' %}active{% endif %}">{{ t('layout.admin_dashboard') }}</a>
+                {% endif %}
                 
                 <div class="dropdown me-lg-4 mb-2 mb-lg-0">
                     <button class="btn btn-sm btn-green-outline dropdown-toggle rounded-pill px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -105,30 +111,28 @@
         </div>
     </header>
 
-    <!-- Content -->
-    <main class="container my-5">
-        {% set success = session().getFlash('success') %}
-        {% if success %}
-            <!-- Success Toast -->
-            <div class="position-fixed end-0 p-3" style="z-index: 1100; max-width: 400px; width: 100%; top: 80px;">
+    {% set success = session().getFlash('success') %}
+    {% set error = session().getFlash('error') %}
+    {% if success or error %}
+        <div class="flash-toast-layer">
+            {% if success %}
                 <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-4" role="alert">
                     <i class="bi bi-check-circle-fill me-2"></i> {{ success[0] }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-            </div>
-        {% endif %}
+            {% endif %}
 
-        {% set error = session().getFlash('error') %}
-        {% if error %}
-            <!-- Error Toast -->
-            <div class="position-fixed end-0 p-3" style="z-index: 1100; max-width: 400px; width: 100%; top: 80px;">
+            {% if error %}
                 <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-4" role="alert">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error[0] }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-            </div>
-        {% endif %}
+            {% endif %}
+        </div>
+    {% endif %}
 
+    <!-- Content -->
+    <main class="container my-5">
         {% block content %}{% endblock %}
     </main>
 
@@ -142,5 +146,6 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/assets/js/theme-toggle.js"></script>
+    <script src="/assets/js/flash-messages.js"></script>
 </body>
 </html>

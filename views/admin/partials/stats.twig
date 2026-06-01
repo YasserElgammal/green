@@ -1,0 +1,18 @@
+<section class="admin-stats-grid" aria-label="Dashboard statistics">
+    {% set cards = [
+        {'label': 'Total Users', 'value': stats.users, 'icon': 'bi-people-fill', 'tone': 'success'},
+        {'label': 'Total Admins', 'value': stats.admins, 'icon': 'bi-shield-lock-fill', 'tone': 'info'},
+        {'label': 'Total Posts', 'value': stats.posts, 'icon': 'bi-file-earmark-richtext-fill', 'tone': 'warning'},
+        {'label': 'Total Comments', 'value': stats.comments, 'icon': 'bi-chat-dots-fill', 'tone': 'danger'}
+    ] %}
+    {% for card in cards %}
+        <article class="admin-stat-card admin-stat-{{ card.tone }}">
+            <div class="admin-stat-icon"><i class="bi {{ card.icon }}"></i></div>
+            <div>
+                <span>{{ card.label }}</span>
+                <strong>{{ card.value|number_format }}</strong>
+                <small>Current application total</small>
+            </div>
+        </article>
+    {% endfor %}
+</section>

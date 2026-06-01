@@ -1,0 +1,71 @@
+{% extends 'admin/layout.twig' %}
+
+{% set admin_section = 'posts' %}
+
+{% block title %}Posts{% endblock %}
+{% block breadcrumb %}Posts{% endblock %}
+{% block page_title %}Post Management{% endblock %}
+
+{% block content %}
+    <section class="admin-page-header">
+        <div>
+            <p class="admin-eyebrow">Content operations</p>
+            <h2>Manage posts across authors and statuses.</h2>
+            <p>Search by title, author, or status, then create, edit, archive, or delete content from one workspace.</p>
+        </div>
+        <a href="/admin/posts/create" class="btn admin-btn-primary"><i class="bi bi-pencil-square"></i> Create post</a>
+    </section>
+
+    <section class="admin-panel">
+        <div class="admin-panel-header">
+            <div><h3>List Posts</h3><p>Required pagination and search are built in.</p></div>
+            <form method="GET" action="/admin/posts" class="admin-table-search">
+                <i class="bi bi-search"></i>
+                <input type="search" name="search" value="{{ search }}" placeholder="Search title, author, status" aria-label="Search posts">
+                <select name="status" class="admin-inline-select" aria-label="Filter by status">
+                    <option value="">All statuses</option>
+                    {% for option in statuses %}
+                        <option value="{{ option.value }}" {{ status == option.value ? 'selected' }}>{{ option.label }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn admin-btn-primary" type="submit">Search</button>
+                {% if search or status %}
+                    <a class="btn admin-btn-secondary admin-search-reset" href="/admin/posts"><i class="bi bi-x-lg"></i> Clear</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="table-responsive admin-table-wrap">
+            <table class="table admin-table align-middle mb-0">
+                <thead>
+                    <tr><th>ID</th><th>Title</th><th>Author</th><th>Status</th><th>Comments</th><th>Created At</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for post in posts %}
+                        <tr>
+                            <td class="fw-semibold">#{{ post.id }}</td>
+                            <td>{{ post.title }}</td>
+                            <td>{{ post.author.name|default('Unknown author') }}</td>
+                            <td><span class="admin-badge admin-badge-info">{{ post.status|default('draft')|capitalize }}</span></td>
+                            <td>{{ post.comments_count|default(0) }}</td>
+                            <td>{{ post.created_at|default('Recently') }}</td>
+                            <td>
+                                <div class="admin-row-actions">
+                                    <a class="btn admin-action-btn" href="/admin/posts/{{ post.id }}/edit" aria-label="Edit post"><i class="bi bi-pencil"></i></a>
+                                    <form method="POST" action="/admin/posts/{{ post.id }}/delete" onsubmit="return confirm('Delete this post? This action cannot be undone.');">
+                                        {{ csrf_field() }}
+                                        <button class="btn admin-action-btn admin-action-danger" type="submit" aria-label="Delete post"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="7"><div class="admin-empty-state"><i class="bi bi-inbox"></i><strong>No posts found</strong><span>Create a post or adjust your search filters.</span></div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% include 'admin/partials/pagination.twig' with {'base_path': '/admin/posts', 'meta': meta, 'query_suffix': '&search=' ~ search|url_encode ~ '&status=' ~ status|url_encode} %}
+    </section>
+{% endblock %}

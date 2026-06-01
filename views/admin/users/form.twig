@@ -1,0 +1,42 @@
+{% extends 'admin/layout.twig' %}
+
+{% set admin_section = 'users' %}
+{% set is_edit = mode == 'edit' %}
+
+{% block title %}{{ is_edit ? 'Edit User' : 'Create User' }}{% endblock %}
+{% block breadcrumb %}{{ is_edit ? 'Edit User' : 'Create User' }}{% endblock %}
+{% block page_title %}{{ is_edit ? 'Edit User' : 'Create User' }}{% endblock %}
+
+{% block content %}
+    <section class="admin-panel admin-form-page">
+        <div class="admin-panel-header">
+            <div>
+                <h3>{{ is_edit ? 'Edit User' : 'Create User' }}</h3>
+                <p>{{ is_edit ? 'Password is optional when editing.' : 'All fields marked with an asterisk are required.' }}</p>
+            </div>
+        </div>
+        <form class="admin-form" method="POST" action="{{ is_edit ? '/admin/users/' ~ user.id : '/admin/users' }}">
+            {{ csrf_field() }}
+            <div>
+                <label for="name">Name <span aria-label="required">*</span></label>
+                <input id="name" class="form-control" name="name" value="{{ user.name|default('') }}" required>
+            </div>
+            <div>
+                <label for="email">Email <span aria-label="required">*</span></label>
+                <input id="email" class="form-control" type="email" name="email" value="{{ user.email|default('') }}" required>
+            </div>
+            <div>
+                <label for="password">Password {{ is_edit ? '(optional)' : '' }}{% if not is_edit %}<span aria-label="required">*</span>{% endif %}</label>
+                <input id="password" class="form-control" type="password" name="password" {{ is_edit ? '' : 'required' }}>
+            </div>
+            <label class="admin-check">
+                <input type="checkbox" name="is_admin" value="1" {{ user and user.is_admin ? 'checked' }}>
+                <span>Is Admin</span>
+            </label>
+            <div class="admin-form-actions">
+                <a href="/admin/users" class="btn admin-btn-secondary">Cancel</a>
+                <button class="btn admin-btn-primary" type="submit"><i class="bi bi-check2"></i> Save user</button>
+            </div>
+        </form>
+    </section>
+{% endblock %}

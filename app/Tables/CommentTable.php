@@ -4,6 +4,7 @@ namespace App\Tables;
 
 use App\Models\Comment;
 use App\Models\Like;
+use App\Models\Post;
 use App\Models\User;
 use YasserElgammal\Green\Database\Table;
 
@@ -31,6 +32,13 @@ class CommentTable extends Table
             'type'        => 'belongsTo',
             'model'       => User::class,
             'foreign_key' => 'user_id',
+            'owner_key'   => 'id',
+        ],
+
+        'post' => [
+            'type'        => 'belongsTo',
+            'model'       => Post::class,
+            'foreign_key' => 'post_id',
             'owner_key'   => 'id',
         ],
     ];

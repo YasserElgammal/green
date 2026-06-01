@@ -1,0 +1,64 @@
+{% extends 'admin/layout.twig' %}
+
+{% set admin_section = 'comments' %}
+
+{% block title %}Comments{% endblock %}
+{% block breadcrumb %}Comments{% endblock %}
+{% block page_title %}Comment Management{% endblock %}
+
+{% block content %}
+    <section class="admin-page-header">
+        <div>
+            <p class="admin-eyebrow">Community moderation</p>
+            <h2>Review, search, edit, and remove comments.</h2>
+            <p>Search by author, post title, or comment content with paginated moderation queues.</p>
+        </div>
+    </section>
+
+    <section class="admin-panel">
+        <div class="admin-panel-header">
+            <div><h3>List Comments</h3><p>Author, post, preview, date, and actions.</p></div>
+            <form method="GET" action="/admin/comments" class="admin-table-search">
+                <i class="bi bi-search"></i>
+                <input type="search" name="search" value="{{ search }}" placeholder="Search comments" aria-label="Search comments">
+                <button class="btn admin-btn-primary" type="submit">Search</button>
+                {% if search %}
+                    <a class="btn admin-btn-secondary admin-search-reset" href="/admin/comments"><i class="bi bi-x-lg"></i> Clear</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="table-responsive admin-table-wrap">
+            <table class="table admin-table align-middle mb-0">
+                <thead>
+                    <tr><th>ID</th><th>Author</th><th>Post</th><th>Content Preview</th><th>Created At</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for comment in comments %}
+                        <tr>
+                            <td class="fw-semibold">#{{ comment.id }}</td>
+                            <td>{{ comment.author.name|default('Unknown author') }}</td>
+                            <td>{{ comment.post.title|default('Untitled post') }}</td>
+                            <td>{{ comment.content|length > 90 ? comment.content|slice(0, 90) ~ '...' : comment.content }}</td>
+                            <td>{{ comment.created_at|default('Recently') }}</td>
+                            <td>
+                                <div class="admin-row-actions">
+                                    <a class="btn admin-action-btn" href="/admin/comments/{{ comment.id }}" aria-label="View comment"><i class="bi bi-eye"></i></a>
+                                    <a class="btn admin-action-btn" href="/admin/comments/{{ comment.id }}/edit" aria-label="Edit comment"><i class="bi bi-pencil"></i></a>
+                                    <form method="POST" action="/admin/comments/{{ comment.id }}/delete" onsubmit="return confirm('Delete this comment? This action cannot be undone.');">
+                                        {{ csrf_field() }}
+                                        <button class="btn admin-action-btn admin-action-danger" type="submit" aria-label="Delete comment"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="6"><div class="admin-empty-state"><i class="bi bi-inbox"></i><strong>No comments found</strong><span>Comments will appear here as users join the conversation.</span></div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% include 'admin/partials/pagination.twig' with {'base_path': '/admin/comments', 'meta': meta, 'query_suffix': '&search=' ~ search|url_encode} %}
+    </section>
+{% endblock %}

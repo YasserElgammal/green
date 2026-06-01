@@ -2,6 +2,7 @@
     "home": "Home",
     "profile": "Profile",
     "posts": "Posts",
+    "my_posts": "My Posts",
     "hello": "Hello, :name",
     "logout": "Logout",
     "login": "Login",
@@ -12,5 +13,6 @@
         "dark": "Dark",
         "system": "System"
     },
-    "rights_reserved": "Green. All rights reserved."
+    "rights_reserved": "Green. All rights reserved.",
+    "admin_dashboard": "Admin Dashboard"
 }

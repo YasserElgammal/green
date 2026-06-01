@@ -6,6 +6,7 @@
         "post_title": "Post Title",
         "post_body": "What's on your mind?",
         "publish": "Publish Post",
+        "save_draft": "Save to Draft",
         "log_in": "Log in",
         "login_to_join": "to join the conversation and create a post.",
         "by_author": "By :author",
@@ -13,6 +14,24 @@
         "read_more": "Read More & Comments",
         "no_posts": "No posts available yet. Be the first to post!",
         "page_info": "Page :current of :total &mdash; :items posts total"
+    },
+    "my": {
+        "title": "My Posts - Green",
+        "heading": "My Posts",
+        "subheading": "Move your own posts between draft, published, and archived.",
+        "tabs": {
+            "draft": "Draft",
+            "published": "Published",
+            "archived": "Archived"
+        },
+        "actions": {
+            "draft": "Draft",
+            "published": "Publish",
+            "archived": "Archive"
+        },
+        "view": "View",
+        "empty_title": "No posts here yet",
+        "empty_body": "Posts with this status will appear here."
     },
     "show": {
         "title": ":title - Green",
