@@ -47,6 +47,7 @@ The framework is divided into several powerful subsystems. Please refer to the *
 - **[Logic & Validation](DOCUMENTATION.md#-5-logic-payloads--validation)**: Payload-based validation.
 - **[Security & Sessions](DOCUMENTATION.md#-6-security--sessions)**: State management and hashing.
 - **[Global Exception Handling](DOCUMENTATION.md#-7-exception-handling--debug-mode)**: Debug Mode and API errors.
+- **[Debugging with `leaf()`](DOCUMENTATION.md#73-debugging-with-leaf)**: Native PHP helper for dumping a value and stopping execution.
 - **[Helper Reference](DOCUMENTATION.md#-8-helper-reference-cheat-sheet)**: Glossary of global functions.
 - **[Console Commands](DOCUMENTATION.md#-9-console-commands)**: CLI tools and generators.
 - **[Migrations & Schema Builder](DOCUMENTATION.md#-10-migrations--schema-builder)**: Migration workflow, schema operations, dry-run mode, and safe mode.
@@ -66,6 +67,7 @@ The framework is divided into several powerful subsystems. Please refer to the *
 - ✅ **Twig Templates**: Native Twig integration for clean views.
 - ✅ **Connect**: Simple outgoing HTTP requests for payments, CRMs, messaging APIs, and other services.
 - ✅ **Debug UI**: Premium dark-mode error pages.
+- ✅ **`leaf()` Debugging**: Native formatted dump-and-die output for focused PHP debugging.
 
 ---
 
