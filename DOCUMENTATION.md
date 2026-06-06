@@ -330,6 +330,97 @@ Controlled via `APP_DEBUG` in your `.env` file.
 ### 7.2 API Errors
 The exception handler automatically detects `application/json` requests and returns a structured JSON error response instead of HTML.
 
+### 7.3 Debugging with `leaf()`
+
+`leaf($value)` is Green Framework's native dump-and-die helper. It renders a formatted dump of any PHP value, displays the call site and runtime context, then terminates execution immediately.
+
+```php
+leaf($user);
+```
+
+#### Supported Values
+
+`leaf()` supports scalars, arrays, objects, Green models, exceptions, resources, and nested structures. It detects repeated object references and marks them as circular instead of recursing forever.
+
+Green models are rendered as `model` nodes with class, table, primary key, primary key value, and resolved attributes. Exceptions are rendered as `exception` nodes with message, code, file, line, and a limited trace.
+
+#### Configuration
+
+Publish the config file into an application:
+
+```bash
+php green publish:config leaf
+```
+
+This creates `config/leaf.php`:
+
+```php
+<?php
+
+return [
+    'max_depth' => 6,
+    'max_items' => 100,
+    'max_string_length' => 20000,
+    'dark_theme' => true,
+];
+```
+
+`leaf()` reads `config/leaf.php` automatically when the file exists. You can override the config file path with `GREEN_LEAF_CONFIG` or `LEAF_CONFIG`.
+
+You can also configure it at runtime:
+
+```php
+leaf_config([
+    'max_depth' => 6,
+    'max_items' => 100,
+]);
+```
+
+Or override individual values via environment:
+
+```dotenv
+GREEN_LEAF_DEPTH=6
+GREEN_LEAF_ITEMS=100
+GREEN_LEAF_STRING_LIMIT=20000
+GREEN_LEAF_DARK=true
+```
+
+Defaults are conservative: depth `5`, items `50`, string length `10000`, dark theme enabled.
+
+#### Example: `max_depth`
+
+- The data has multiple nested levels:
+
+```text
+Level 1: data
+Level 2: user
+Level 3: profile
+Level 4: address
+```
+
+#### Leaf Config Priority
+
+1. Runtime Config (`leaf_config(...)`)
+2. `config/leaf.php`
+3. Environment Variables (`GREEN_LEAF_*`)
+4. Internal Defaults
+
+#### Best Practices
+
+Use `leaf()` only during development or local debugging. Since it intentionally terminates the script and returns a debug response, it should not remain in committed application code paths.
+
+Keep depth and item limits low for large model graphs, API payloads, and ORM-style relation trees. Raise limits only when investigating a specific structure.
+
+Prefer dumping focused values instead of entire containers or application instances. Smaller dumps are faster, easier to read, and less likely to expose secrets.
+
+Avoid dumping credentials, tokens, session payloads, or customer data in shared environments.
+
+#### Performance Notes
+
+The dumper never walks more than `max_depth` levels or `max_items` entries per collection/object. Strings are truncated at `max_string_length`. Repeated object references are tracked by `spl_object_id()` to prevent circular object graphs from exhausting memory.
+
+Arrays that contain recursive references are still protected by the depth limit. PHP does not expose a stable, mutation-free array identity, so depth limits are the safe guard for recursive array structures.
+
 ---
 
 ## 🛠️ 8. Helper Reference Cheat Sheet
@@ -345,6 +436,8 @@ The exception handler automatically detects `application/json` requests and retu
 | `csrf_token()`                 | `array`            | Generates a CSRF `{id, token}` pair.|
 | `csrf_field()`                 | `string` (HTML)    | Outputs two hidden CSRF inputs.     |
 | `connect()`                    | `Connect`          | Sends outgoing HTTP requests to external APIs. |
+| `leaf(value)`                  | `never`            | Dumps a formatted value and terminates execution. |
+| `leaf_config(options)`         | `void`             | Overrides `leaf()` runtime dump limits. |
 
 ---
 
@@ -363,6 +456,30 @@ php green create:model Car         # Create a new model
 php green create:controller Car    # Create a new controller
 php green translation:clear  # Clear all cached translations
 ```
+
+### Publishing Config Files
+
+Use `publish:config` to copy framework config files into your application so you can customize them:
+
+```bash
+php green publish:config leaf
+php green publish:config csrf
+php green publish:config connect
+php green publish:config drive
+```
+
+These commands publish the matching config files into the local `config/` directory. Run only the commands for the subsystems you want to customize.
+
+If a config file has not been published, Green uses built-in defaults:
+
+| Config | Built-in default |
+| :--- | :--- |
+| `leaf` | Uses conservative dump limits: depth `5`, items `50`, string length `10000`, dark theme enabled. |
+| `csrf` | CSRF protection is enabled with a 30-minute token TTL, 50 max tokens, standard form inputs, and standard AJAX headers. |
+| `connect` | Defines a `default` connection using the `symfony` driver, no base URL, timeout `10`, connect timeout `5`, and `Accept: application/json`. |
+| `drive` | Defines a `local` disk using the `local` driver, rooted at `{BASE_PATH}/public` or the current working directory's `public` folder. |
+
+Publishing config is therefore only required when you want to customize those defaults.
 
 ## 🔧 10. Migrations & Schema Builder
 

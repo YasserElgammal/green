@@ -2,6 +2,7 @@
 
 namespace App\Controllers\Web;
 
+use App\Enums\PostStatus;
 use App\Tables\PostTable;
 use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\Routing\Route;
@@ -19,13 +20,45 @@ class PostController
         // Load author and comments for eager loading efficiency
         $postsTable->include(['author']);
 
-        $postsQuery = $postsTable->builder()->orderBy('id', strtoupper($order));
+        $postsQuery = $postsTable->builder()
+            ->where('status = :status')
+            ->setParameter('status', PostStatus::Published->value)
+            ->orderBy('id', strtoupper($order));
         $result  = $postsTable->paginateFromBuilder($postsQuery, (int) $perPage, (int) ($_GET['page'] ?? 1));
 
         return view('posts/index', [
             'posts' => $result['data'],
             'meta'  => $result['meta'],
             'order' => $order
+        ]);
+    }
+
+    #[Route('GET', '/my-posts')]
+    public function myPosts()
+    {
+        if (!session()->has('user_id')) {
+            session()->flash('error', 'You must be logged in to manage your posts.');
+            return redirect('/login');
+        }
+
+        $activeStatus = PostStatus::fromRequest($_GET['status'] ?? PostStatus::Draft->value);
+        $perPage = (int) ($_GET['per_page'] ?? 15);
+
+        $postsTable = (new PostTable())->includeCount('comments');
+        $postsQuery = $postsTable->builder()
+            ->where('user_id = :user_id')
+            ->andWhere('status = :status')
+            ->setParameter('user_id', session()->get('user_id'))
+            ->setParameter('status', $activeStatus->value)
+            ->orderBy('id', 'DESC');
+
+        $result = $postsTable->paginateFromBuilder($postsQuery, $perPage, (int) ($_GET['page'] ?? 1));
+
+        return view('posts/my', [
+            'posts' => $result['data'],
+            'meta' => $result['meta'],
+            'activeStatus' => $activeStatus->value,
+            'statuses' => PostStatus::options(),
         ]);
     }
 
@@ -37,7 +70,7 @@ class PostController
 
         $post = $postsTable->fetchById($id);
 
-        if (!$post) {
+        if (!$post || $post->status !== PostStatus::Published->value) {
             session()->flash('error', 'Post not found.');
             return redirect('/posts');
         }
@@ -69,15 +102,42 @@ class PostController
             $imagePath = $filename;
         }
 
+        $status = PostStatus::tryFrom((string) $request->input('status', PostStatus::Published->value))
+            ?? PostStatus::Published;
+
         $postsTable = new PostTable();
         $postsTable->insert([
             'title' => $title,
             'body' => $body,
             'image' => $imagePath,
             'user_id' => session()->get('user_id'),
+            'status' => $status->value,
         ]);
 
-        session()->flash('success', 'Post created successfully!');
-        return redirect('/posts');
+        session()->flash('success', $status === PostStatus::Draft ? 'Post saved as draft.' : 'Post created successfully!');
+        return redirect($status === PostStatus::Draft ? '/my-posts?status=draft' : '/posts');
+    }
+
+    #[Route('POST', '/my-posts/{id}/status')]
+    public function updateStatus(int $id, Request $request)
+    {
+        if (!session()->has('user_id')) {
+            session()->flash('error', 'You must be logged in to manage your posts.');
+            return redirect('/login');
+        }
+
+        $status = PostStatus::fromRequest($request->input('status'));
+        $postsTable = new PostTable();
+        $post = $postsTable->fetchById($id);
+
+        if (!$post || (int) $post->user_id !== (int) session()->get('user_id')) {
+            session()->flash('error', 'Post not found.');
+            return redirect('/my-posts');
+        }
+
+        $postsTable->update($id, ['status' => $status->value]);
+
+        session()->flash('success', 'Post moved to ' . $status->label() . '.');
+        return redirect('/my-posts?status=' . $status->value);
     }
 }

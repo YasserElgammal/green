@@ -4,6 +4,7 @@ namespace Tests\Api\Controllers;
 
 use App\Controllers\Api\AuthController;
 use App\Payloads\RegisterPayload;
+use App\Tables\UserTable;
 use YasserElgammal\Green\Http\Request;
 use Tests\TestCase;
 
@@ -71,5 +72,28 @@ class AuthControllerTest extends TestCase
         $this->assertEquals('User registered successfully!', $data['message']);
         $this->assertEquals('New User', $data['data']['user']['name']);
         $this->assertEquals('new@example.com', $data['data']['user']['email']);
+    }
+
+    public function testFirstRegisteredUserIsAdmin(): void
+    {
+        $firstPayload = new RegisterPayload(new Request([], [
+            'name' => 'First User',
+            'email' => 'first@example.com',
+            'password' => '123456',
+        ]));
+
+        $secondPayload = new RegisterPayload(new Request([], [
+            'name' => 'Second User',
+            'email' => 'second@example.com',
+            'password' => '123456',
+        ]));
+
+        $this->controller->register($firstPayload);
+        $this->controller->register($secondPayload);
+
+        $users = new UserTable();
+
+        $this->assertSame(1, (int) $users->fetchFirst('email', 'first@example.com')->is_admin);
+        $this->assertSame(0, (int) $users->fetchFirst('email', 'second@example.com')->is_admin);
     }
 }

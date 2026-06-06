@@ -30,9 +30,14 @@
                                     <img id="postImagePreview" src="#" alt="Preview" class="img-fluid rounded-4 shadow-sm" style="display: none; max-height: 180px; object-fit: cover; width: 100%;">
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-green w-100 rounded-pill py-2 shadow-sm fs-6">
-                                <i class="bi bi-send-fill me-1"></i> {{ t('posts.index.publish') }}
-                            </button>
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="status" value="published" class="btn btn-green rounded-pill py-2 shadow-sm fs-6">
+                                    <i class="bi bi-send-fill me-1"></i> {{ t('posts.index.publish') }}
+                                </button>
+                                <button type="submit" name="status" value="draft" class="btn btn-green-outline rounded-pill py-2 shadow-sm fs-6">
+                                    <i class="bi bi-file-earmark me-1"></i> {{ t('posts.index.save_draft') }}
+                                </button>
+                            </div>
                         </form>
                         
                         <script>
@@ -92,7 +97,7 @@
                                     </div>
                                     <div class="d-flex flex-column">
                                         <small class="text-dark fw-bold">{{ t('posts.index.by_author', {'author': post.author.name|default(t('posts.index.unknown'))}) }}</small>
-                                        <small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-clock me-1"></i>Recently published</small>
+                                        <small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-clock me-1"></i>{{ post.created_at|date("Y/m/d H:i:s") }}</small>
                                     </div>
                                 </div>
                                 <p class="text-muted mb-4 flex-grow-1" style="font-size: 0.95rem; line-height: 1.6;">

@@ -10,6 +10,7 @@ class AuthService
 {
     private ?object $user = null;
     private bool $resolved = false;
+    private mixed $resolvedUserId = null;
     private JwtService $jwtService;
     private JwtConfig $jwtConfig;
 
@@ -27,17 +28,33 @@ class AuthService
      */
     public function user(): ?object
     {
-        if ($this->resolved) {
+        $userId = session()->get('user_id');
+
+        if ($this->resolved && $this->resolvedUserId === $userId) {
             return $this->user;
         }
 
-        $userId = session()->get('user_id');
         if ($userId) {
-            $usersTable = new UserTable();
-            $this->user = $usersTable->fetchById($userId);
+            try {
+                $usersTable = new UserTable();
+                $this->user = $usersTable->fetchById($userId);
+            } catch (\Throwable) {
+                $this->user = null;
+            }
+
+            if (!$this->user) {
+                session()->flush();
+                $userId = null;
+            } else {
+                $this->syncSessionUser($this->user);
+            }
+        } else {
+            $this->user = null;
         }
 
         $this->resolved = true;
+        $this->resolvedUserId = $userId;
+
         return $this->user;
     }
 
@@ -62,11 +79,10 @@ class AuthService
      */
     public function login(object $user): void
     {
-        session()->put('user_id', $user->id);
-        session()->put('user_name', $user->name);
-        session()->put('user_avatar', $user->avatar ?? null);
+        $this->syncSessionUser($user);
         $this->user = $user;
         $this->resolved = true;
+        $this->resolvedUserId = $user->id;
     }
 
     /**
@@ -77,6 +93,7 @@ class AuthService
         session()->flush();
         $this->user = null;
         $this->resolved = true;
+        $this->resolvedUserId = null;
     }
 
     /**
@@ -130,5 +147,13 @@ class AuthService
     {
         $usersTable = new UserTable();
         return $usersTable->fetchFirst('refresh_token', $token);
+    }
+
+    private function syncSessionUser(object $user): void
+    {
+        session()->put('user_id', $user->id);
+        session()->put('user_name', $user->name);
+        session()->put('user_avatar', $user->avatar ?? null);
+        session()->put('user_is_admin', (int) ($user->is_admin ?? 0));
     }
 }

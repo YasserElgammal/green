@@ -70,6 +70,7 @@ class AuthController
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => password_hash($data['password'], PASSWORD_DEFAULT),
+            'is_admin' => $this->isFirstRegisteredUser($users) ? 1 : 0,
         ]);
 
         //TODO send verification email
@@ -80,5 +81,10 @@ class AuthController
                 'email' => $data['email'],
             ],
         ], 201);
+    }
+
+    private function isFirstRegisteredUser(UserTable $users): bool
+    {
+        return !$users->exists();
     }
 }

@@ -1,0 +1,107 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{ t('posts.my.title') }}{% endblock %}
+
+{% block content %}
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+        <div>
+            <h2 class="mb-1 fw-bolder d-flex align-items-center" style="color: var(--green-dark);">
+                <i class="bi bi-person-lines-fill me-2 text-success"></i>
+                {{ t('posts.my.heading') }}
+            </h2>
+            <p class="text-muted mb-0">{{ t('posts.my.subheading') }}</p>
+        </div>
+        <a href="/posts#create-post" class="btn btn-green rounded-pill px-4 py-2 shadow-sm">
+            <i class="bi bi-pencil-square me-1"></i> {{ t('posts.index.create_post') }}
+        </a>
+    </div>
+
+    <ul class="nav nav-pills gap-2 mb-4" role="tablist">
+        {% for status in statuses %}
+            <li class="nav-item" role="presentation">
+                <a class="nav-link rounded-pill px-4 {{ activeStatus == status.value ? 'active bg-success' : 'text-dark bg-white shadow-sm' }}"
+                   href="/my-posts?status={{ status.value }}">
+                    {{ t('posts.my.tabs.' ~ status.value) }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <div class="row g-4">
+        {% for post in posts %}
+            <div class="col-md-6 col-xl-4">
+                <article class="glass-card h-100 d-flex flex-column overflow-hidden border-0">
+                    {% if post.image %}
+                        <div style="height: 180px; overflow: hidden;">
+                            <img src="/{{ post.image }}" class="w-100 h-100" style="object-fit: cover;" alt="Post Image">
+                        </div>
+                    {% else %}
+                        <div class="d-flex justify-content-center align-items-center" style="height: 180px; background: linear-gradient(135deg, var(--green-light) 0%, #a7f3d0 100%);">
+                            <i class="bi bi-journal-richtext text-success" style="font-size: 3.5rem; opacity: 0.4;"></i>
+                        </div>
+                    {% endif %}
+
+                    <div class="p-4 d-flex flex-column flex-grow-1 bg-white bg-opacity-50">
+                        <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                            <span class="badge rounded-pill text-bg-success px-3 py-2">{{ t('posts.my.tabs.' ~ post.status) }}</span>
+                            <small class="text-muted">
+                                <i class="bi bi-chat-left-text me-1"></i>{{ post.comments_count|default(0) }}
+                            </small>
+                        </div>
+
+                        <h4 class="fw-bold mb-3" style="line-height: 1.35;">{{ post.title }}</h4>
+                        <p class="text-muted mb-4 flex-grow-1" style="font-size: 0.95rem; line-height: 1.6;">
+                            {{ post.body|length > 120 ? post.body|slice(0, 120) ~ '...' : post.body }}
+                        </p>
+
+                        <div class="d-flex flex-wrap gap-2 mt-auto">
+                            {% if post.status == 'published' %}
+                                <a href="/posts/{{ post.id }}" class="btn btn-green-outline btn-sm rounded-pill px-3">
+                                    <i class="bi bi-eye me-1"></i>{{ t('posts.my.view') }}
+                                </a>
+                            {% endif %}
+
+                            {% for status in statuses %}
+                                {% if status.value != post.status %}
+                                    <form method="POST" action="/my-posts/{{ post.id }}/status" class="d-inline">
+                                        {{ csrf_field() }}
+                                        <input type="hidden" name="status" value="{{ status.value }}">
+                                        <button type="submit" class="btn btn-green-outline btn-sm rounded-pill px-3">
+                                            {{ t('posts.my.actions.' ~ status.value) }}
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </article>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="glass-card p-5 text-center border-0">
+                    <i class="bi bi-inbox text-muted mb-3" style="font-size: 4rem;"></i>
+                    <h3 class="text-dark fw-bold mb-2">{{ t('posts.my.empty_title') }}</h3>
+                    <p class="text-muted mb-0">{{ t('posts.my.empty_body') }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if meta.total_pages > 1 %}
+        <nav aria-label="My posts pagination" class="mt-5 pt-3">
+            <ul class="pagination justify-content-center gap-2">
+                <li class="page-item {{ not meta.has_prev ? 'disabled' }}">
+                    <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm" style="width: 40px; height: 40px;" href="{% if meta.has_prev %}?status={{ activeStatus }}&page={{ meta.current_page - 1 }}{% else %}#{% endif %}"><i class="bi bi-chevron-left"></i></a>
+                </li>
+                {% for p in 1..meta.total_pages %}
+                    <li class="page-item {{ p == meta.current_page ? 'active' }}">
+                        <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm {% if p == meta.current_page %}bg-success text-white fw-bold{% else %}text-dark fw-medium{% endif %}" style="width: 40px; height: 40px;" href="?status={{ activeStatus }}&page={{ p }}">{{ p }}</a>
+                    </li>
+                {% endfor %}
+                <li class="page-item {{ not meta.has_next ? 'disabled' }}">
+                    <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm" style="width: 40px; height: 40px;" href="{% if meta.has_next %}?status={{ activeStatus }}&page={{ meta.current_page + 1 }}{% else %}#{% endif %}"><i class="bi bi-chevron-right"></i></a>
+                </li>
+            </ul>
+        </nav>
+    {% endif %}
+{% endblock %}

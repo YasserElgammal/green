@@ -1,0 +1,29 @@
+{% extends 'admin/layout.twig' %}
+
+{% set admin_section = 'dashboard' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+    <section class="admin-page-header">
+        <div>
+            <p class="admin-eyebrow">Official Green Framework ecosystem</p>
+            <h2>Operate your application from one clean workspace.</h2>
+            <p>Modern defaults for teams shipping Green Skeleton applications across startup and enterprise environments.</p>
+        </div>
+        <div class="admin-header-actions">
+            <a href="/admin/users/create" class="btn admin-btn-primary"><i class="bi bi-person-plus"></i> New user</a>
+            <a href="/admin/posts/create" class="btn admin-btn-secondary"><i class="bi bi-pencil-square"></i> New post</a>
+        </div>
+    </section>
+
+    {% include 'admin/partials/stats.twig' with {'stats': stats} %}
+
+    <section class="admin-dashboard-lists">
+        {% include 'admin/partials/activity-list.twig' with {'title': 'Latest Users', 'items': latestUsers, 'type': 'users'} %}
+        {% include 'admin/partials/activity-list.twig' with {'title': 'Latest Posts', 'items': latestPosts, 'type': 'posts'} %}
+        {% include 'admin/partials/activity-list.twig' with {'title': 'Latest Comments', 'items': latestComments, 'type': 'comments'} %}
+    </section>
+{% endblock %}

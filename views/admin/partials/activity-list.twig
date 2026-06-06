@@ -1,0 +1,32 @@
+<article class="admin-panel">
+    <div class="admin-panel-header">
+        <div>
+            <h3>{{ title }}</h3>
+            <p>Recent activity from this workspace.</p>
+        </div>
+    </div>
+    <div class="admin-list">
+        {% for item in items %}
+            <div class="admin-list-item">
+                <span class="admin-avatar admin-avatar-sm">{{ (item.name|default(item.author.name|default(item.title|default('G'))))|first|upper }}</span>
+                <div>
+                    {% if type == 'users' %}
+                        <strong>{{ item.name }}</strong>
+                        <small>{{ item.email }} - {{ item.posts_count|default(0) }} posts</small>
+                    {% elseif type == 'posts' %}
+                        <strong>{{ item.title }}</strong>
+                        <small>{{ item.author.name|default('Unknown author') }} - {{ item.status|default('draft')|capitalize }} - {{ item.comments_count|default(0) }} comments</small>
+                    {% else %}
+                        <strong>{{ item.author.name|default('Unknown author') }}</strong>
+                        <small>{{ item.post.title|default('Untitled post') }} - {{ item.content|length > 70 ? item.content|slice(0, 70) ~ '...' : item.content }}</small>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="admin-empty-state admin-empty-state-sm">
+                <i class="bi bi-inbox"></i>
+                <strong>No activity yet</strong>
+            </div>
+        {% endfor %}
+    </div>
+</article>
