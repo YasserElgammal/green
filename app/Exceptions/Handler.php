@@ -6,8 +6,9 @@ use App\Exceptions\Contracts\ErrorResponderInterface;
 use Throwable;
 use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\Http\Response;
+use YasserElgammal\Green\Exceptions\ExceptionHandler;
 
-class Handler
+class Handler extends ExceptionHandler
 {
     public function __construct(
         private ?ErrorResponderInterface $apiHandler = null,
@@ -19,16 +20,16 @@ class Handler
 
     public function handle(Throwable $e, Request $request): Response
     {
-        if ($this->isApiRequest($request)) {
-            return $this->apiHandler->handle($e, $request);
-        }
+        $response = $this->isApiRequest($request)
+            ? $this->apiHandler->handle($e, $request)
+            : $this->webHandler->handle($e, $request);
 
-        return $this->webHandler->handle($e, $request);
+        return $response->setHeader('X-Green-Exception-Handled', '1');
     }
 
     public function handleResponse(Response $response, Request $request): Response
     {
-        if ($response->getStatusCode() < 400) {
+        if ($response->getStatusCode() < 400 || $response->hasHeader('X-Green-Exception-Handled')) {
             return $response;
         }
 

@@ -92,6 +92,25 @@ class HandlerTest extends TestCase
         $this->assertStringContainsString('Stack Trace', $response->getContent());
     }
 
+    public function testItDoesNotReplaceHandledDebugExceptionsDuringResponseHandling(): void
+    {
+        $_ENV['APP_DEBUG'] = 'true';
+
+        $request = new Request(server: [
+            'REQUEST_URI' => '/posts',
+            'HTTP_ACCEPT' => 'text/html',
+        ]);
+
+        $handler = new Handler();
+        $response = $handler->handle(new RuntimeException('Debug detail', 500), $request);
+        $response = $handler->handleResponse($response, $request);
+
+        $this->assertSame(500, $response->getStatusCode());
+        $this->assertStringContainsString('DEVELOPER MODE ACTIVE', $response->getContent());
+        $this->assertStringContainsString('Debug detail', $response->getContent());
+        $this->assertStringContainsString('Stack Trace', $response->getContent());
+    }
+
     public function testItUsesCsrfStatusCodeForWebRequests(): void
     {
         $request = new Request(server: [

@@ -454,7 +454,52 @@ php green serve              # Start development server
 
 php green create:model Car         # Create a new model
 php green create:controller Car    # Create a new controller
+php green create:provider App      # Create a new service provider
 php green translation:clear  # Clear all cached translations
+```
+
+### Creating Service Providers
+
+Use `create:provider` to generate an application service provider under `app/Providers`:
+
+```bash
+php green create:provider App
+php green create:provider AppServiceProvider
+```
+
+Both examples create:
+
+```text
+app/Providers/AppServiceProvider.php
+```
+
+Generated providers extend `YasserElgammal\Green\Support\ServiceProvider` and include `register()` and `boot()` methods:
+
+```php
+namespace App\Providers;
+
+use YasserElgammal\Green\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
+        //
+    }
+
+    public function boot(): void
+    {
+        //
+    }
+}
+```
+
+Register the provider in `config/app.php`:
+
+```php
+'providers' => [
+    \App\Providers\AppServiceProvider::class,
+],
 ```
 
 ### Publishing Config Files

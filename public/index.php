@@ -16,10 +16,17 @@ use YasserElgammal\Green\Security\Csrf\CsrfConfig;
 use App\Exceptions\{ApiExceptionHandler, ErrorStatusResolver, ErrorViewResolver, Handler, WebExceptionHandler};
 use App\Middleware\{LoggingMiddleware, LocaleMiddleware, TrimStringsMiddleware, ValidateSessionUserMiddleware, ValidationExceptionMiddleware};
 
-// Initialize View engine
-View::init(__DIR__ . '/../views');
-
 $app = new Application();
+
+$statusResolver = new ErrorStatusResolver();
+$viewResolver = new ErrorViewResolver();
+$handler = new Handler(
+    new ApiExceptionHandler($statusResolver),
+    new WebExceptionHandler($statusResolver, $viewResolver)
+);
+
+// Bind the skeleton's custom ExceptionHandler to the framework's container
+$app->instance(\YasserElgammal\Green\Exceptions\ExceptionHandler::class, $handler);
 
 // Add global middleware
 $app->router->addGlobalMiddleware(ValidationExceptionMiddleware::class);
@@ -41,18 +48,7 @@ require_once __DIR__ . '/../routes/web.php';
 require_once __DIR__ . '/../routes/api.php';
 
 $request = Request::capture();
-$statusResolver = new ErrorStatusResolver();
-$viewResolver = new ErrorViewResolver();
-$handler = new Handler(
-    new ApiExceptionHandler($statusResolver),
-    new WebExceptionHandler($statusResolver, $viewResolver)
-);
 
-try {
-    $response = $app->handle($request);
-    $response = $handler->handleResponse($response, $request);
-} catch (\Throwable $e) {
-    $response = $handler->handle($e, $request);
-}
-
+$response = $app->handle($request);
+$response = $handler->handleResponse($response, $request);
 $response->send();
