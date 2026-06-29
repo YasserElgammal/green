@@ -19,14 +19,14 @@ php green serve
 ### 2. Define a Route
 ```php
 class PostController {
-    #[Route('GET', '/posts/{id}', middleware: [AuthMiddleware::class, LocaleMiddleware::class])]
+    #[Route('GET', '/posts/{id}', name: 'posts.show', middleware: [AuthMiddleware::class, LocaleMiddleware::class])]
     public function show(int $id) {
         return view('posts/show', ['id' => $id]);
     }
 }
 ```
 
-Pass route middleware as an array; add multiple middleware classes in the order they should run.
+Pass route middleware as an array; add multiple middleware classes in the order they should run. Generate named route URLs with `route('posts.show', ['id' => 1])`.
 
 ### 3. Database Access
 ```php
@@ -54,12 +54,17 @@ The framework is divided into several powerful subsystems. Please refer to the *
 - **[Translation & Localization](DOCUMENTATION.md#-11-translation--localization)**: Global helpers, multiple providers, caching, and pluralization.
 - **[Include Query Language](DOCUMENTATION.md#-12-include-query-language-iql)**: Advanced relation loading with limits, ordering, filtering, and column selection.
 - **[Connect](DOCUMENTATION.md#13-connect-external-http-apis)**: Outgoing HTTP requests for third-party APIs and services.
+- **[Cache](DOCUMENTATION.md#-15-cache-management)**: Cache manager, stores, drivers, and remember().
+- **[Events & Signals](DOCUMENTATION.md#-16-events--signals)**: Signal dispatcher, listeners, and event generators.
+- **[Authorization](DOCUMENTATION.md#-17-authorization-gate--policies)**: Authorizer, policies, and controller `PolicyAttribute` checks.
 
 ---
 
 ## 🛠 Features at a Glance
 
 - ✅ **PHP 8.2+ Attributes**: No more clunky routing files.
+- ✅ **Named Routes**: Generate URLs with `route()` from named Route attributes.
+- ✅ **Signals, Cache & Policies**: Core providers expose signal(), cache(), and authorizer().
 - ✅ **Table Gateway**: Clean separation of state (Model) and logic (Table).
 - ✅ **Eager Loading & IQL**: Simple `include('relation')` to solve N+1, with an advanced query language for limits, ordering, filtering, and column selection.
 - ✅ **Smart Transformers**: Nested API responses made easy.

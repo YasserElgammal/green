@@ -56,7 +56,8 @@ abstract class TestCase extends BaseTestCase
                 is_admin INTEGER NOT NULL DEFAULT 0,
                 avatar TEXT,
                 refresh_token TEXT,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         ");
 
@@ -70,6 +71,7 @@ abstract class TestCase extends BaseTestCase
                 body TEXT NOT NULL,
                 image TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
             )
         ");
@@ -78,7 +80,9 @@ abstract class TestCase extends BaseTestCase
         $this->connection->executeStatement("
             CREATE TABLE roles (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL UNIQUE
+                name TEXT NOT NULL UNIQUE,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         ");
 
@@ -101,6 +105,7 @@ abstract class TestCase extends BaseTestCase
                 user_id INTEGER NOT NULL,
                 content TEXT NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE,
                 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
             )
@@ -114,6 +119,7 @@ abstract class TestCase extends BaseTestCase
                 post_id INTEGER,
                 user_id INTEGER NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (comment_id) REFERENCES comments (id) ON DELETE CASCADE,
                 FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE,
                 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE

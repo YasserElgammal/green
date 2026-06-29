@@ -16,7 +16,20 @@ Green follows a standard Front Controller pattern:
 6. **Response**: The Controller returns a `Response` (or an array for JSON), which is then sent to the client via `send()`.
 7. **Exception Handling**: Any uncaught `Throwable` is caught by the global `ExceptionHandler` to provide a clean response.
 
-### 1.2 Dependency Injection (Auto-wiring)
+### 1.2 Core Service Providers
+
+`Application` registers core framework services before handling requests. The skeleton uses these providers automatically:
+
+| Provider | Responsibility |
+| :--- | :--- |
+| `SignalServiceProvider` | Registers the `SignalDispatcher` and the `signal()` helper. |
+| `AuthServiceProvider` | Registers the authorization gate and the `authorizer()` helper. |
+| `DatabaseServiceProvider` | Registers the Doctrine DBAL connection pool used by `Database`. |
+| `CacheServiceProvider` | Registers the `CacheManager` and the `cache()` helper. |
+
+Application providers listed in `config/app.php` are registered after the core providers, then every provider is booted.
+
+### 1.3 Dependency Injection (Auto-wiring)
 Green automatically injects common dependencies into your controller methods:
 - `YasserElgammal\Green\Http\Request`: The current request object.
 - `YasserElgammal\Green\Http\Payload`: Any custom payload subclasses (validated automatically).
@@ -43,17 +56,50 @@ public function show(Request $request, int $id): array
 }
 ```
 
-### 2.2 Middleware Pipeline
+### 2.2 URL Generation
+
+Routes may be named with the `name` argument on the `Route` attribute:
+
+```php
+#[Route('GET', '/users/{id}', name: 'users.show')]
+public function show(int $id): array
+{
+    // ...
+}
+```
+
+The Router stores named routes and `UrlGenerator` builds URLs for them. Use the `route()` helper from controllers, views, or services:
+
+```php
+$url = route('users.show', ['id' => 1]); // /users/1
+```
+
+Route parameters in `{braces}` are replaced from the parameter array. Extra parameters are appended as a query string.
+
+### 2.3 Middleware Pipeline
 Middleware must implement `YasserElgammal\Green\Middleware\MiddlewareInterface`.
 
 - **Global Middleware**: Defined in `public/index.php` via `$app->router->addGlobalMiddleware()`.
 - **Route Middleware**: Defined in the `#[Route]` attribute using the `middleware` array.
 
-### 2.3 Redirects
+### 2.4 Redirects
 Use the `redirect($url)` helper to return a `RedirectResponse`.
 
 ```php
 return redirect('/login');
+```
+
+### 2.5 Route Policies
+
+Controller actions can be protected with policy attributes. The router reads `#[PolicyAttribute]` before invoking the action and calls the global authorizer.
+
+```php
+#[Route('PUT', '/users/{id}', name: 'users.update')]
+#[PolicyAttribute('update', 'id')]
+public function update(Request $request, int $id): array
+{
+    // ...
+}
 ```
 
 ---
@@ -71,12 +117,50 @@ class Post extends Model {
 }
 ```
 
+Models track their original hydrated state so the Table layer can persist only changed fields.
+
+```php
+$post->syncOriginal();
+$post->title = 'Updated title';
+
+$post->getDirty();          // ['title' => 'Updated title']
+$post->isDirty();           // true
+$post->isDirty('title');    // true
+$post->isClean('body');     // true
+$post->getOriginal('title');
+```
+
+Hydrated models call `syncOriginal()` automatically after they are read from the database.
+
 ### 3.2 Table Gateway (The Persistence)
 The `Table` class handles all CRUD operations and returns hydrated Models.
 
 ```php
 $posts = new Table(new Post());
 $allPosts = $posts->fetchAll();
+```
+
+`Table::save()` uses dirty tracking. Existing models update only dirty fields, and clean models are skipped without issuing an update query.
+
+```php
+$post = $posts->fetchById(1);
+$post->title = 'Updated title';
+$posts->save($post); // updates title and updated_at
+```
+
+Tables manage timestamps automatically when timestamps are enabled:
+
+```php
+protected bool $timestamps = true;
+```
+
+With timestamps enabled, `created_at` and `updated_at` are set on insert, and `updated_at` is refreshed on update. Disable this per table when the table does not have timestamp columns:
+
+```php
+class AuditLogTable extends Table
+{
+    protected bool $timestamps = false;
+}
 ```
 
 ### 3.3 Relations & Eager Loading
@@ -436,6 +520,10 @@ Arrays that contain recursive references are still protected by the depth limit.
 | `csrf_token()`                 | `array`            | Generates a CSRF `{id, token}` pair.|
 | `csrf_field()`                 | `string` (HTML)    | Outputs two hidden CSRF inputs.     |
 | `connect()`                    | `Connect`          | Sends outgoing HTTP requests to external APIs. |
+| `signal()`                     | `SignalDispatcher` | Registers listeners and emits application signals. |
+| `authorizer()`                 | `Authorizer`       | Registers policies and checks abilities. |
+| `cache()`                      | `CacheManager`     | Reads and writes cache values. |
+| `route(name, params)`          | `string`           | Generates a URL for a named route. |
 | `leaf(value)`                  | `never`            | Dumps a formatted value and terminates execution. |
 | `leaf_config(options)`         | `void`             | Overrides `leaf()` runtime dump limits. |
 
@@ -452,10 +540,14 @@ php green help               # Display help for a command
 php green list               # List all available commands
 php green serve              # Start development server
 
-php green create:model Car         # Create a new model
-php green create:controller Car    # Create a new controller
-php green create:provider App      # Create a new service provider
-php green translation:clear  # Clear all cached translations
+php green create:model Car             # Create a new model
+php green create:controller Car        # Create a new controller
+php green create:provider App          # Create a new service provider
+php green create:authorizer Post       # Create a new authorizer class
+php green create:policy Post           # Create a new policy class
+php green create:event UserCreated     # Create a new event class
+php green create:listener SendWelcome  # Create a new listener class
+php green translation:clear            # Clear all cached translations
 ```
 
 ### Creating Service Providers
@@ -523,6 +615,7 @@ If a config file has not been published, Green uses built-in defaults:
 | `csrf` | CSRF protection is enabled with a 30-minute token TTL, 50 max tokens, standard form inputs, and standard AJAX headers. |
 | `connect` | Defines a `default` connection using the `symfony` driver, no base URL, timeout `10`, connect timeout `5`, and `Accept: application/json`. |
 | `drive` | Defines a `local` disk using the `local` driver, rooted at `{BASE_PATH}/public` or the current working directory's `public` folder. |
+| `cache` | Defines `file`, `array`, `database`, and `redis` cache stores with a configurable default store. |
 
 Publishing config is therefore only required when you want to customize those defaults.
 
@@ -675,6 +768,18 @@ public function up(): void
 
 ## Schema Builder Reference
 
+### Grammar Abstraction
+
+Schema SQL is generated by database grammar classes instead of being hardcoded in `Blueprint`.
+
+| Class | Role |
+| :--- | :--- |
+| `Grammar` | Base contract for schema SQL compilation. |
+| `MySqlGrammar` | Compiles MySQL-compatible schema SQL. |
+| `SqliteGrammar` | Compiles SQLite-compatible schema SQL. |
+| `GrammarFactory` | Resolves the correct grammar from the active PDO driver. |
+
+`Blueprint` collects operations such as columns, indexes, foreign keys, and drops, then delegates SQL generation to the selected grammar. This keeps migrations portable across supported database engines.
 ### `Schema::` static methods
 
 | Method | Description |
@@ -1276,4 +1381,182 @@ class PaymentService {
         }
     }
 }
+```
+
+---
+
+## ⚡ 15. Cache Management
+
+Green includes a unified cache subsystem built around `CacheManager` and `CacheDriverInterface`.
+
+Supported drivers:
+
+| Driver | Class |
+| :--- | :--- |
+| `array` | `ArrayDriver` |
+| `file` | `FileDriver` |
+| `database` | `DatabaseDriver` |
+| `redis` | `RedisDriver` |
+
+### 15.1 Configuration
+Configure your default cache store in `.env`:
+```env
+CACHE_DRIVER=file
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+```
+Detailed store configuration is located in `config/cache.php`.
+
+### 15.2 Usage
+Use the global `cache()` helper or inject `CacheManager`.
+
+```php
+$value = cache()->get('key');
+
+cache()->put('key', $value, 60);
+
+$result = cache()->remember('key', 60, fn () => expensive_lookup());
+```
+
+Common operations are proxied to the default store:
+
+```php
+cache()->has('key');
+cache()->forget('key');
+cache()->flush();
+```
+
+### 15.3 Store Selection
+Use `store()` to target a configured store by name:
+
+```php
+$value = cache()->store('redis')->get('key');
+cache()->store('array')->put('preview', $data, 30);
+```
+
+### 15.4 Custom Drivers
+Register custom drivers with `CacheManager::extend()`:
+
+```php
+cache()->extend('custom', function (array $config) {
+    return new CustomCacheDriver($config);
+});
+```
+
+The file driver clears PHP's file stat cache after deletion, so `has()` reflects a deleted key immediately after `forget()`.
+
+---
+
+## 📡 16. Events & Signals
+
+The `SignalDispatcher` provides a small decoupled event system for application signals.
+
+### 16.1 Listening to Signals
+Register listeners with the global `signal()` helper:
+
+```php
+signal()->listen('user.created', function (array $payload) {
+    $user = $payload['user'];
+}, priority: 0);
+```
+
+Lower priority numbers run earlier. If a listener returns `false`, propagation stops and later listeners are not called.
+
+```php
+signal()->listen('user.created', function (array $payload) {
+    return false;
+});
+```
+
+### 16.2 Emitting Signals
+Emit a signal with an optional payload array:
+
+```php
+signal()->emit('user.created', ['user' => $user]);
+```
+
+`emit()` returns an array containing listener return values.
+
+### 16.3 Signal Generators
+Use the console generators to create event and listener classes:
+
+```bash
+php green create:event UserCreated
+php green create:listener SendWelcomeEmail
+```
+
+---
+
+## 🛡️ 17. Authorization (Gate & Policies)
+
+Green provides an authorization layer built around `Authorizer`, `Policy`, `PolicyAttribute`, and `ForbiddenException`.
+
+### 17.1 Policies
+Policies are classes that contain authorization logic for a specific model or resource.
+
+```php
+namespace App\Policies;
+
+use App\Models\User;
+use YasserElgammal\Green\Auth\Policy;
+
+class UserPolicy extends Policy
+{
+    public function update(?array $actor, User $user): bool
+    {
+        return $actor && (int) $actor['id'] === (int) $user->id;
+    }
+}
+```
+
+Register policies during application boot, usually in an application service provider:
+
+```php
+authorizer()->policy(User::class, UserPolicy::class);
+```
+
+### 17.2 Inline Abilities
+Use inline abilities for simple checks that do not need a policy class:
+
+```php
+authorizer()->define('update-user', fn ($actor, $subject) => true);
+```
+
+### 17.3 Enforcement
+The `Authorizer` can check or enforce an ability:
+
+```php
+authorizer()->check('update', $user, $currentUser);      // true or false
+authorizer()->authorize('update', $user, $currentUser);  // throws ForbiddenException when denied
+```
+
+The short form is useful when the policy can resolve the actor itself:
+
+```php
+authorizer()->authorize('update', $user);
+```
+
+### 17.4 Controller Enforcement
+Routes can be authorized using `#[PolicyAttribute]` directly on controller methods. If authorization fails, Green throws a `ForbiddenException` before the controller method executes.
+
+```php
+use YasserElgammal\Green\Auth\PolicyAttribute;
+
+class UserController {
+    #[Route('PUT', '/users/{id}', name: 'users.update')]
+    #[PolicyAttribute('update', 'id')]
+    public function update(Request $request, int $id) {
+        // ...
+    }
+}
+```
+
+The first attribute argument is the ability name. The second argument is the route parameter name or subject string passed to the `Authorizer`.
+
+### 17.5 Authorization Generators
+Use the console generators to create authorization classes:
+
+```bash
+php green create:authorizer User
+php green create:policy User
 ```
