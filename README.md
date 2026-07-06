@@ -43,6 +43,7 @@ The framework is divided into several powerful subsystems. Please refer to the *
 - **[Core Architecture](DOCUMENTATION.md#-1-core-architecture)**: Lifecycle and DI patterns.
 - **[Routing & Middleware](DOCUMENTATION.md#-2-routing--middleware)**: Attribute-based routing and pipelines.
 - **[Database & Relations](DOCUMENTATION.md#-3-database--table-gateway--models)**: Eager loading and Table Gateways.
+- **[Database Querying](DOCUMENTATION.md#34-database-querying)**: Fluent Green queries, condition helpers, aggregates, table aliases, and transactions.
 - **[API Layer](DOCUMENTATION.md#-4-api-layer-transformers--pagination)**: Smart Transformers and Pagination.
 - **[Logic & Validation](DOCUMENTATION.md#-5-logic-payloads--validation)**: Payload-based validation.
 - **[Security & Sessions](DOCUMENTATION.md#-6-security--sessions)**: State management and hashing.
