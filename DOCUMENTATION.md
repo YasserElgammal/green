@@ -221,7 +221,7 @@ $users = $userTable
 Basic conditions support two common forms:
 
 ```php
-$query->where('email', 'mona@green.dev');
+$query->where('email', 'lara@green.dev');
 $query->where('age', '>=', 18);
 $query->where(['status' => 'active', 'role' => 'admin']);
 $query->orWhere('score', '>=', 90);
@@ -338,8 +338,8 @@ Use `Database::transaction()` to run work atomically. The callback return value 
 ```php
 $id = Database::transaction(function () use ($userTable) {
     $user = $userTable->insert([
-        'name' => 'Mona',
-        'email' => 'mona@green.dev',
+        'name' => 'Lara',
+        'email' => 'lara@green.dev',
     ]);
 
     return $user->id;
