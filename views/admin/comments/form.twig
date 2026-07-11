@@ -2,24 +2,24 @@
 
 {% set admin_section = 'comments' %}
 
-{% block title %}Edit Comment{% endblock %}
-{% block breadcrumb %}Edit Comment{% endblock %}
-{% block page_title %}Edit Comment{% endblock %}
+{% block title %}{{ t('admin.edit_comment') }}{% endblock %}
+{% block breadcrumb %}{{ t('admin.edit_comment') }}{% endblock %}
+{% block page_title %}{{ t('admin.edit_comment') }}{% endblock %}
 
 {% block content %}
     <section class="admin-panel admin-form-page">
         <div class="admin-panel-header">
-            <div><h3>Edit Comment</h3><p>Update the comment content while keeping its author and post relationship intact.</p></div>
+            <div><h3>{{ t('admin.edit_comment') }}</h3><p>{{ t('admin.edit_comment_help') }}</p></div>
         </div>
         <form class="admin-form" method="POST" action="/admin/comments/{{ comment.id }}">
             {{ csrf_field() }}
             <div>
-                <label for="content">Content <span aria-label="required">*</span></label>
+                <label for="content">{{ t('admin.content') }} <span aria-label="{{ t('admin.required') }}">*</span></label>
                 <textarea id="content" class="form-control" name="content" rows="8" required>{{ comment.content }}</textarea>
             </div>
             <div class="admin-form-actions">
-                <a href="/admin/comments" class="btn admin-btn-secondary">Cancel</a>
-                <button class="btn admin-btn-primary" type="submit"><i class="bi bi-check2"></i> Save comment</button>
+                <a href="/admin/comments" class="btn admin-btn-secondary">{{ t('admin.cancel') }}</a>
+                <button class="btn admin-btn-primary" type="submit"><i class="bi bi-check2"></i> {{ t('admin.save_comment') }}</button>
             </div>
         </form>
     </section>

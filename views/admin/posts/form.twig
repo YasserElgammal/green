@@ -3,45 +3,45 @@
 {% set admin_section = 'posts' %}
 {% set is_edit = mode == 'edit' %}
 
-{% block title %}{{ is_edit ? 'Edit Post' : 'Create Post' }}{% endblock %}
-{% block breadcrumb %}{{ is_edit ? 'Edit Post' : 'Create Post' }}{% endblock %}
-{% block page_title %}{{ is_edit ? 'Edit Post' : 'Create Post' }}{% endblock %}
+{% block title %}{{ is_edit ? t('admin.edit_post') : t('admin.create_post') }}{% endblock %}
+{% block breadcrumb %}{{ is_edit ? t('admin.edit_post') : t('admin.create_post') }}{% endblock %}
+{% block page_title %}{{ is_edit ? t('admin.edit_post') : t('admin.create_post') }}{% endblock %}
 
 {% block content %}
     <section class="admin-panel admin-form-page">
         <div class="admin-panel-header">
-            <div><h3>{{ is_edit ? 'Edit Post' : 'Create Post' }}</h3><p>Assign an author and publication status.</p></div>
+            <div><h3>{{ is_edit ? t('admin.edit_post') : t('admin.create_post') }}</h3><p>{{ t('admin.assign_post_help') }}</p></div>
         </div>
         <form class="admin-form" method="POST" action="{{ is_edit ? '/admin/posts/' ~ post.id : '/admin/posts' }}">
             {{ csrf_field() }}
             <div>
-                <label for="title">Title <span aria-label="required">*</span></label>
+                <label for="title">{{ t('admin.title') }} <span aria-label="{{ t('admin.required') }}">*</span></label>
                 <input id="title" class="form-control" name="title" value="{{ post.title|default('') }}" required>
             </div>
             <div>
-                <label for="user_id">Author <span aria-label="required">*</span></label>
+                <label for="user_id">{{ t('admin.author') }} <span aria-label="{{ t('admin.required') }}">*</span></label>
                 <select id="user_id" class="form-select admin-select" name="user_id" required>
-                    <option value="" disabled {{ not post ? 'selected' }}>Choose author</option>
+                    <option value="" disabled {{ not post ? 'selected' }}>{{ t('admin.choose_author') }}</option>
                     {% for user in users %}
                         <option value="{{ user.id }}" {{ post and post.user_id == user.id ? 'selected' }}>{{ user.name }} · {{ user.email }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div>
-                <label for="status">Status <span aria-label="required">*</span></label>
+                <label for="status">{{ t('admin.status') }} <span aria-label="{{ t('admin.required') }}">*</span></label>
                 <select id="status" class="form-select admin-select" name="status" required>
                     {% for option in statuses %}
-                        <option value="{{ option.value }}" {{ post and post.status == option.value ? 'selected' }}>{{ option.label }}</option>
+                        <option value="{{ option.value }}" {{ post and post.status == option.value ? 'selected' }}>{{ t('admin.' ~ option.value) }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div>
-                <label for="body">Body <span aria-label="required">*</span></label>
+                <label for="body">{{ t('admin.body') }} <span aria-label="{{ t('admin.required') }}">*</span></label>
                 <textarea id="body" class="form-control" name="body" rows="9" required>{{ post.body|default('') }}</textarea>
             </div>
             <div class="admin-form-actions">
-                <a href="/admin/posts" class="btn admin-btn-secondary">Cancel</a>
-                <button class="btn admin-btn-primary" type="submit"><i class="bi bi-check2"></i> Save post</button>
+                <a href="/admin/posts" class="btn admin-btn-secondary">{{ t('admin.cancel') }}</a>
+                <button class="btn admin-btn-primary" type="submit"><i class="bi bi-check2"></i> {{ t('admin.save_post') }}</button>
             </div>
         </form>
     </section>

@@ -2,35 +2,35 @@
 
 {% set admin_section = 'posts' %}
 
-{% block title %}Posts{% endblock %}
-{% block breadcrumb %}Posts{% endblock %}
-{% block page_title %}Post Management{% endblock %}
+{% block title %}{{ t('admin.posts') }}{% endblock %}
+{% block breadcrumb %}{{ t('admin.posts') }}{% endblock %}
+{% block page_title %}{{ t('admin.post_management') }}{% endblock %}
 
 {% block content %}
     <section class="admin-page-header">
         <div>
-            <p class="admin-eyebrow">Content operations</p>
-            <h2>Manage posts across authors and statuses.</h2>
-            <p>Search by title, author, or status, then create, edit, archive, or delete content from one workspace.</p>
+            <p class="admin-eyebrow">{{ t('admin.content_operations') }}</p>
+            <h2>{{ t('admin.posts_heading') }}</h2>
+            <p>{{ t('admin.posts_intro') }}</p>
         </div>
-        <a href="/admin/posts/create" class="btn admin-btn-primary"><i class="bi bi-pencil-square"></i> Create post</a>
+        <a href="/admin/posts/create" class="btn admin-btn-primary"><i class="bi bi-pencil-square"></i> {{ t('admin.create_post_action') }}</a>
     </section>
 
     <section class="admin-panel">
         <div class="admin-panel-header">
-            <div><h3>List Posts</h3><p>Required pagination and search are built in.</p></div>
+            <div><h3>{{ t('admin.list_posts') }}</h3><p>{{ t('admin.posts_list_help') }}</p></div>
             <form method="GET" action="/admin/posts" class="admin-table-search">
                 <i class="bi bi-search"></i>
-                <input type="search" name="search" value="{{ search }}" placeholder="Search title, author, status" aria-label="Search posts">
-                <select name="status" class="admin-inline-select" aria-label="Filter by status">
-                    <option value="">All statuses</option>
+                <input type="search" name="search" value="{{ search }}" placeholder="{{ t('admin.search_posts') }}" aria-label="{{ t('admin.search_posts') }}">
+                <select name="status" class="admin-inline-select" aria-label="{{ t('admin.filter_status') }}">
+                    <option value="">{{ t('admin.all_statuses') }}</option>
                     {% for option in statuses %}
-                        <option value="{{ option.value }}" {{ status == option.value ? 'selected' }}>{{ option.label }}</option>
+                        <option value="{{ option.value }}" {{ status == option.value ? 'selected' }}>{{ t('admin.' ~ option.value) }}</option>
                     {% endfor %}
                 </select>
-                <button class="btn admin-btn-primary" type="submit">Search</button>
+                <button class="btn admin-btn-primary" type="submit">{{ t('admin.search') }}</button>
                 {% if search or status %}
-                    <a class="btn admin-btn-secondary admin-search-reset" href="/admin/posts"><i class="bi bi-x-lg"></i> Clear</a>
+                    <a class="btn admin-btn-secondary admin-search-reset" href="/admin/posts"><i class="bi bi-x-lg"></i> {{ t('admin.clear') }}</a>
                 {% endif %}
             </form>
         </div>
@@ -38,29 +38,29 @@
         <div class="table-responsive admin-table-wrap">
             <table class="table admin-table align-middle mb-0">
                 <thead>
-                    <tr><th>ID</th><th>Title</th><th>Author</th><th>Status</th><th>Comments</th><th>Created At</th><th class="text-end">Actions</th></tr>
+                    <tr><th>{{ t('admin.id') }}</th><th>{{ t('admin.title') }}</th><th>{{ t('admin.author') }}</th><th>{{ t('admin.status') }}</th><th>{{ t('admin.comments') }}</th><th>{{ t('admin.created_at') }}</th><th class="text-end">{{ t('admin.actions') }}</th></tr>
                 </thead>
                 <tbody>
                     {% for post in posts %}
                         <tr>
                             <td class="fw-semibold">#{{ post.id }}</td>
                             <td>{{ post.title }}</td>
-                            <td>{{ post.author.name|default('Unknown author') }}</td>
-                            <td><span class="admin-badge admin-badge-info">{{ post.status|default('draft')|capitalize }}</span></td>
+                            <td>{{ post.author.name|default(t('admin.unknown_author')) }}</td>
+                            <td><span class="admin-badge admin-badge-info">{{ t('admin.' ~ post.status|default('draft')) }}</span></td>
                             <td>{{ post.comments_count|default(0) }}</td>
-                            <td>{{ post.created_at|default('Recently') }}</td>
+                            <td>{{ post.created_at|default(t('admin.recently')) }}</td>
                             <td>
                                 <div class="admin-row-actions">
-                                    <a class="btn admin-action-btn" href="/admin/posts/{{ post.id }}/edit" aria-label="Edit post"><i class="bi bi-pencil"></i></a>
-                                    <form method="POST" action="/admin/posts/{{ post.id }}/delete" onsubmit="return confirm('Delete this post? This action cannot be undone.');">
+                                    <a class="btn admin-action-btn" href="/admin/posts/{{ post.id }}/edit" aria-label="{{ t('admin.edit_post_action') }}"><i class="bi bi-pencil"></i></a>
+                                    <form method="POST" action="/admin/posts/{{ post.id }}/delete" onsubmit="return confirm('{{ t('admin.delete_post_confirm') }}');">
                                         {{ csrf_field() }}
-                                        <button class="btn admin-action-btn admin-action-danger" type="submit" aria-label="Delete post"><i class="bi bi-trash"></i></button>
+                                        <button class="btn admin-action-btn admin-action-danger" type="submit" aria-label="{{ t('admin.delete_post_action') }}"><i class="bi bi-trash"></i></button>
                                     </form>
                                 </div>
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="7"><div class="admin-empty-state"><i class="bi bi-inbox"></i><strong>No posts found</strong><span>Create a post or adjust your search filters.</span></div></td></tr>
+                        <tr><td colspan="7"><div class="admin-empty-state"><i class="bi bi-inbox"></i><strong>{{ t('admin.no_posts') }}</strong><span>{{ t('admin.no_posts_help') }}</span></div></td></tr>
                     {% endfor %}
                 </tbody>
             </table>

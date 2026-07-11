@@ -1,9 +1,9 @@
-<section class="admin-stats-grid" aria-label="Dashboard statistics">
+<section class="admin-stats-grid" aria-label="{{ t('admin.dashboard_statistics') }}">
     {% set cards = [
-        {'label': 'Total Users', 'value': stats.users, 'icon': 'bi-people-fill', 'tone': 'success'},
-        {'label': 'Total Admins', 'value': stats.admins, 'icon': 'bi-shield-lock-fill', 'tone': 'info'},
-        {'label': 'Total Posts', 'value': stats.posts, 'icon': 'bi-file-earmark-richtext-fill', 'tone': 'warning'},
-        {'label': 'Total Comments', 'value': stats.comments, 'icon': 'bi-chat-dots-fill', 'tone': 'danger'}
+        {'label': t('admin.total_users'), 'value': stats.users, 'icon': 'bi-people-fill', 'tone': 'success'},
+        {'label': t('admin.total_admins'), 'value': stats.admins, 'icon': 'bi-shield-lock-fill', 'tone': 'info'},
+        {'label': t('admin.total_posts'), 'value': stats.posts, 'icon': 'bi-file-earmark-richtext-fill', 'tone': 'warning'},
+        {'label': t('admin.total_comments'), 'value': stats.comments, 'icon': 'bi-chat-dots-fill', 'tone': 'danger'}
     ] %}
     {% for card in cards %}
         <article class="admin-stat-card admin-stat-{{ card.tone }}">
@@ -11,7 +11,7 @@
             <div>
                 <span>{{ card.label }}</span>
                 <strong>{{ card.value|number_format }}</strong>
-                <small>Current application total</small>
+                <small>{{ t('admin.current_total') }}</small>
             </div>
         </article>
     {% endfor %}

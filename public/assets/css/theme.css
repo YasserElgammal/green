@@ -1788,3 +1788,16 @@ html[data-theme="dark"] .admin-toast-danger {
         width: 100%;
     }
 }
+/* Keyboard-only skip navigation */
+.skip-link { position: fixed; top: .5rem; inset-inline-start: .5rem; z-index: 9999; padding: .75rem 1rem; border-radius: .5rem; background: var(--button-bg); color: var(--button-text); transform: translateY(-150%); transition: transform .15s ease; }
+.skip-link:focus, .skip-link:focus-visible { color: var(--button-text); transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) { .skip-link { transition: none; } }
+/* Keep the admin navigation geometry identical on every page */
+html { scrollbar-gutter: stable; }
+.admin-sidebar { box-sizing: border-box; inset-inline-start: 0; inset-inline-end: auto; width: 280px; min-width: 280px; max-width: 280px; border-right: 0; border-inline-end: 1px solid var(--admin-border); }
+.admin-content { box-sizing: border-box; margin-left: 0; margin-inline-start: 280px; width: calc(100% - 280px); }
+html[dir="rtl"] .admin-content { margin-left: 0; margin-right: 0; margin-inline-start: 280px; }
+@media (max-width: 991.98px) {
+    .admin-sidebar { width: 280px; min-width: 280px; max-width: 280px; }
+    .admin-content, html[dir="rtl"] .admin-content { margin-inline-start: 0; width: 100%; }
+}

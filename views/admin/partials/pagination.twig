@@ -1,10 +1,10 @@
 {% if meta.total_pages|default(1) > 1 %}
     <div class="admin-pagination">
-        <span>Showing page {{ meta.current_page }} of {{ meta.total_pages }} · {{ meta.total_items }} records</span>
-        <nav aria-label="Pagination">
+        <span>Showing page {{ meta.current_page }} of {{ meta.total_pages }} · {{ meta.total_items }} {{ t('admin.records') }}</span>
+        <nav aria-label="{{ t('admin.pagination') }}">
             <ul class="pagination mb-0">
                 <li class="page-item {{ not meta.has_prev ? 'disabled' }}">
-                    <a class="page-link" href="{{ base_path }}?page={{ meta.current_page - 1 }}{{ query_suffix|default('') }}" aria-label="Previous"><i class="bi bi-chevron-left"></i></a>
+                    <a class="page-link" href="{{ base_path }}?page={{ meta.current_page - 1 }}{{ query_suffix|default('') }}" aria-label="{{ t('admin.previous') }}"><i class="bi bi-chevron-left"></i></a>
                 </li>
                 {% for p in 1..meta.total_pages %}
                     <li class="page-item {{ p == meta.current_page ? 'active' }}">
@@ -12,7 +12,7 @@
                     </li>
                 {% endfor %}
                 <li class="page-item {{ not meta.has_next ? 'disabled' }}">
-                    <a class="page-link" href="{{ base_path }}?page={{ meta.current_page + 1 }}{{ query_suffix|default('') }}" aria-label="Next"><i class="bi bi-chevron-right"></i></a>
+                    <a class="page-link" href="{{ base_path }}?page={{ meta.current_page + 1 }}{{ query_suffix|default('') }}" aria-label="{{ t('admin.next') }}"><i class="bi bi-chevron-right"></i></a>
                 </li>
             </ul>
         </nav>
