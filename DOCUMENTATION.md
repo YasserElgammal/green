@@ -163,7 +163,192 @@ class AuditLogTable extends Table
 }
 ```
 
-### 3.3 Relations & Eager Loading
+### 3.3 Fluent Helpers (Conditional/Inspection API)
+
+Table Gateway provides fluent helper methods `when()` and `tap()` to build conditional query chains and inspect Table states without breaking the chain.
+
+#### `when()`
+Executes a callback only when the first argument evaluates to true. An optional default fallback callback can be passed.
+
+```php
+$posts = $postsTable
+    ->when($request->has('featured'), function ($table, $value) {
+        // Only run when 'featured' is truthy in the request
+        $table->include('likes');
+    })
+    ->fetchAll();
+```
+
+#### `tap()`
+Allows you to inspect or perform side effects on the `Table` instance in the middle of a fluent chain.
+
+```php
+$posts = $postsTable
+    ->include('author')
+    ->tap(function ($table) {
+        // Debug or conditionally inspect the table state
+        error_log('Fetching posts with author includes.');
+    })
+    ->fetchAll();
+```
+
+### 3.4 Database Querying
+
+Green's database layer uses a Table Gateway plus a small fluent query wrapper. Models stay as data containers; `Table` owns persistence; `GreenQuery` owns readable filtering, ordering, result fetching, and aggregate queries.
+
+#### Starting a Query
+
+```php
+$users = (new UserTable(new User()))
+    ->query()
+    ->where('status', 'active')
+    ->latest()
+    ->fetch();
+```
+
+`Table::query()` starts from the table's Doctrine DBAL builder and returns a `GreenQuery` instance. The final result methods hydrate rows back into model instances and still honor pending includes queued on the table.
+
+```php
+$users = $userTable
+    ->include('posts')
+    ->query()
+    ->where('role', 'admin')
+    ->fetch();
+```
+
+#### Conditions
+
+Basic conditions support two common forms:
+
+```php
+$query->where('email', 'lara@green.dev');
+$query->where('age', '>=', 18);
+$query->where(['status' => 'active', 'role' => 'admin']);
+$query->orWhere('score', '>=', 90);
+```
+
+Grouped conditions keep OR logic readable:
+
+```php
+$query
+    ->where('status', 'active')
+    ->whereGroup(fn ($query) => $query
+        ->where('role', 'admin')
+        ->orWhere('score', '>=', 90)
+    );
+
+$query->orWhereGroup(fn ($query) => $query
+    ->where('role', 'editor')
+    ->where('age', '>=', 30)
+);
+```
+
+Supported operators for `where()` and `orWhere()` are `=`, `!=`, `<>`, `>`, `>=`, `<`, `<=`, `LIKE`, and `NOT LIKE`.
+
+#### Helper Conditions
+
+The query wrapper includes common SQL helpers:
+
+```php
+$query->whereIn('role', ['admin', 'editor']);
+$query->orWhereIn('role', ['owner']);
+$query->whereNotIn('status', ['banned']);
+$query->orWhereNotIn('role', ['guest']);
+
+$query->whereNull('deleted_at');
+$query->orWhereNull('archived_at');
+$query->whereNotNull('created_at');
+$query->orWhereNotNull('deleted_at');
+
+$query->whereBetween('age', 18, 40);
+$query->orWhereBetween('score', 80, 100);
+$query->whereNotBetween('age', 0, 17);
+$query->orWhereNotBetween('score', 0, 10);
+
+$query->whereLike('email', '%@green.dev');
+$query->orWhereLike('name', 'Mo%');
+$query->whereNotLike('email', '%example.com');
+$query->orWhereNotLike('name', 'Test%');
+```
+
+Empty list conditions are deterministic: `whereIn('id', [])` matches no rows, while `whereNotIn('id', [])` does not filter rows out.
+
+Column names are validated before they are interpolated into SQL. Values are always bound as query parameters.
+
+#### Ordering and Windows
+
+```php
+$query->orderBy('name');
+$query->orderBy('created_at', 'desc');
+$query->latest();
+$query->latest('published_at');
+$query->oldest();
+$query->limit(20)->offset(40);
+```
+
+#### Results
+
+```php
+$users = $query->fetch();
+$user = $query->first();
+$user = $query->firstRequired();
+```
+
+`firstRequired()` is useful when absence is exceptional and the caller should not continue with `null`.
+
+#### Aggregates
+
+Aggregates reuse the same conditions already applied to the query:
+
+```php
+$count = $userTable->query()->where('status', 'active')->count();
+$exists = $userTable->query()->where('email', $email)->exists();
+$total = $userTable->query()->whereNull('deleted_at')->sum('score');
+$average = $userTable->query()->where('status', 'active')->avg('score');
+$lowest = $userTable->query()->min('score');
+$highest = $userTable->query()->max('score');
+```
+
+`sum()` returns `0` when no rows match. `avg()` returns `null` when no rows match.
+
+#### Table Aliases
+
+Tables keep concise aliases for common fetches:
+
+```php
+$users = $userTable->all();
+$user = $userTable->find(1);
+$user = $userTable->findRequired(1);
+```
+
+For fully custom SQL, use `builder()` and hand the builder back to the table for hydration:
+
+```php
+$builder = $userTable->builder()
+    ->where('status = :status')
+    ->setParameter('status', 'active');
+
+$users = $userTable->fetchFromBuilder($builder);
+```
+
+#### Transactions
+
+Use `Database::transaction()` to run work atomically. The callback return value is returned to the caller.
+
+```php
+$id = Database::transaction(function () use ($userTable) {
+    $user = $userTable->insert([
+        'name' => 'Lara',
+        'email' => 'lara@green.dev',
+    ]);
+
+    return $user->id;
+});
+```
+
+If the callback throws, the transaction is rolled back and the exception is rethrown.
+
+### 3.5 Relations & Eager Loading
 Relations are defined in the `Table` class via the `$relations` array.
 
 #### Supported Relation Types:
@@ -180,7 +365,7 @@ $posts = new PostTable();
 $results = $posts->include('author,comments.author')->fetchAll();
 ```
 
-### 3.4 Relation Aggregations
+### 3.6 Relation Aggregations
 Green provides native support for executing aggregate functions (`COUNT`, `EXISTS`, `SUM`, `AVG`, `MIN`, `MAX`) on related tables. These can be executed programmatically using fluent methods on the `Table` class.
 
 All aggregation methods accept a single relation name (or format of `relation:column` where required) or an array of relations. The computed values are automatically type-casted and attached to the parent models as attributes (accessible as dynamic properties).
@@ -217,7 +402,7 @@ $postsTable->includeCount(['comments', 'likes'])
            ->fetchAll();
 ```
 
-### 3.5 CRUD Operations
+### 3.6 CRUD Operations
 
 Green provides a streamlined way to perform Create, Read, Update, and Delete operations via the `Table` class.
 
@@ -282,9 +467,21 @@ class PostTransformer extends Transformer {
 The `paginate()` method on the `Table` class returns a standardized structure for collections.
 
 ```php
-$results = $posts->paginate(perPage: 15, page: 1);
+$results = $posts->paginate(perPage: 15, page: 1, withCount: true);
 // Returns ['data' => [...], 'meta' => [...]]
 ```
+
+#### Smart COUNT Elimination
+By default, `paginate()` runs a `COUNT(*)` query to calculate `total_items` and `total_pages`. For large datasets (millions of rows), this is very slow. You can pass `withCount: false` to skip the COUNT query entirely:
+
+```php
+$results = $posts->paginate(perPage: 15, page: 1, withCount: false);
+```
+
+When `withCount: false` is used:
+- The framework skips the expensive `COUNT(*)` query.
+- It queries `perPage + 1` rows to determine if a next page exists.
+- The `meta` keys `total_items` and `total_pages` will return `null`.
 
 ---
 
