@@ -34,6 +34,21 @@ $posts = new PostTable();
 $post  = $posts->fetchById(1);
 ```
 
+### 4. Database Querying
+```php
+$activePosts = $posts
+    ->query()
+    ->where('status', 'published')
+    ->whereGroup(fn ($query) => $query
+        ->where('featured', true)
+        ->orWhere('score', '>=', 90)
+    )
+    ->latest()
+    ->fetch();
+```
+
+Green queries support readable condition helpers such as `whereIn()`, `whereNotIn()`, `whereNull()`, `whereBetween()`, `whereLike()`, their `orWhere...` counterparts, aggregates like `count()`, `exists()`, `sum()`, `avg()`, `min()`, `max()`, and table aliases like `all()`, `find()`, and `findRequired()`.
+
 ---
 
 ## 📖 Master Documentation
