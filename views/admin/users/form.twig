@@ -3,39 +3,39 @@
 {% set admin_section = 'users' %}
 {% set is_edit = mode == 'edit' %}
 
-{% block title %}{{ is_edit ? 'Edit User' : 'Create User' }}{% endblock %}
-{% block breadcrumb %}{{ is_edit ? 'Edit User' : 'Create User' }}{% endblock %}
-{% block page_title %}{{ is_edit ? 'Edit User' : 'Create User' }}{% endblock %}
+{% block title %}{{ is_edit ? t('admin.edit_user') : t('admin.create_user_title') }}{% endblock %}
+{% block breadcrumb %}{{ is_edit ? t('admin.edit_user') : t('admin.create_user_title') }}{% endblock %}
+{% block page_title %}{{ is_edit ? t('admin.edit_user') : t('admin.create_user_title') }}{% endblock %}
 
 {% block content %}
     <section class="admin-panel admin-form-page">
         <div class="admin-panel-header">
             <div>
-                <h3>{{ is_edit ? 'Edit User' : 'Create User' }}</h3>
-                <p>{{ is_edit ? 'Password is optional when editing.' : 'All fields marked with an asterisk are required.' }}</p>
+                <h3>{{ is_edit ? t('admin.edit_user') : t('admin.create_user_title') }}</h3>
+                <p>{{ is_edit ? t('admin.edit_password_help') : t('admin.required_help') }}</p>
             </div>
         </div>
         <form class="admin-form" method="POST" action="{{ is_edit ? '/admin/users/' ~ user.id : '/admin/users' }}">
             {{ csrf_field() }}
             <div>
-                <label for="name">Name <span aria-label="required">*</span></label>
+                <label for="name">{{ t('admin.name') }} <span aria-label="{{ t('admin.required') }}">*</span></label>
                 <input id="name" class="form-control" name="name" value="{{ user.name|default('') }}" required>
             </div>
             <div>
-                <label for="email">Email <span aria-label="required">*</span></label>
+                <label for="email">{{ t('admin.email') }} <span aria-label="{{ t('admin.required') }}">*</span></label>
                 <input id="email" class="form-control" type="email" name="email" value="{{ user.email|default('') }}" required>
             </div>
             <div>
-                <label for="password">Password {{ is_edit ? '(optional)' : '' }}{% if not is_edit %}<span aria-label="required">*</span>{% endif %}</label>
+                <label for="password">{{ t('admin.password') }} {% if is_edit %}({{ t('admin.optional') }}){% endif %}{% if not is_edit %}<span aria-label="{{ t('admin.required') }}">*</span>{% endif %}</label>
                 <input id="password" class="form-control" type="password" name="password" {{ is_edit ? '' : 'required' }}>
             </div>
             <label class="admin-check">
                 <input type="checkbox" name="is_admin" value="1" {{ user and user.is_admin ? 'checked' }}>
-                <span>Is Admin</span>
+                <span>{{ t('admin.is_admin') }}</span>
             </label>
             <div class="admin-form-actions">
-                <a href="/admin/users" class="btn admin-btn-secondary">Cancel</a>
-                <button class="btn admin-btn-primary" type="submit"><i class="bi bi-check2"></i> Save user</button>
+                <a href="/admin/users" class="btn admin-btn-secondary">{{ t('admin.cancel') }}</a>
+                <button class="btn admin-btn-primary" type="submit"><i class="bi bi-check2"></i> {{ t('admin.save_user') }}</button>
             </div>
         </form>
     </section>

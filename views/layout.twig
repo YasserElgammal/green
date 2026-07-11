@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="/assets/css/theme.css">
 </head>
 <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
 
     <!-- Glassy Header -->
     <header class="py-3 navbar navbar-expand-lg">
@@ -114,7 +115,7 @@
     {% set success = session().getFlash('success') %}
     {% set error = session().getFlash('error') %}
     {% if success or error %}
-        <div class="flash-toast-layer">
+        <div class="flash-toast-layer" aria-live="polite" aria-atomic="true">
             {% if success %}
                 <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-4" role="alert">
                     <i class="bi bi-check-circle-fill me-2"></i> {{ success[0] }}
@@ -132,7 +133,7 @@
     {% endif %}
 
     <!-- Content -->
-    <main class="container my-5">
+    <main class="container my-5" id="main-content" tabindex="-1">
         {% block content %}{% endblock %}
     </main>
 

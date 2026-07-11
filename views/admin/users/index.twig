@@ -2,32 +2,32 @@
 
 {% set admin_section = 'users' %}
 
-{% block title %}Users{% endblock %}
-{% block breadcrumb %}Users{% endblock %}
+{% block title %}{{ t('admin.users') }}{% endblock %}
+{% block breadcrumb %}{{ t('admin.users') }}{% endblock %}
 {% block page_title %}User Management{% endblock %}
 
 {% block content %}
     <section class="admin-page-header">
         <div>
-            <p class="admin-eyebrow">Identity and access</p>
-            <h2>Manage users and administrator access.</h2>
-            <p>Create accounts, update profile details, toggle admin rights, and prevent removal of the last admin account.</p>
+            <p class="admin-eyebrow">{{ t('admin.identity_access') }}</p>
+            <h2>{{ t('admin.users_heading') }}</h2>
+            <p>{{ t('admin.users_intro') }}</p>
         </div>
-        <a href="/admin/users/create" class="btn admin-btn-primary"><i class="bi bi-person-plus"></i> Create user</a>
+        <a href="/admin/users/create" class="btn admin-btn-primary"><i class="bi bi-person-plus"></i> {{ t('admin.create_user') }}</a>
     </section>
 
     <section class="admin-panel">
         <div class="admin-panel-header">
             <div>
-                <h3>List Users</h3>
-                <p>ID, name, email, admin state, post count, created date, and actions.</p>
+                <h3>{{ t('admin.list_users') }}</h3>
+                <p>{{ t('admin.users_list_help') }}</p>
             </div>
             <form method="GET" action="/admin/users" class="admin-table-search">
                 <i class="bi bi-search"></i>
-                <input type="search" name="search" value="{{ search }}" placeholder="Search users" aria-label="Search users">
-                <button class="btn admin-btn-primary" type="submit">Search</button>
+                <input type="search" name="search" value="{{ search }}" placeholder="{{ t('admin.search_users') }}" aria-label="{{ t('admin.search_users') }}">
+                <button class="btn admin-btn-primary" type="submit">{{ t('admin.search') }}</button>
                 {% if search %}
-                    <a class="btn admin-btn-secondary admin-search-reset" href="/admin/users"><i class="bi bi-x-lg"></i> Clear</a>
+                    <a class="btn admin-btn-secondary admin-search-reset" href="/admin/users"><i class="bi bi-x-lg"></i> {{ t('admin.clear') }}</a>
                 {% endif %}
             </form>
         </div>
@@ -36,7 +36,7 @@
             <table class="table admin-table align-middle mb-0">
                 <thead>
                     <tr>
-                        {% set columns = {'id': 'ID', 'name': 'Name', 'email': 'Email', 'is_admin': 'Is Admin', 'created_at': 'Created At'} %}
+                        {% set columns = {'id': t('admin.id'), 'name': t('admin.name'), 'email': t('admin.email'), 'is_admin': t('admin.is_admin'), 'created_at': t('admin.created_at')} %}
                         {% for key, label in columns %}
                             <th scope="col">
                                 <a class="admin-sort-link" href="/admin/users?sort={{ key }}&direction={{ sort == key ? nextDirection : 'ASC' }}&search={{ search|url_encode }}">
@@ -44,8 +44,8 @@
                                 </a>
                             </th>
                         {% endfor %}
-                        <th scope="col">Posts</th>
-                        <th scope="col" class="text-end">Actions</th>
+                        <th scope="col">{{ t('admin.posts') }}</th>
+                        <th scope="col" class="text-end">{{ t('admin.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -54,25 +54,25 @@
                             <td class="fw-semibold">#{{ user.id }}</td>
                             <td><div class="admin-table-user"><span class="admin-avatar admin-avatar-sm">{{ user.name|first|upper }}</span>{{ user.name }}</div></td>
                             <td>{{ user.email }}</td>
-                            <td><span class="admin-badge {{ user.is_admin ? 'admin-badge-success' : 'admin-badge-muted' }}">{{ user.is_admin ? 'Yes' : 'No' }}</span></td>
-                            <td>{{ user.created_at|default('Recently') }}</td>
+                            <td><span class="admin-badge {{ user.is_admin ? 'admin-badge-success' : 'admin-badge-muted' }}">{{ user.is_admin ? t('admin.yes') : t('admin.no') }}</span></td>
+                            <td>{{ user.created_at|default(t('admin.recently')) }}</td>
                             <td>{{ user.posts_count|default(0) }}</td>
                             <td>
                                 <div class="admin-row-actions">
-                                    <a class="btn admin-action-btn" href="/admin/users/{{ user.id }}/edit" aria-label="Edit user"><i class="bi bi-pencil"></i></a>
+                                    <a class="btn admin-action-btn" href="/admin/users/{{ user.id }}/edit" aria-label="{{ t('admin.edit_user_action') }}"><i class="bi bi-pencil"></i></a>
                                     <form method="POST" action="/admin/users/{{ user.id }}/toggle-admin">
                                         {{ csrf_field() }}
-                                        <button class="btn admin-action-btn" type="submit" aria-label="Toggle admin"><i class="bi bi-shield-check"></i></button>
+                                        <button class="btn admin-action-btn" type="submit" aria-label="{{ t('admin.toggle_admin') }}"><i class="bi bi-shield-check"></i></button>
                                     </form>
-                                    <form method="POST" action="/admin/users/{{ user.id }}/delete" onsubmit="return confirm('Delete this user? This action cannot be undone.');">
+                                    <form method="POST" action="/admin/users/{{ user.id }}/delete" onsubmit="return confirm('{{ t('admin.delete_user_confirm') }}');">
                                         {{ csrf_field() }}
-                                        <button class="btn admin-action-btn admin-action-danger" type="submit" aria-label="Delete user"><i class="bi bi-trash"></i></button>
+                                        <button class="btn admin-action-btn admin-action-danger" type="submit" aria-label="{{ t('admin.delete_user_action') }}"><i class="bi bi-trash"></i></button>
                                     </form>
                                 </div>
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="7"><div class="admin-empty-state"><i class="bi bi-inbox"></i><strong>No users found</strong><span>Create the first user or adjust your search.</span></div></td></tr>
+                        <tr><td colspan="7"><div class="admin-empty-state"><i class="bi bi-inbox"></i><strong>{{ t('admin.no_users') }}</strong><span>{{ t('admin.no_users_help') }}</span></div></td></tr>
                     {% endfor %}
                 </tbody>
             </table>

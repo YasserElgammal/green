@@ -1,13 +1,13 @@
 {% set app_locale = session().get('locale') ?? 'en' %}
 {% set app_dir = app_locale == 'ar' ? 'rtl' : 'ltr' %}
-{% set user_name = session().get('user_name') ?? 'Admin User' %}
+{% set user_name = session().get('user_name') ?? t('admin.administrator') %}
 <!DOCTYPE html>
 <html lang="{{ app_locale }}" dir="{{ app_dir }}" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light dark">
-    <title>{% block title %}Admin Dashboard{% endblock %} | Green Framework</title>
+    <title>{% block title %}{{ t('admin.admin_dashboard') }}{% endblock %} | Green Framework</title>
     <script src="/assets/js/theme-init.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="/assets/css/theme.css">
 </head>
 <body class="admin-body">
+    <a class="skip-link" href="#admin-main">{{ t('admin.skip_content') }}</a>
     <div class="admin-shell">
         <aside class="admin-sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="adminSidebar" aria-labelledby="adminSidebarLabel">
             <div class="admin-sidebar-header">
@@ -28,63 +29,63 @@
                     <span class="admin-brand-mark">G</span>
                     <span><strong>Green</strong><small>Framework</small></span>
                 </a>
-                <button type="button" class="btn-close btn-close-white d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#adminSidebar" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#adminSidebar" aria-label="{{ t('admin.close') }}"></button>
             </div>
 
-            <nav class="admin-nav" aria-label="Admin navigation">
-                <a href="/admin" class="admin-nav-link {{ admin_section|default('dashboard') == 'dashboard' ? 'active' }}"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a>
-                <a href="/admin/users" class="admin-nav-link {{ admin_section|default('') == 'users' ? 'active' }}"><i class="bi bi-people"></i><span>Users</span></a>
-                <a href="/admin/posts" class="admin-nav-link {{ admin_section|default('') == 'posts' ? 'active' }}"><i class="bi bi-file-earmark-text"></i><span>Posts</span></a>
-                <a href="/admin/comments" class="admin-nav-link {{ admin_section|default('') == 'comments' ? 'active' }}"><i class="bi bi-chat-left-text"></i><span>Comments</span></a>
-                <a href="/admin/statistics" class="admin-nav-link {{ admin_section|default('') == 'statistics' ? 'active' }}"><i class="bi bi-bar-chart-line"></i><span>Statistics</span></a>
+            <nav class="admin-nav" aria-label="{{ t('admin.admin_navigation') }}">
+                <a href="/admin" class="admin-nav-link {{ admin_section|default('dashboard') == 'dashboard' ? 'active' }}"><i class="bi bi-grid-1x2-fill"></i><span>{{ t('admin.dashboard') }}</span></a>
+                <a href="/admin/users" class="admin-nav-link {{ admin_section|default('') == 'users' ? 'active' }}"><i class="bi bi-people"></i><span>{{ t('admin.users') }}</span></a>
+                <a href="/admin/posts" class="admin-nav-link {{ admin_section|default('') == 'posts' ? 'active' }}"><i class="bi bi-file-earmark-text"></i><span>{{ t('admin.posts') }}</span></a>
+                <a href="/admin/comments" class="admin-nav-link {{ admin_section|default('') == 'comments' ? 'active' }}"><i class="bi bi-chat-left-text"></i><span>{{ t('admin.comments') }}</span></a>
+                <a href="/admin/statistics" class="admin-nav-link {{ admin_section|default('') == 'statistics' ? 'active' }}"><i class="bi bi-bar-chart-line"></i><span>{{ t('admin.statistics') }}</span></a>
             </nav>
 
             <div class="admin-sidebar-card">
                 <span class="admin-status-dot"></span>
-                <div><strong>Green Skeleton</strong><small>Default admin experience</small></div>
+                <div><strong>Green Skeleton</strong><small>{{ t('admin.default_experience') }}</small></div>
             </div>
         </aside>
 
         <div class="admin-content">
             <header class="admin-topbar">
                 <div class="d-flex align-items-center gap-3">
-                    <button class="admin-icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminSidebar" aria-controls="adminSidebar" aria-label="Open navigation">
+                    <button class="admin-icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminSidebar" aria-controls="adminSidebar" aria-label="{{ t('admin.open_navigation') }}">
                         <i class="bi bi-list"></i>
                     </button>
                     <div>
-                        <nav aria-label="breadcrumb">
+                        <nav aria-label="{{ t('admin.breadcrumb') }}">
                             <ol class="breadcrumb admin-breadcrumb mb-1">
                                 <li class="breadcrumb-item"><a href="/">Green</a></li>
-                                <li class="breadcrumb-item"><a href="/admin">Admin</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">{% block breadcrumb %}Dashboard{% endblock %}</li>
+                                <li class="breadcrumb-item"><a href="/admin">{{ t('admin.admin') }}</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">{% block breadcrumb %}{{ t('admin.dashboard') }}{% endblock %}</li>
                             </ol>
                         </nav>
-                        <h1 class="admin-page-title mb-0">{% block page_title %}Admin Dashboard{% endblock %}</h1>
+                        <h1 class="admin-page-title mb-0">{% block page_title %}{{ t('admin.admin_dashboard') }}{% endblock %}</h1>
                     </div>
                 </div>
 
                 <div class="admin-topbar-actions">
-                    <a class="admin-icon-btn" href="/" aria-label="View site"><i class="bi bi-globe2"></i></a>
+                    <a class="admin-icon-btn" href="/" aria-label="{{ t('admin.view_site') }}"><i class="bi bi-globe2"></i></a>
                     <div class="dropdown theme-toggle">
                         <button
                             class="admin-icon-btn dropdown-toggle"
                             type="button"
                             id="adminThemeToggle"
                             data-theme-toggle
-                            data-theme-label-light="Light"
-                            data-theme-label-dark="Dark"
-                            data-theme-label-system="System"
+                            data-theme-label-light="{{ t('admin.light') }}"
+                            data-theme-label-dark="{{ t('admin.dark') }}"
+                            data-theme-label-system="{{ t('admin.system') }}"
                             data-bs-toggle="dropdown"
                             aria-expanded="false"
-                            aria-label="Choose theme"
+                            aria-label="{{ t('admin.choose_theme') }}"
                         >
                             <i class="bi bi-circle-half theme-toggle-icon" data-theme-toggle-icon aria-hidden="true"></i>
-                            <span class="visually-hidden" data-theme-toggle-label>System</span>
+                            <span class="visually-hidden" data-theme-toggle-label>{{ t('admin.system') }}</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm p-2" aria-labelledby="adminThemeToggle">
-                            <li><button class="dropdown-item" type="button" data-theme-choice="light"><i class="bi bi-sun"></i>Light</button></li>
-                            <li><button class="dropdown-item" type="button" data-theme-choice="dark"><i class="bi bi-moon-stars"></i>Dark</button></li>
-                            <li><button class="dropdown-item" type="button" data-theme-choice="system"><i class="bi bi-laptop"></i>System</button></li>
+                            <li><button class="dropdown-item" type="button" data-theme-choice="light"><i class="bi bi-sun"></i>{{ t('admin.light') }}</button></li>
+                            <li><button class="dropdown-item" type="button" data-theme-choice="dark"><i class="bi bi-moon-stars"></i>{{ t('admin.dark') }}</button></li>
+                            <li><button class="dropdown-item" type="button" data-theme-choice="system"><i class="bi bi-laptop"></i>{{ t('admin.system') }}</button></li>
                         </ul>
                     </div>
                     <div class="dropdown">
@@ -92,29 +93,29 @@
                             <span class="admin-avatar">{{ user_name|first|upper }}</span>
                             <span class="d-none d-sm-flex flex-column align-items-start">
                                 <strong>{{ user_name }}</strong>
-                                <small>Administrator</small>
+                                <small>{{ t('admin.administrator') }}</small>
                             </span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow admin-user-menu">
-                            <li><a class="dropdown-item" href="/profile"><i class="bi bi-person"></i>Profile</a></li>
-                            <li><a class="dropdown-item" href="/admin"><i class="bi bi-sliders"></i>Dashboard</a></li>
+                            <li><a class="dropdown-item" href="/profile"><i class="bi bi-person"></i>{{ t('admin.profile') }}</a></li>
+                            <li><a class="dropdown-item" href="/admin"><i class="bi bi-sliders"></i>{{ t('admin.dashboard') }}</a></li>
                             <li><hr class="dropdown-divider"></li>
                             {% if session().has('user_id') %}
                                 <li>
                                     <form action="/logout" method="POST">
                                         {{ csrf_field() }}
-                                        <button class="dropdown-item" type="submit"><i class="bi bi-box-arrow-right"></i>Logout</button>
+                                        <button class="dropdown-item" type="submit"><i class="bi bi-box-arrow-right"></i>{{ t('admin.logout') }}</button>
                                     </form>
                                 </li>
                             {% else %}
-                                <li><a class="dropdown-item" href="/login"><i class="bi bi-box-arrow-in-right"></i>Login</a></li>
+                                <li><a class="dropdown-item" href="/login"><i class="bi bi-box-arrow-in-right"></i>{{ t('admin.login') }}</a></li>
                             {% endif %}
                         </ul>
                     </div>
                 </div>
             </header>
 
-            <main class="admin-main">
+            <main class="admin-main" id="admin-main" tabindex="-1">
                 {% set success = session().getFlash('success') %}
                 {% if success %}
                     <div class="admin-toast admin-toast-success" role="alert"><i class="bi bi-check-circle-fill"></i>{{ success[0] }}</div>

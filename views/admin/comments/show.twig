@@ -2,31 +2,31 @@
 
 {% set admin_section = 'comments' %}
 
-{% block title %}View Comment{% endblock %}
-{% block breadcrumb %}View Comment{% endblock %}
-{% block page_title %}View Comment{% endblock %}
+{% block title %}{{ t('admin.view_comment') }}{% endblock %}
+{% block breadcrumb %}{{ t('admin.view_comment') }}{% endblock %}
+{% block page_title %}{{ t('admin.view_comment') }}{% endblock %}
 
 {% block content %}
     <section class="admin-panel admin-detail-panel">
         <div class="admin-panel-header">
             <div>
                 <h3>Comment #{{ comment.id }}</h3>
-                <p>{{ comment.author.name|default('Unknown author') }} on {{ comment.post.title|default('Untitled post') }}</p>
+                <p>{{ comment.author.name|default(t('admin.unknown_author')) }} {{ t('admin.on') }} {{ comment.post.title|default(t('admin.untitled_post')) }}</p>
             </div>
             <div class="admin-row-actions">
-                <a href="/admin/comments/{{ comment.id }}/edit" class="btn admin-btn-secondary"><i class="bi bi-pencil"></i> Edit</a>
-                <form method="POST" action="/admin/comments/{{ comment.id }}/delete" onsubmit="return confirm('Delete this comment? This action cannot be undone.');">
+                <a href="/admin/comments/{{ comment.id }}/edit" class="btn admin-btn-secondary"><i class="bi bi-pencil"></i> {{ t('admin.edit') }}</a>
+                <form method="POST" action="/admin/comments/{{ comment.id }}/delete" onsubmit="return confirm('{{ t('admin.delete_comment_confirm') }}');">
                     {{ csrf_field() }}
-                    <button class="btn admin-btn-primary admin-btn-danger" type="submit"><i class="bi bi-trash"></i> Delete</button>
+                    <button class="btn admin-btn-primary admin-btn-danger" type="submit"><i class="bi bi-trash"></i> {{ t('admin.delete') }}</button>
                 </form>
             </div>
         </div>
         <div class="admin-detail-body">
             <dl class="admin-detail-list">
-                <div><dt>ID</dt><dd>#{{ comment.id }}</dd></div>
-                <div><dt>Author</dt><dd>{{ comment.author.name|default('Unknown author') }}</dd></div>
-                <div><dt>Post</dt><dd>{{ comment.post.title|default('Untitled post') }}</dd></div>
-                <div><dt>Created At</dt><dd>{{ comment.created_at|default('Recently') }}</dd></div>
+                <div><dt>{{ t('admin.id') }}</dt><dd>#{{ comment.id }}</dd></div>
+                <div><dt>{{ t('admin.author') }}</dt><dd>{{ comment.author.name|default(t('admin.unknown_author')) }}</dd></div>
+                <div><dt>{{ t('admin.post') }}</dt><dd>{{ comment.post.title|default(t('admin.untitled_post')) }}</dd></div>
+                <div><dt>{{ t('admin.created_at') }}</dt><dd>{{ comment.created_at|default(t('admin.recently')) }}</dd></div>
             </dl>
             <div class="admin-comment-box">{{ comment.content }}</div>
         </div>

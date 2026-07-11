@@ -2,16 +2,16 @@
 
 {% set admin_section = 'statistics' %}
 
-{% block title %}Statistics{% endblock %}
-{% block breadcrumb %}Statistics{% endblock %}
-{% block page_title %}Statistics{% endblock %}
+{% block title %}{{ t('admin.statistics') }}{% endblock %}
+{% block breadcrumb %}{{ t('admin.statistics') }}{% endblock %}
+{% block page_title %}{{ t('admin.statistics') }}{% endblock %}
 
 {% block content %}
     <section class="admin-page-header">
         <div>
-            <p class="admin-eyebrow">Application intelligence</p>
-            <h2>Track users, posts, comments, and recent activity.</h2>
-            <p>High-signal operational metrics for the default Green Skeleton administration experience.</p>
+            <p class="admin-eyebrow">{{ t('admin.application_intelligence') }}</p>
+            <h2>{{ t('admin.statistics_heading') }}</h2>
+            <p>{{ t('admin.statistics_intro') }}</p>
         </div>
     </section>
 
@@ -19,33 +19,33 @@
 
     <section class="admin-stat-sections">
         <article class="admin-panel">
-            <div class="admin-panel-header"><div><h3>User Statistics</h3><p>Registration and admin coverage.</p></div></div>
+            <div class="admin-panel-header"><div><h3>{{ t('admin.user_statistics') }}</h3><p>{{ t('admin.registration_coverage') }}</p></div></div>
             <div class="admin-metric-list">
-                <div><span>Total Users</span><strong>{{ stats.users }}</strong></div>
-                <div><span>Total Admins</span><strong>{{ stats.admins }}</strong></div>
-                <div><span>New Users This Month</span><strong>{{ stats.new_users_month }}</strong></div>
+                <div><span>{{ t('admin.total_users') }}</span><strong>{{ stats.users }}</strong></div>
+                <div><span>{{ t('admin.total_admins') }}</span><strong>{{ stats.admins }}</strong></div>
+                <div><span>{{ t('admin.new_users_month') }}</span><strong>{{ stats.new_users_month }}</strong></div>
             </div>
         </article>
         <article class="admin-panel">
-            <div class="admin-panel-header"><div><h3>Post Statistics</h3><p>Content publishing volume.</p></div></div>
+            <div class="admin-panel-header"><div><h3>{{ t('admin.post_statistics') }}</h3><p>{{ t('admin.publishing_volume') }}</p></div></div>
             <div class="admin-metric-list">
-                <div><span>Total Posts</span><strong>{{ stats.posts }}</strong></div>
-                <div><span>Posts This Month</span><strong>{{ stats.posts_month }}</strong></div>
+                <div><span>{{ t('admin.total_posts') }}</span><strong>{{ stats.posts }}</strong></div>
+                <div><span>{{ t('admin.posts_month') }}</span><strong>{{ stats.posts_month }}</strong></div>
             </div>
         </article>
         <article class="admin-panel">
-            <div class="admin-panel-header"><div><h3>Comment Statistics</h3><p>Community conversation volume.</p></div></div>
+            <div class="admin-panel-header"><div><h3>{{ t('admin.comment_statistics') }}</h3><p>{{ t('admin.conversation_volume') }}</p></div></div>
             <div class="admin-metric-list">
-                <div><span>Total Comments</span><strong>{{ stats.comments }}</strong></div>
-                <div><span>Comments This Month</span><strong>{{ stats.comments_month }}</strong></div>
+                <div><span>{{ t('admin.total_comments') }}</span><strong>{{ stats.comments }}</strong></div>
+                <div><span>{{ t('admin.comments_month') }}</span><strong>{{ stats.comments_month }}</strong></div>
             </div>
         </article>
     </section>
 
-    <h3 class="admin-section-heading">Recent Activity</h3>
+    <h3 class="admin-section-heading">{{ t('admin.recent_activity') }}</h3>
     <section class="admin-dashboard-lists">
-        {% include 'admin/partials/activity-list.twig' with {'title': 'Latest registrations', 'items': latestUsers, 'type': 'users'} %}
-        {% include 'admin/partials/activity-list.twig' with {'title': 'Latest posts', 'items': latestPosts, 'type': 'posts'} %}
-        {% include 'admin/partials/activity-list.twig' with {'title': 'Latest comments', 'items': latestComments, 'type': 'comments'} %}
+        {% include 'admin/partials/activity-list.twig' with {'title': t('admin.latest_registrations'), 'items': latestUsers, 'type': 'users'} %}
+        {% include 'admin/partials/activity-list.twig' with {'title': t('admin.latest_posts'), 'items': latestPosts, 'type': 'posts'} %}
+        {% include 'admin/partials/activity-list.twig' with {'title': t('admin.latest_comments'), 'items': latestComments, 'type': 'comments'} %}
     </section>
 {% endblock %}

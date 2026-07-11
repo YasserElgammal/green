@@ -2,7 +2,7 @@
     <div class="admin-panel-header">
         <div>
             <h3>{{ title }}</h3>
-            <p>Recent activity from this workspace.</p>
+            <p>{{ t('admin.activity_help') }}</p>
         </div>
     </div>
     <div class="admin-list">
@@ -12,20 +12,20 @@
                 <div>
                     {% if type == 'users' %}
                         <strong>{{ item.name }}</strong>
-                        <small>{{ item.email }} - {{ item.posts_count|default(0) }} posts</small>
+                        <small>{{ item.email }} - {{ t('admin.posts_count', {'count': item.posts_count|default(0)}) }}</small>
                     {% elseif type == 'posts' %}
                         <strong>{{ item.title }}</strong>
-                        <small>{{ item.author.name|default('Unknown author') }} - {{ item.status|default('draft')|capitalize }} - {{ item.comments_count|default(0) }} comments</small>
+                        <small>{{ item.author.name|default(t('admin.unknown_author')) }} - {{ t('admin.' ~ item.status|default('draft')) }} - {{ t('admin.comments_count', {'count': item.comments_count|default(0)}) }}</small>
                     {% else %}
-                        <strong>{{ item.author.name|default('Unknown author') }}</strong>
-                        <small>{{ item.post.title|default('Untitled post') }} - {{ item.content|length > 70 ? item.content|slice(0, 70) ~ '...' : item.content }}</small>
+                        <strong>{{ item.author.name|default(t('admin.unknown_author')) }}</strong>
+                        <small>{{ item.post.title|default(t('admin.untitled_post')) }} - {{ item.content|length > 70 ? item.content|slice(0, 70) ~ '...' : item.content }}</small>
                     {% endif %}
                 </div>
             </div>
         {% else %}
             <div class="admin-empty-state admin-empty-state-sm">
                 <i class="bi bi-inbox"></i>
-                <strong>No activity yet</strong>
+                <strong>{{ t('admin.no_activity') }}</strong>
             </div>
         {% endfor %}
     </div>
