@@ -7,41 +7,27 @@ use App\Models\Like;
 use App\Models\Post;
 use App\Models\User;
 use YasserElgammal\Green\Database\Table;
+use YasserElgammal\Green\Database\Relations\BelongsTo;
+use YasserElgammal\Green\Database\Relations\HasMany;
 
 /**
  * CommentTable — Table Gateway for the `comments` table.
  */
 class CommentTable extends Table
 {
-    protected array $relations = [
+    protected function relations(): array
+    {
+        return [
+            // A comment has many likes.
+            'likes' => new HasMany(Like::class),
 
-        // ── hasMany ──────────────────────────────────────────────────────────
-        // A comment has many likes.
-        // likes.comment_id → comments.id
-        'likes' => [
-            'type'        => 'hasMany',
-            'model'       => Like::class,
-            'foreign_key' => 'comment_id',
-            'local_key'   => 'id',
-        ],
+            // A comment belongs to one user (author).
+            'author' => new BelongsTo(User::class),
 
-        // ── belongsTo ────────────────────────────────────────────────────────
-        // A comment belongs to one user (author).
-        // comments.user_id → users.id
-        'author' => [
-            'type'        => 'belongsTo',
-            'model'       => User::class,
-            'foreign_key' => 'user_id',
-            'owner_key'   => 'id',
-        ],
-
-        'post' => [
-            'type'        => 'belongsTo',
-            'model'       => Post::class,
-            'foreign_key' => 'post_id',
-            'owner_key'   => 'id',
-        ],
-    ];
+            // A comment belongs to one post.
+            'post' => new BelongsTo(Post::class),
+        ];
+    }
 
     public function __construct()
     {
