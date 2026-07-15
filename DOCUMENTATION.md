@@ -76,20 +76,32 @@ $url = route('users.show', ['id' => 1]); // /users/1
 
 Route parameters in `{braces}` are replaced from the parameter array. Extra parameters are appended as a query string.
 
-### 2.3 Middleware Pipeline
+### 2.3 Routing Internals
+
+Application code still registers controller routes the same way, through `#[Route]` attributes and `$app->router->registerRoutesFromController(...)`. Internally, routing is split into focused collaborators:
+
+- `RouteRegistry` stores registered routes, named routes, global middleware, and fallback handlers.
+- `RouteRegistrar` scans controller attributes and registers each action.
+- `RouteMatcher` matches the incoming method and path, including dynamic `{parameters}`.
+- `MatchedRouteDispatcher` resolves policies, builds the middleware chain, and invokes the controller action.
+- `RouteInvoker` maps request and route parameters into the controller method arguments.
+
+Use `route('name', ['id' => 1])` for named route URLs; the helper delegates to the framework URL generator.
+
+### 2.4 Middleware Pipeline
 Middleware must implement `YasserElgammal\Green\Middleware\MiddlewareInterface`.
 
 - **Global Middleware**: Defined in `public/index.php` via `$app->router->addGlobalMiddleware()`.
 - **Route Middleware**: Defined in the `#[Route]` attribute using the `middleware` array.
 
-### 2.4 Redirects
+### 2.5 Redirects
 Use the `redirect($url)` helper to return a `RedirectResponse`.
 
 ```php
 return redirect('/login');
 ```
 
-### 2.5 Route Policies
+### 2.6 Route Policies
 
 Controller actions can be protected with policy attributes. The router reads `#[PolicyAttribute]` before invoking the action and calls the global authorizer.
 
@@ -214,6 +226,16 @@ $users = $userTable
     ->query()
     ->where('role', 'admin')
     ->fetch();
+```
+
+Queries can be paginated after filters and ordering have been applied:
+
+```php
+$results = $postTable
+    ->query()
+    ->where('status', 'published')
+    ->latest()
+    ->paginate(perPage: 15, page: 1);
 ```
 
 #### Conditions
@@ -464,24 +486,39 @@ class PostTransformer extends Transformer {
 ```
 
 ### 4.2 Unified Pagination
-The `paginate()` method on the `Table` class returns a standardized structure for collections.
+The framework returns the same pagination structure for table-level and query-level pagination.
+
+Use `query()->paginate()` when the page depends on filters, search conditions, joins, or ordering:
 
 ```php
-$results = $posts->paginate(perPage: 15, page: 1, withCount: true);
+$results = $posts
+    ->query()
+    ->where('status', 'published')
+    ->latest()
+    ->paginate(perPage: 15, page: 1, withCount: true);
 // Returns ['data' => [...], 'meta' => [...]]
 ```
 
-#### Smart COUNT Elimination
-By default, `paginate()` runs a `COUNT(*)` query to calculate `total_items` and `total_pages`. For large datasets (millions of rows), this is very slow. You can pass `withCount: false` to skip the COUNT query entirely:
+`Table::paginate()` remains available as a shortcut for simple full-table pagination:
 
 ```php
-$results = $posts->paginate(perPage: 15, page: 1, withCount: false);
+$results = $posts->paginate(perPage: 15, page: 1);
+```
+
+#### Smart COUNT Elimination
+By default, `paginate()` runs a `COUNT(*)` query to calculate `total_items` and `total_pages`. For large datasets, pass `withCount: false` to skip the count query:
+
+```php
+$results = $posts
+    ->query()
+    ->where('status', 'published')
+    ->paginate(perPage: 15, page: 1, withCount: false);
 ```
 
 When `withCount: false` is used:
 - The framework skips the expensive `COUNT(*)` query.
 - It queries `perPage + 1` rows to determine if a next page exists.
-- The `meta` keys `total_items` and `total_pages` will return `null`.
+- The `meta` keys `total_items` and `total_pages` return `null`.
 
 ---
 
