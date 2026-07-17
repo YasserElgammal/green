@@ -6,6 +6,8 @@ use App\Models\Post;
 use App\Models\Role;
 use App\Models\User;
 use YasserElgammal\Green\Database\Table;
+use YasserElgammal\Green\Database\Relations\HasMany;
+use YasserElgammal\Green\Database\Relations\ManyToMany;
 
 /**
  * UserTable — Table Gateway for the `users` table.
@@ -15,31 +17,16 @@ use YasserElgammal\Green\Database\Table;
  */
 class UserTable extends Table
 {
-    protected array $relations = [
+    protected function relations(): array
+    {
+        return [
+            // A user has many posts.
+            'posts' => new HasMany(Post::class),
 
-        // ── hasMany ──────────────────────────────────────────────────────────
-        // A user has many posts.
-        // posts.user_id → users.id
-        'posts' => [
-            'type'        => 'hasMany',
-            'model'       => Post::class,
-            'foreign_key' => 'user_id',
-            'local_key'   => 'id',
-        ],
-
-        // ── manyToMany ───────────────────────────────────────────────────────
-        // A user has many roles through the `user_roles` pivot table.
-        // user_roles.user_id  → users.id
-        // user_roles.role_id  → roles.id
-        'roles' => [
-            'type'        => 'manyToMany',
-            'model'       => Role::class,
-            'pivot'       => 'user_roles',
-            'foreign_key' => 'user_id',
-            'related_key' => 'role_id',
-            'local_key'   => 'id',
-        ],
-    ];
+            // A user has many roles through the `user_roles` pivot table.
+            'roles' => new ManyToMany(Role::class, pivot: 'user_roles'),
+        ];
+    }
 
     public function __construct()
     {

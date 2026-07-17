@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.0] - 2026-07-18
+
+### Changed
+- Switch application table relationships to Relation DTOs for an improved developer experience.
+- Clarify the routing and pagination documentation.
+- Update profile controller tests to resolve Drive through the application instance.
+
+## [2.2.0] - 2026-07-12
+
+### Added
+- Add Arabic and English translations for the admin interface.
+
+### Changed
+- Localize admin views, shared partials, and pagination using translation functions.
+- Enhance database querying documentation with fluent queries and advanced condition helpers.
+- Update the application theme styles and main layout.
+
+## [2.1.0] - 2026-06-29
+
+### Added
+- Add cache and database configuration files with matching environment variables.
+- Add relation aggregation documentation and examples.
+
+### Changed
+- Expand the framework documentation for caching, database configuration, and relation aggregation.
+- Update test configuration to use the application database settings.
+
 ## [2.0.0] - 2026-06-15
 
 ### Added

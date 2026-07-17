@@ -6,34 +6,24 @@ use App\Models\Comment;
 use App\Models\User;
 use App\Models\Post;
 use YasserElgammal\Green\Database\Table;
+use YasserElgammal\Green\Database\Relations\BelongsTo;
+use YasserElgammal\Green\Database\Relations\HasMany;
 
 /**
  * PostTable — Table Gateway for the `posts` table.
  */
 class PostTable extends Table
 {
-    protected array $relations = [
+    protected function relations(): array
+    {
+        return [
+            // A post belongs to one user.
+            'author' => new BelongsTo(User::class),
 
-        // ── belongsTo ────────────────────────────────────────────────────────
-        // A post belongs to one user.
-        // posts.user_id → users.id
-        'author' => [
-            'type'        => 'belongsTo',
-            'model'       => User::class,
-            'foreign_key' => 'user_id',   // column ON the post
-            'owner_key'   => 'id',        // column ON the user
-        ],
-
-        // ── hasMany ──────────────────────────────────────────────────────────
-        // A post has many comments.
-        // comments.post_id → posts.id
-        'comments' => [
-            'type'        => 'hasMany',
-            'model'       => Comment::class,
-            'foreign_key' => 'post_id',
-            'local_key'   => 'id',
-        ],
-    ];
+            // A post has many comments.
+            'comments' => new HasMany(Comment::class),
+        ];
+    }
 
     public function __construct()
     {

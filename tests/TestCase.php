@@ -6,14 +6,23 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 use YasserElgammal\Green\Database\Database;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
+use YasserElgammal\Green\Application;
+use YasserElgammal\Green\ErrorHandling\GreenErrorKernel;
 
 abstract class TestCase extends BaseTestCase
 {
+    protected Application $app;
     protected ?Connection $connection = null;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        if (!defined('BASE_PATH')) {
+            define('BASE_PATH', dirname(__DIR__));
+        }
+
+        $this->app = new Application();
 
         // 1. Setup Environment
         $_ENV['JWT_SECRET'] = 'test-secret-key-that-is-long-enough-32-chars-for-hs256';
@@ -37,6 +46,8 @@ abstract class TestCase extends BaseTestCase
 
     protected function tearDown(): void
     {
+        $this->app->make(GreenErrorKernel::class)->unregister();
+
         // Reset the singleton connection
         Database::setConnection(null);
         $this->connection = null;
