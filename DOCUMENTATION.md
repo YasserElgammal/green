@@ -22,17 +22,29 @@ Green follows a standard Front Controller pattern:
 
 | Provider | Responsibility |
 | :--- | :--- |
-| `SignalServiceProvider` | Registers the `SignalDispatcher` and the `signal()` helper. |
-| `AuthServiceProvider` | Registers the authorization gate and the `authorizer()` helper. |
+| `SignalServiceProvider` | Registers `SignalDispatcher` as a container singleton. |
+| `AuthServiceProvider` | Registers `Authorizer` as a container singleton. |
 | `DatabaseServiceProvider` | Registers the Doctrine DBAL connection pool used by `Database`. |
-| `CacheServiceProvider` | Registers the `CacheManager` and the `cache()` helper. |
+| `CacheServiceProvider` | Registers `CacheManager` as a container singleton. |
 
 Application providers listed in `config/app.php` are registered after the core providers, then every provider is booted.
+
+The application container is the single source of truth for framework services. Helpers such as `signal()`, `authorizer()`, `cache()`, `connect()`, `drive()`, and `green_log()` are thin accessors that resolve the same instances registered by their service providers; providers do not copy those services into separate global storage.
 
 ### 1.3 Dependency Injection (Auto-wiring)
 Green automatically injects common dependencies into your controller methods:
 - `YasserElgammal\Green\Http\Request`: The current request object.
 - `YasserElgammal\Green\Http\Payload`: Any custom payload subclasses (validated automatically).
+
+The container also auto-wires constructor dependencies. Rebinding a service clears any previously resolved singleton for that abstract type, and failed resolutions always clean their internal resolution state so a later `make()` call does not report a false circular dependency.
+
+For application code, prefer constructor injection. Tests can replace a service explicitly through the container:
+
+```php
+$app->instance(Drive::class, $fakeDrive);
+```
+
+Legacy helpers such as `drive_set_instance()` and the other `*_set_instance()` functions remain available for backward compatibility, but they are deprecated and now delegate to the application container.
 
 ---
 
@@ -371,7 +383,24 @@ $id = Database::transaction(function () use ($userTable) {
 If the callback throws, the transaction is rolled back and the exception is rethrown.
 
 ### 3.5 Relations & Eager Loading
-Relations are defined in the `Table` class via the `$relations` array.
+Relations are normally declared by returning relation DTOs from a protected `relations()` method on the `Table` class:
+
+```php
+use App\Models\Comment;
+use App\Models\User;
+use YasserElgammal\Green\Database\Relations\BelongsTo;
+use YasserElgammal\Green\Database\Relations\HasMany;
+
+protected function relations(): array
+{
+    return [
+        'author' => new BelongsTo(User::class),
+        'comments' => new HasMany(Comment::class),
+    ];
+}
+```
+
+The legacy `$relations` array format is still supported for backward compatibility. Relation DTOs are preferred because they provide explicit types, named constructor arguments for custom keys, and work with nested IQL validation.
 
 #### Supported Relation Types:
 - `belongsTo`
@@ -1583,7 +1612,7 @@ $manager->extend('custom', function (array $config) {
 });
 ```
 
-Connect follows Green's subsystem style: explicit managers, small drivers, no global service container, and no hidden dependency injection magic.
+Connect follows Green's subsystem style: explicit managers, small drivers, and container-managed dependencies. The `connect()` helper resolves the same `Connect` singleton registered in the application container, so helper access and constructor injection cannot drift into different instances.
 
 ---
 
@@ -1593,6 +1622,8 @@ Green includes a centralized, zero-manual-intervention error system that automat
 
 ### 14.1 Automatic Error Capture
 The global `ExceptionHandler` catches all unhandled exceptions and normalizes them into a unified structure. These errors are automatically forwarded to the **Logger**. 
+
+`GreenErrorKernel::register()` is idempotent, so registering the same kernel more than once does not stack duplicate PHP handlers. Long-running workers and tests may call `unregister()` when an application lifecycle ends to restore the exception and error handlers that were active previously.
 
 ### 14.2 The Logger System
 The `Logger` is a pluggable, driver-based system (e.g., file-based, Papertrail, etc.). It provides deduplication, rate limiting, and loop prevention to ensure execution safety.
