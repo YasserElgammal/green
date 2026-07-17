@@ -25,7 +25,7 @@ class ProfileControllerTest extends TestCase
         $config = require dirname(__DIR__, 3) . '/config/drive.php';
         $manager = new DriveManager($config);
         $drive = new Drive($manager);
-        drive_set_instance($drive);
+        $this->app->instance(Drive::class, $drive);
 
         $this->controller = new ProfileController();
         $this->userTable = new UserTable();
