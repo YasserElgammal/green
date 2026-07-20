@@ -6,7 +6,6 @@ use App\Middleware\AdminMiddleware;
 use App\Tables\CommentTable;
 use App\Tables\PostTable;
 use App\Tables\UserTable;
-use YasserElgammal\Green\Database\Database;
 use YasserElgammal\Green\Routing\Route;
 
 class StatisticsController extends BaseAdminController
@@ -41,7 +40,7 @@ class StatisticsController extends BaseAdminController
         try {
             $users = new UserTable();
             $users->includeCount('posts');
-            return $users->fetchFromBuilder($users->builder()->orderBy('id', 'DESC')->setMaxResults($limit));
+            return $users->query()->latest('id')->limit($limit)->fetch();
         } catch (\Throwable) {
             return [];
         }
@@ -53,11 +52,7 @@ class StatisticsController extends BaseAdminController
             $posts = new PostTable();
             $posts->include(['author']);
             $posts->includeCount('comments');
-            return $posts->fetchFromBuilder(
-                $posts->builder()
-                    ->orderBy('id', 'DESC')
-                    ->setMaxResults($limit)
-            );
+            return $posts->query()->latest('id')->limit($limit)->fetch();
         } catch (\Throwable) {
             return [];
         }
@@ -68,11 +63,7 @@ class StatisticsController extends BaseAdminController
         try {
             $comments = new CommentTable();
             $comments->include(['author', 'post']);
-            return $comments->fetchFromBuilder(
-                $comments->builder()
-                    ->orderBy('id', 'DESC')
-                    ->setMaxResults($limit)
-            );
+            return $comments->query()->latest('id')->limit($limit)->fetch();
         } catch (\Throwable) {
             return [];
         }
@@ -82,7 +73,7 @@ class StatisticsController extends BaseAdminController
     {
         try {
             $table = new $tableClass();
-            return (int) $table->count();
+            return $table->query()->count();
         } catch (\Throwable) {
             return 0;
         }
@@ -91,13 +82,7 @@ class StatisticsController extends BaseAdminController
     private function adminCount(): int
     {
         try {
-            return (int) Database::getConnection()
-                ->createQueryBuilder()
-                ->select('COUNT(*)')
-                ->from('users')
-                ->where('is_admin = 1')
-                ->executeQuery()
-                ->fetchOne();
+            return (new UserTable())->query()->where('is_admin', 1)->count();
         } catch (\Throwable) {
             return 0;
         }
@@ -106,14 +91,16 @@ class StatisticsController extends BaseAdminController
     private function countThisMonth(string $table): int
     {
         try {
-            return (int) Database::getConnection()
-                ->createQueryBuilder()
-                ->select('COUNT(*)')
-                ->from($table)
-                ->where('created_at >= :month_start')
-                ->setParameter('month_start', date('Y-m-01 00:00:00'))
-                ->executeQuery()
-                ->fetchOne();
+            $tableClass = match ($table) {
+                'users' => UserTable::class,
+                'posts' => PostTable::class,
+                'comments' => CommentTable::class,
+            };
+
+            return (new $tableClass())
+                ->query()
+                ->where('created_at', '>=', date('Y-m-01 00:00:00'))
+                ->count();
         } catch (\Throwable) {
             return 0;
         }

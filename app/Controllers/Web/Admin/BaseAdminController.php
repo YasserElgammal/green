@@ -6,51 +6,6 @@ abstract class BaseAdminController
 {
     protected const PER_PAGE = 10;
 
-    protected function paginateQuery(object $query, int $perPage, int $page): array
-    {
-        $countQuery = clone $query;
-        $totalItems = (int) $countQuery->select('COUNT(*)')->executeQuery()->fetchOne();
-        $totalPages = (int) ceil($totalItems / $perPage);
-        $page = max(1, min($page, $totalPages > 0 ? $totalPages : 1));
-
-        $data = $query
-            ->setFirstResult(($page - 1) * $perPage)
-            ->setMaxResults($perPage)
-            ->executeQuery()
-            ->fetchAllAssociative();
-
-        return [
-            'data' => $data,
-            'meta' => [
-                'current_page' => $page,
-                'per_page' => $perPage,
-                'total_items' => $totalItems,
-                'total_pages' => $totalPages,
-                'has_next' => $page < $totalPages,
-                'has_prev' => $page > 1,
-            ],
-        ];
-    }
-
-    protected function paginateArray(array $items, int $perPage, int $page): array
-    {
-        $totalItems = count($items);
-        $totalPages = (int) ceil($totalItems / $perPage);
-        $page = max(1, min($page, $totalPages > 0 ? $totalPages : 1));
-
-        return [
-            'data' => array_slice($items, ($page - 1) * $perPage, $perPage),
-            'meta' => [
-                'current_page' => $page,
-                'per_page' => $perPage,
-                'total_items' => $totalItems,
-                'total_pages' => $totalPages,
-                'has_next' => $page < $totalPages,
-                'has_prev' => $page > 1,
-            ],
-        ];
-    }
-
     protected function query(string $key): string
     {
         return trim((string) ($_GET[$key] ?? ''));
