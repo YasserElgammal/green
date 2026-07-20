@@ -6,7 +6,6 @@ use App\Middleware\AdminMiddleware;
 use App\Payloads\AdminStoreUserPayload;
 use App\Payloads\AdminUpdateUserPayload;
 use App\Tables\UserTable;
-use YasserElgammal\Green\Database\Database;
 use YasserElgammal\Green\Routing\Route;
 
 class UserController extends BaseAdminController
@@ -18,23 +17,19 @@ class UserController extends BaseAdminController
         $sort = $this->sort(['id', 'name', 'email', 'is_admin', 'created_at'], 'id');
         $direction = $this->direction();
 
-        $result = $this->paginateArray([], self::PER_PAGE, 1);
+        $users = new UserTable();
+        $users->includeCount('posts');
+        $query = $users->query();
 
-        try {
-            $users = new UserTable();
-            $users->includeCount('posts');
-            $query = $users->builder();
-
-            if ($search !== '') {
-                $query->where('name LIKE :search OR email LIKE :search')
-                    ->setParameter('search', "%{$search}%");
-            }
-
-            $query->orderBy($sort, $direction);
-            $result = $users->paginateFromBuilder($query, self::PER_PAGE, $this->page());
-        } catch (\Throwable) {
-            session()->flash('error', 'Unable to load users. Make sure migrations are up to date.');
+        if ($search !== '') {
+            $query->whereGroup(fn ($query) => $query
+                ->whereLike('name', "%{$search}%")
+                ->orWhereLike('email', "%{$search}%"));
         }
+
+        $result = $query
+            ->orderBy($sort, $direction)
+            ->paginate(self::PER_PAGE, $this->page());
 
         return view('admin/users/index', [
             'users' => $result['data'],
@@ -174,13 +169,7 @@ class UserController extends BaseAdminController
     private function adminCount(): int
     {
         try {
-            return (int) Database::getConnection()
-                ->createQueryBuilder()
-                ->select('COUNT(*)')
-                ->from('users')
-                ->where('is_admin = 1')
-                ->executeQuery()
-                ->fetchOne();
+            return (new UserTable())->query()->where('is_admin', 1)->count();
         } catch (\Throwable) {
             return 0;
         }

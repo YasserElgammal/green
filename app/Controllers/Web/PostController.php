@@ -20,11 +20,10 @@ class PostController
         // Load author and comments for eager loading efficiency
         $postsTable->include(['author']);
 
-        $postsQuery = $postsTable->builder()
-            ->where('status = :status')
-            ->setParameter('status', PostStatus::Published->value)
-            ->orderBy('id', strtoupper($order));
-        $result  = $postsTable->paginateFromBuilder($postsQuery, (int) $perPage, (int) ($_GET['page'] ?? 1));
+        $result = $postsTable->query()
+            ->where('status', PostStatus::Published->value)
+            ->orderBy('id', $order)
+            ->paginate($perPage, (int) ($_GET['page'] ?? 1));
 
         return view('posts/index', [
             'posts' => $result['data'],
@@ -45,14 +44,13 @@ class PostController
         $perPage = (int) ($_GET['per_page'] ?? 15);
 
         $postsTable = (new PostTable())->includeCount('comments');
-        $postsQuery = $postsTable->builder()
-            ->where('user_id = :user_id')
-            ->andWhere('status = :status')
-            ->setParameter('user_id', session()->get('user_id'))
-            ->setParameter('status', $activeStatus->value)
-            ->orderBy('id', 'DESC');
-
-        $result = $postsTable->paginateFromBuilder($postsQuery, $perPage, (int) ($_GET['page'] ?? 1));
+        $result = $postsTable->query()
+            ->where([
+                'user_id' => session()->get('user_id'),
+                'status' => $activeStatus->value,
+            ])
+            ->latest('id')
+            ->paginate($perPage, (int) ($_GET['page'] ?? 1));
 
         return view('posts/my', [
             'posts' => $result['data'],

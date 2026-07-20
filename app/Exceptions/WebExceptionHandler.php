@@ -16,13 +16,16 @@ class WebExceptionHandler extends ExceptionHandler implements ErrorResponderInte
         private ?ErrorStatusResolver $statusResolver = null,
         private ?ErrorViewResolver $viewResolver = null,
     ) {
+        parent::__construct();
         $this->statusResolver ??= new ErrorStatusResolver();
         $this->viewResolver ??= new ErrorViewResolver();
     }
 
     public function handle(Throwable $e, Request $request): Response
     {
-        return $this->renderHtml($e, $this->statusResolver->resolve($e), $this->isDebug());
+        $traceId = uniqid('ERR_', true);
+
+        return $this->renderHtml($e, $this->statusResolver->resolve($e), $this->isDebug(), $traceId);
     }
 
     public function handleStatus(int $statusCode): Response
@@ -30,7 +33,7 @@ class WebExceptionHandler extends ExceptionHandler implements ErrorResponderInte
         return $this->renderErrorPage($statusCode);
     }
 
-    protected function renderHtml(Throwable $e, int $statusCode, bool $isDebug): Response
+    protected function renderHtml(Throwable $e, int $statusCode, bool $isDebug, string $traceId): Response
     {
         if ($e instanceof ValidationException && $isDebug === false) {
             $errors = $e->getErrors();
@@ -43,20 +46,20 @@ class WebExceptionHandler extends ExceptionHandler implements ErrorResponderInte
         }
 
         if ($isDebug) {
-            return $this->renderDebugException($e, $statusCode);
+            return $this->renderDebugException($e, $statusCode, $traceId);
         }
 
         return $this->renderErrorPage($statusCode);
     }
 
-    private function renderDebugException(Throwable $e, int $statusCode): Response
+    private function renderDebugException(Throwable $e, int $statusCode, string $traceId): Response
     {
         $viewParameters = [
             'title' => $this->getErrorTitle($statusCode),
             'message' => $e->getMessage(),
             'debug' => true,
             'status_code' => $statusCode,
-            'trace_id' => uniqid('ERR_'),
+            'trace_id' => $traceId,
             'exception' => $e,
             'file' => $e->getFile(),
             'line' => $e->getLine(),

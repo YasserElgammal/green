@@ -17,29 +17,28 @@ class PostController extends BaseAdminController
         $search = $this->query('search');
         $status = $this->query('status');
         $status = $status === '' ? '' : PostStatus::fromRequest($status)->value;
-        $result = $this->paginateArray([], self::PER_PAGE, 1);
+        $posts = new PostTable();
+        $posts->include(['author']);
+        $posts->includeCount('comments');
+        $query = $posts->query()->latest('id');
 
-        try {
-            $posts = new PostTable();
-            $posts->include(['author']);
-            $posts->includeCount('comments');
-            $query = $posts->builder()
-                ->orderBy('id', 'DESC');
-
-            if ($status !== '') {
-                $query->where('status = :status')
-                    ->setParameter('status', $status);
-            }
-
-            if ($search !== '') {
-                $posts = $this->filterPosts($posts->fetchFromBuilder($query), $search);
-                $result = $this->paginateArray($posts, self::PER_PAGE, $this->page());
-            } else {
-                $result = $posts->paginateFromBuilder($query, self::PER_PAGE, $this->page());
-            }
-        } catch (\Throwable) {
-            session()->flash('error', 'Unable to load posts. Make sure migrations are up to date.');
+        if ($status !== '') {
+            $query->where('status', $status);
         }
+
+        if ($search !== '') {
+            $authorIds = array_map(
+                static fn ($user) => $user->id,
+                (new UserTable())->query()->whereLike('name', "%{$search}%")->fetch()
+            );
+
+            $query->whereGroup(fn ($query) => $query
+                ->whereLike('title', "%{$search}%")
+                ->orWhereLike('status', "%{$search}%")
+                ->orWhereIn('user_id', $authorIds));
+        }
+
+        $result = $query->paginate(self::PER_PAGE, $this->page());
 
         return view('admin/posts/index', [
             'posts' => $result['data'],
@@ -123,22 +122,10 @@ class PostController extends BaseAdminController
     {
         try {
             $users = new UserTable();
-            return $users->fetchFromBuilder($users->builder()->orderBy('name', 'ASC'));
+            return $users->query()->orderBy('name')->fetch();
         } catch (\Throwable) {
             return [];
         }
     }
 
-    private function filterPosts(array $posts, string $search): array
-    {
-        $needle = strtolower($search);
-
-        return array_values(array_filter($posts, function ($post) use ($needle) {
-            $author = $post->author->name ?? '';
-
-            return str_contains(strtolower((string) $post->title), $needle)
-                || str_contains(strtolower((string) $post->status), $needle)
-                || str_contains(strtolower((string) $author), $needle);
-        }));
-    }
 }

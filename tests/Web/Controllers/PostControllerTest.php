@@ -25,6 +25,36 @@ class PostControllerTest extends TestCase
         $_FILES = [];
     }
 
+    protected function tearDown(): void
+    {
+        $_GET = [];
+        parent::tearDown();
+    }
+
+    public function testIndexUsesPublishedFilterAndRequestedOrder(): void
+    {
+        $this->seed();
+        $this->postTable->insert([
+            'user_id' => 1,
+            'title' => 'Newest Published',
+            'status' => 'published',
+            'body' => 'Visible.',
+        ]);
+        $this->postTable->insert([
+            'user_id' => 1,
+            'title' => 'Hidden Draft',
+            'status' => 'draft',
+            'body' => 'Hidden.',
+        ]);
+        $_GET = ['order' => 'ASC', 'per_page' => 1];
+
+        $response = $this->controller->index();
+
+        $this->assertStringContainsString('Test Post', $response);
+        $this->assertStringNotContainsString('Newest Published', $response);
+        $this->assertStringNotContainsString('Hidden Draft', $response);
+    }
+
     public function testStoreCanSaveUserPostAsDraft(): void
     {
         $this->seed();

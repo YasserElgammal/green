@@ -4,6 +4,8 @@ namespace App\Controllers\Web\Admin;
 
 use App\Middleware\AdminMiddleware;
 use App\Tables\CommentTable;
+use App\Tables\PostTable;
+use App\Tables\UserTable;
 use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\Routing\Route;
 
@@ -13,23 +15,27 @@ class CommentController extends BaseAdminController
     public function index()
     {
         $search = $this->query('search');
-        $result = $this->paginateArray([], self::PER_PAGE, 1);
+        $comments = new CommentTable();
+        $comments->include(['author', 'post']);
+        $query = $comments->query()->latest('id');
 
-        try {
-            $comments = new CommentTable();
-            $comments->include(['author', 'post']);
-            $query = $comments->builder()
-                ->orderBy('id', 'DESC');
+        if ($search !== '') {
+            $authorIds = array_map(
+                static fn ($user) => $user->id,
+                (new UserTable())->query()->whereLike('name', "%{$search}%")->fetch()
+            );
+            $postIds = array_map(
+                static fn ($post) => $post->id,
+                (new PostTable())->query()->whereLike('title', "%{$search}%")->fetch()
+            );
 
-            if ($search !== '') {
-                $comments = $this->filterComments($comments->fetchFromBuilder($query), $search);
-                $result = $this->paginateArray($comments, self::PER_PAGE, $this->page());
-            } else {
-                $result = $comments->paginateFromBuilder($query, self::PER_PAGE, $this->page());
-            }
-        } catch (\Throwable) {
-            session()->flash('error', 'Unable to load comments.');
+            $query->whereGroup(fn ($query) => $query
+                ->whereLike('content', "%{$search}%")
+                ->orWhereIn('user_id', $authorIds)
+                ->orWhereIn('post_id', $postIds));
         }
+
+        $result = $query->paginate(self::PER_PAGE, $this->page());
 
         return view('admin/comments/index', [
             'comments' => $result['data'],
@@ -91,17 +97,4 @@ class CommentController extends BaseAdminController
         }
     }
 
-    private function filterComments(array $comments, string $search): array
-    {
-        $needle = strtolower($search);
-
-        return array_values(array_filter($comments, function ($comment) use ($needle) {
-            $author = $comment->author->name ?? '';
-            $post = $comment->post->title ?? '';
-
-            return str_contains(strtolower((string) $comment->content), $needle)
-                || str_contains(strtolower((string) $author), $needle)
-                || str_contains(strtolower((string) $post), $needle);
-        }));
-    }
 }

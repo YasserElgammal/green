@@ -63,17 +63,13 @@ class CommentController
         $userId = session()->get('user_id');
 
         // Check if already liked
-        $qb = $likesTable->builder()
-            ->where('comment_id = :comment_id')
-            ->andWhere('user_id = :user_id')
-            ->setParameter('comment_id', $commentId)
-            ->setParameter('user_id', $userId);
+        $existing = $likesTable->query()
+            ->where(['comment_id' => $commentId, 'user_id' => $userId])
+            ->first();
 
-        $existing = $likesTable->fetchFromBuilder($qb);
-
-        if (!empty($existing)) {
+        if ($existing) {
             // Unlike
-            $likesTable->delete($existing[0]);
+            $likesTable->delete($existing);
             session()->flash('success', 'Comment unliked.');
         } else {
             // Like
