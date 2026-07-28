@@ -9,6 +9,7 @@ $dotenv = Dotenv\Dotenv::createImmutable(BASE_PATH);
 $dotenv->safeLoad();
 
 use YasserElgammal\Green\Application;
+use YasserElgammal\Green\Config\Typed\ApplicationConfig;
 use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\View\View;
 use YasserElgammal\Green\Http\Middleware\CsrfMiddleware;
@@ -20,9 +21,14 @@ $app = new Application();
 
 $statusResolver = new ErrorStatusResolver();
 $viewResolver = new ErrorViewResolver();
+$debug = $app->make(ApplicationConfig::class)->debug;
 $handler = new Handler(
-    new ApiExceptionHandler($statusResolver),
-    new WebExceptionHandler($statusResolver, $viewResolver)
+    new ApiExceptionHandler($statusResolver, $debug),
+    new WebExceptionHandler(
+        $statusResolver,
+        $viewResolver,
+        $debug,
+    )
 );
 
 // Bind the skeleton's custom ExceptionHandler to the framework's container

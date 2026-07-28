@@ -15,10 +15,16 @@ class WebExceptionHandler extends ExceptionHandler implements ErrorResponderInte
     public function __construct(
         private ?ErrorStatusResolver $statusResolver = null,
         private ?ErrorViewResolver $viewResolver = null,
+        private ?bool $debug = null,
     ) {
         parent::__construct();
         $this->statusResolver ??= new ErrorStatusResolver();
         $this->viewResolver ??= new ErrorViewResolver();
+    }
+
+    protected function isDebug(): bool
+    {
+        return $this->debug ?? parent::isDebug();
     }
 
     public function handle(Throwable $e, Request $request): Response

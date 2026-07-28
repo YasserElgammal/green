@@ -46,6 +46,37 @@ class HandlerTest extends TestCase
         $this->assertSame(500, $response->getStatusCode());
     }
 
+    public function testItIncludesApiExceptionDetailsWhenDebugIsEnabled(): void
+    {
+        $request = new Request(server: [
+            'REQUEST_URI' => '/api/posts',
+            'HTTP_ACCEPT' => 'application/json',
+        ]);
+
+        $handler = new Handler(apiHandler: new \App\Exceptions\ApiExceptionHandler(debug: true));
+        $response = $handler->handle(new RuntimeException('Debug API detail', 500), $request);
+
+        $this->assertSame(500, $response->getStatusCode());
+        $this->assertStringContainsString('Debug API detail', $response->getContent());
+        $this->assertStringContainsString('"debug"', $response->getContent());
+        $this->assertStringContainsString('"trace_id"', $response->getContent());
+    }
+
+    public function testItHidesApiExceptionDetailsWhenDebugIsDisabled(): void
+    {
+        $request = new Request(server: [
+            'REQUEST_URI' => '/api/posts',
+            'HTTP_ACCEPT' => 'application/json',
+        ]);
+
+        $handler = new Handler(apiHandler: new \App\Exceptions\ApiExceptionHandler(debug: false));
+        $response = $handler->handle(new RuntimeException('Sensitive API detail', 500), $request);
+
+        $this->assertSame(500, $response->getStatusCode());
+        $this->assertStringNotContainsString('Sensitive API detail', $response->getContent());
+        $this->assertStringNotContainsString('"debug"', $response->getContent());
+    }
+
     public function testItDelegatesBrowserRequestsToWebHandler(): void
     {
         $request = new Request(server: [
@@ -77,14 +108,13 @@ class HandlerTest extends TestCase
 
     public function testItKeepsDebugExceptionsOnOopsScreen(): void
     {
-        $_ENV['APP_DEBUG'] = 'true';
-
         $request = new Request(server: [
             'REQUEST_URI' => '/missing-page',
             'HTTP_ACCEPT' => 'text/html',
         ]);
 
-        $response = (new Handler())->handle(new RuntimeException('Debug detail', 404), $request);
+        $handler = new Handler(webHandler: new \App\Exceptions\WebExceptionHandler(debug: true));
+        $response = $handler->handle(new RuntimeException('Debug detail', 404), $request);
 
         $this->assertSame(404, $response->getStatusCode());
         $this->assertStringContainsString('DEVELOPER MODE ACTIVE', $response->getContent());
@@ -94,14 +124,12 @@ class HandlerTest extends TestCase
 
     public function testItDoesNotReplaceHandledDebugExceptionsDuringResponseHandling(): void
     {
-        $_ENV['APP_DEBUG'] = 'true';
-
         $request = new Request(server: [
             'REQUEST_URI' => '/posts',
             'HTTP_ACCEPT' => 'text/html',
         ]);
 
-        $handler = new Handler();
+        $handler = new Handler(webHandler: new \App\Exceptions\WebExceptionHandler(debug: true));
         $response = $handler->handle(new RuntimeException('Debug detail', 500), $request);
         $response = $handler->handleResponse($response, $request);
 
