@@ -43,7 +43,7 @@ class AuthService
             }
 
             if (!$this->user) {
-                session()->flush();
+                session()->invalidate();
                 $userId = null;
             } else {
                 $this->syncSessionUser($this->user);
@@ -79,6 +79,7 @@ class AuthService
      */
     public function login(object $user): void
     {
+        session()->regenerateId(true);
         $this->syncSessionUser($user);
         $this->user = $user;
         $this->resolved = true;
@@ -90,7 +91,7 @@ class AuthService
      */
     public function logout(): void
     {
-        session()->flush();
+        session()->invalidate();
         $this->user = null;
         $this->resolved = true;
         $this->resolvedUserId = null;

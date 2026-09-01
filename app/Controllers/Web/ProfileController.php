@@ -91,8 +91,8 @@ class ProfileController
             return redirect('/profile');
         }
 
-        // Clear session and logout
-        session()->flush();
+        // Invalidate the authenticated session and rotate its identifier.
+        session()->invalidate();
         session()->flash('success', t('profile.success_deleted') ?: 'Your account has been deleted permanently.');
 
         return redirect('/');
