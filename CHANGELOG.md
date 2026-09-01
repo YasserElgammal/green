@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.5.0] - 2026-09-02
+
+### Changed
+- Invalidate sessions on logout, account deletion, and missing-user authentication instead of only clearing session data.
+- Regenerate the session ID after login to improve session security.
+- Expand session and authentication tests to verify session ID rotation and invalidation behavior.
+
+## [2.4.0] - 2026-07-28
+
+### Changed
+- Sync API and web exception debug handling with the application configuration.
+
+### Removed
+- Remove the direct `firebase/php-jwt` dependency from `composer.json`.
+
+## [2.3.1] - 2026-07-20
+
+### Changed
+- Streamline pagination and database queries across web and admin controllers.
+- Expand controller test coverage for admin and post workflows.
+
 ## [2.3.0] - 2026-07-18
 
 ### Changed
