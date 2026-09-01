@@ -61,8 +61,11 @@ class SessionManagerTest extends TestCase
         $this->assertEmpty($this->session->getFlash('success'));
     }
 
-    public function testIdAndRegenerate()
+    public function testSessionStartsLazilyAndRegeneratesId()
     {
+        $this->assertFalse($this->session->isStarted());
+
+        $this->session->put('user_id', 1);
         $id = $this->session->getId();
         $this->assertNotEmpty($id);
 

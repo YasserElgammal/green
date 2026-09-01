@@ -6,8 +6,11 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 use YasserElgammal\Green\Database\Database;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 use YasserElgammal\Green\Application;
 use YasserElgammal\Green\ErrorHandling\GreenErrorKernel;
+use YasserElgammal\Green\Session\SessionManager;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -23,6 +26,10 @@ abstract class TestCase extends BaseTestCase
         }
 
         $this->app = new Application();
+        $this->app->instance(
+            SessionManager::class,
+            new SessionManager(new Session(new MockArraySessionStorage())),
+        );
 
         // 1. Setup Environment
         $_ENV['JWT_SECRET'] = 'test-secret-key-that-is-long-enough-32-chars-for-hs256';

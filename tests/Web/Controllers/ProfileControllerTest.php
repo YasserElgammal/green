@@ -184,6 +184,7 @@ class ProfileControllerTest extends TestCase
         // Put dummy session details
         session()->put('user_id', 1);
         session()->put('user_name', 'Test User');
+        $authenticatedId = session()->getId();
 
         $payload = new DeleteAccountPayload($request);
 
@@ -197,6 +198,7 @@ class ProfileControllerTest extends TestCase
 
         // Assert session is flushed/cleared
         $this->assertFalse(session()->has('user_id'));
+        $this->assertNotSame($authenticatedId, session()->getId());
 
         // Assert success deleted message is flashed
         $this->assertNotEmpty(session()->getFlash('success'));
