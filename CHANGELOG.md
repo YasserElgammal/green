@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.5.1] - 2026-09-09
+
+### Added
+- Add view cache configuration to `.env.example`.
+- Add GitHub Sponsors and Buy Me a Coffee funding links.
+
+### Changed
+- Raise the PHP requirement from `^8.2` to `^8.3`.
+
 ## [2.5.0] - 2026-09-02
 
 ### Changed
