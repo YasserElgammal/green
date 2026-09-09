@@ -14,8 +14,8 @@
                 <p>{{ comment.author.name|default(t('admin.unknown_author')) }} {{ t('admin.on') }} {{ comment.post.title|default(t('admin.untitled_post')) }}</p>
             </div>
             <div class="admin-row-actions">
-                <a href="/admin/comments/{{ comment.id }}/edit" class="btn admin-btn-secondary"><i class="bi bi-pencil"></i> {{ t('admin.edit') }}</a>
-                <form method="POST" action="/admin/comments/{{ comment.id }}/delete" onsubmit="return confirm('{{ t('admin.delete_comment_confirm') }}');">
+                <a href="{{ route('admin.comments.edit', {id: comment.id}) }}" class="btn admin-btn-secondary"><i class="bi bi-pencil"></i> {{ t('admin.edit') }}</a>
+                <form method="POST" action="{{ route('admin.comments.delete', {id: comment.id}) }}" onsubmit="return confirm('{{ t('admin.delete_comment_confirm') }}');">
                     {{ csrf_field() }}
                     <button class="btn admin-btn-primary admin-btn-danger" type="submit"><i class="bi bi-trash"></i> {{ t('admin.delete') }}</button>
                 </form>

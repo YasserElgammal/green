@@ -41,7 +41,7 @@
 
             <!-- Form -->
             {% set formErrors = session().getFlash('errors') %}
-            <form action="/login" method="POST">
+            <form action="{{ route('login.store') }}" method="POST">
                 {{ csrf_field() }}
                 <div class="mb-3">
                     <label for="email" class="form-label-custom">{{ t('auth.login.email') }}</label>
@@ -68,7 +68,7 @@
             <!-- Bottom Redirect -->
             <div class="mt-4 text-center">
                 <small class="text-muted">
-                    {{ t('auth.login.no_account') }} <a href="/register" class="text-success fw-semibold text-decoration-none hover-underline">{{ t('auth.login.register_here') }}</a>
+                    {{ t('auth.login.no_account') }} <a href="{{ route('register.form') }}" class="text-success fw-semibold text-decoration-none hover-underline">{{ t('auth.login.register_here') }}</a>
                 </small>
             </div>
         </div>

@@ -13,7 +13,7 @@
             <h2>{{ t('admin.users_heading') }}</h2>
             <p>{{ t('admin.users_intro') }}</p>
         </div>
-        <a href="/admin/users/create" class="btn admin-btn-primary"><i class="bi bi-person-plus"></i> {{ t('admin.create_user') }}</a>
+        <a href="{{ route('admin.users.create') }}" class="btn admin-btn-primary"><i class="bi bi-person-plus"></i> {{ t('admin.create_user') }}</a>
     </section>
 
     <section class="admin-panel">
@@ -22,12 +22,12 @@
                 <h3>{{ t('admin.list_users') }}</h3>
                 <p>{{ t('admin.users_list_help') }}</p>
             </div>
-            <form method="GET" action="/admin/users" class="admin-table-search">
+            <form method="GET" action="{{ route('admin.users.index') }}" class="admin-table-search">
                 <i class="bi bi-search"></i>
                 <input type="search" name="search" value="{{ search }}" placeholder="{{ t('admin.search_users') }}" aria-label="{{ t('admin.search_users') }}">
                 <button class="btn admin-btn-primary" type="submit">{{ t('admin.search') }}</button>
                 {% if search %}
-                    <a class="btn admin-btn-secondary admin-search-reset" href="/admin/users"><i class="bi bi-x-lg"></i> {{ t('admin.clear') }}</a>
+                    <a class="btn admin-btn-secondary admin-search-reset" href="{{ route('admin.users.index') }}"><i class="bi bi-x-lg"></i> {{ t('admin.clear') }}</a>
                 {% endif %}
             </form>
         </div>
@@ -39,7 +39,7 @@
                         {% set columns = {'id': t('admin.id'), 'name': t('admin.name'), 'email': t('admin.email'), 'is_admin': t('admin.is_admin'), 'created_at': t('admin.created_at')} %}
                         {% for key, label in columns %}
                             <th scope="col">
-                                <a class="admin-sort-link" href="/admin/users?sort={{ key }}&direction={{ sort == key ? nextDirection : 'ASC' }}&search={{ search|url_encode }}">
+                                <a class="admin-sort-link" href="{{ route('admin.users.index', {sort: key, direction: sort == key ? nextDirection : 'ASC', search: search}) }}">
                                     {{ label }} <i class="bi {{ sort == key ? (direction == 'ASC' ? 'bi-sort-up' : 'bi-sort-down') : 'bi-arrow-down-up' }}"></i>
                                 </a>
                             </th>
@@ -59,12 +59,12 @@
                             <td>{{ user.posts_count|default(0) }}</td>
                             <td>
                                 <div class="admin-row-actions">
-                                    <a class="btn admin-action-btn" href="/admin/users/{{ user.id }}/edit" aria-label="{{ t('admin.edit_user_action') }}"><i class="bi bi-pencil"></i></a>
-                                    <form method="POST" action="/admin/users/{{ user.id }}/toggle-admin">
+                                    <a class="btn admin-action-btn" href="{{ route('admin.users.edit', {id: user.id}) }}" aria-label="{{ t('admin.edit_user_action') }}"><i class="bi bi-pencil"></i></a>
+                                    <form method="POST" action="{{ route('admin.users.toggle-admin', {id: user.id}) }}">
                                         {{ csrf_field() }}
                                         <button class="btn admin-action-btn" type="submit" aria-label="{{ t('admin.toggle_admin') }}"><i class="bi bi-shield-check"></i></button>
                                     </form>
-                                    <form method="POST" action="/admin/users/{{ user.id }}/delete" onsubmit="return confirm('{{ t('admin.delete_user_confirm') }}');">
+                                    <form method="POST" action="{{ route('admin.users.delete', {id: user.id}) }}" onsubmit="return confirm('{{ t('admin.delete_user_confirm') }}');">
                                         {{ csrf_field() }}
                                         <button class="btn admin-action-btn admin-action-danger" type="submit" aria-label="{{ t('admin.delete_user_action') }}"><i class="bi bi-trash"></i></button>
                                     </form>

@@ -26,6 +26,8 @@ abstract class TestCase extends BaseTestCase
         }
 
         $this->app = new Application();
+        $app = $this->app;
+        require BASE_PATH . '/routes/web.php';
         $this->app->instance(
             SessionManager::class,
             new SessionManager(new Session(new MockArraySessionStorage())),

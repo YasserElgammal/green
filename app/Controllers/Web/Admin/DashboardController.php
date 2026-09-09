@@ -7,7 +7,7 @@ use YasserElgammal\Green\Routing\Route;
 
 class DashboardController extends BaseAdminController
 {
-    #[Route('GET', '/admin', [AdminMiddleware::class])]
+    #[Route('GET', '/admin', [AdminMiddleware::class], name: 'admin.dashboard')]
     public function dashboard()
     {
         $statistics = new StatisticsController();

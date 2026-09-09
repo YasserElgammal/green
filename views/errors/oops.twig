@@ -205,7 +205,7 @@
         </div>
 
         {% if not debug %}
-            <a href="/" class="button">{{ t('errors.oops.go_back') }}</a>
+            <a href="{{ route('home') }}" class="button">{{ t('errors.oops.go_back') }}</a>
         {% endif %}
 
         {% if debug %}

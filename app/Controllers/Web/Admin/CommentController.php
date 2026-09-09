@@ -11,7 +11,7 @@ use YasserElgammal\Green\Routing\Route;
 
 class CommentController extends BaseAdminController
 {
-    #[Route('GET', '/admin/comments', [AdminMiddleware::class])]
+    #[Route('GET', '/admin/comments', [AdminMiddleware::class], name: 'admin.comments.index')]
     public function index()
     {
         $search = $this->query('search');
@@ -44,7 +44,7 @@ class CommentController extends BaseAdminController
         ]);
     }
 
-    #[Route('GET', '/admin/comments/{id}', [AdminMiddleware::class])]
+    #[Route('GET', '/admin/comments/{id}', [AdminMiddleware::class], name: 'admin.comments.show')]
     public function show(int $id)
     {
         $comment = $this->commentWithContext($id);
@@ -57,7 +57,7 @@ class CommentController extends BaseAdminController
         return view('admin/comments/show', ['comment' => $comment]);
     }
 
-    #[Route('GET', '/admin/comments/{id}/edit', [AdminMiddleware::class])]
+    #[Route('GET', '/admin/comments/{id}/edit', [AdminMiddleware::class], name: 'admin.comments.edit')]
     public function edit(int $id)
     {
         $comment = (new CommentTable())->fetchById($id);
@@ -70,7 +70,7 @@ class CommentController extends BaseAdminController
         return view('admin/comments/form', ['comment' => $comment]);
     }
 
-    #[Route('POST', '/admin/comments/{id}', [AdminMiddleware::class])]
+    #[Route('POST', '/admin/comments/{id}', [AdminMiddleware::class], name: 'admin.comments.update')]
     public function update(int $id, Request $request)
     {
         (new CommentTable())->update($id, ['content' => (string) $request->input('content')]);
@@ -78,7 +78,7 @@ class CommentController extends BaseAdminController
         return redirect('/admin/comments');
     }
 
-    #[Route('POST', '/admin/comments/{id}/delete', [AdminMiddleware::class])]
+    #[Route('POST', '/admin/comments/{id}/delete', [AdminMiddleware::class], name: 'admin.comments.delete')]
     public function delete(int $id)
     {
         (new CommentTable())->deleteById($id);

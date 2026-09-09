@@ -7,7 +7,7 @@
     <div class="col-lg-8 mx-auto">
         {# Back Button #}
         <div class="mb-4">
-            <a href="/posts"
+            <a href="{{ route('posts.index') }}"
                 class="btn btn-sm btn-light rounded-pill shadow-sm text-success fw-bold d-inline-flex align-items-center">
                 <i class="bi bi-arrow-left me-2"></i> {{ t('posts.show.back')|raw }}
             </a>
@@ -78,7 +78,7 @@
                     style="width: 40px; height: 40px; font-size: 16px; font-weight: bold;">
                     {{ session().get('user_name')|first|upper }}
                 </div>
-                <form action="/posts/{{ post.id }}/comments" method="POST" class="flex-grow-1">
+                <form action="{{ route('comments.store', {postId: post.id}) }}" method="POST" class="flex-grow-1">
                     {{ csrf_field() }}
                     <div class="mb-3">
                         <textarea name="content" class="form-control rounded-4 border-0 shadow-sm" id="commentContent"
@@ -98,7 +98,7 @@
         <div class="glass-card p-4 text-center mb-5 border-0">
             <i class="bi bi-chat-dots text-muted fs-2 mb-2 d-block"></i>
             <p class="text-muted mb-3">{{ t('posts.show.login_to_comment') }}</p>
-            <a href="/login" class="btn btn-green-outline rounded-pill px-4">{{ t('posts.show.log_in') }}</a>
+            <a href="{{ route('login.form') }}" class="btn btn-green-outline rounded-pill px-4">{{ t('posts.show.log_in') }}</a>
         </div>
         {% endif %}
 
@@ -121,7 +121,7 @@
 
                         {# Comment Likes #}
                         <div class="mt-2 d-flex align-items-center">
-                            <form action="/comments/{{ comment.id }}/like" method="POST" class="d-inline">
+                            <form action="{{ route('comments.like', {commentId: comment.id}) }}" method="POST" class="d-inline">
                                 {{ csrf_field() }}
                                 <button type="submit" class="btn btn-sm btn-link text-decoration-none p-0 text-success d-flex align-items-center gap-1">
                                     <i class="bi bi-hand-thumbs-up-fill text-success"></i>

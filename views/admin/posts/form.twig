@@ -12,7 +12,7 @@
         <div class="admin-panel-header">
             <div><h3>{{ is_edit ? t('admin.edit_post') : t('admin.create_post') }}</h3><p>{{ t('admin.assign_post_help') }}</p></div>
         </div>
-        <form class="admin-form" method="POST" action="{{ is_edit ? '/admin/posts/' ~ post.id : '/admin/posts' }}">
+        <form class="admin-form" method="POST" action="{{ is_edit ? route('admin.posts.update', {id: post.id}) : route('admin.posts.store') }}">
             {{ csrf_field() }}
             <div>
                 <label for="title">{{ t('admin.title') }} <span aria-label="{{ t('admin.required') }}">*</span></label>
@@ -40,7 +40,7 @@
                 <textarea id="body" class="form-control" name="body" rows="9" required>{{ post.body|default('') }}</textarea>
             </div>
             <div class="admin-form-actions">
-                <a href="/admin/posts" class="btn admin-btn-secondary">{{ t('admin.cancel') }}</a>
+                <a href="{{ route('admin.posts.index') }}" class="btn admin-btn-secondary">{{ t('admin.cancel') }}</a>
                 <button class="btn admin-btn-primary" type="submit"><i class="bi bi-check2"></i> {{ t('admin.save_post') }}</button>
             </div>
         </form>

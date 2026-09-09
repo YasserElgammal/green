@@ -11,7 +11,7 @@
             </h2>
             <p class="text-muted mb-0">{{ t('posts.my.subheading') }}</p>
         </div>
-        <a href="/posts#create-post" class="btn btn-green rounded-pill px-4 py-2 shadow-sm">
+        <a href="{{ route('posts.index') }}#create-post" class="btn btn-green rounded-pill px-4 py-2 shadow-sm">
             <i class="bi bi-pencil-square me-1"></i> {{ t('posts.index.create_post') }}
         </a>
     </div>
@@ -20,7 +20,7 @@
         {% for status in statuses %}
             <li class="nav-item" role="presentation">
                 <a class="nav-link rounded-pill px-4 {{ activeStatus == status.value ? 'active bg-success' : 'text-dark bg-white shadow-sm' }}"
-                   href="/my-posts?status={{ status.value }}">
+                   href="{{ route('posts.mine', {status: status.value}) }}">
                     {{ t('posts.my.tabs.' ~ status.value) }}
                 </a>
             </li>
@@ -56,14 +56,14 @@
 
                         <div class="d-flex flex-wrap gap-2 mt-auto">
                             {% if post.status == 'published' %}
-                                <a href="/posts/{{ post.id }}" class="btn btn-green-outline btn-sm rounded-pill px-3">
+                                <a href="{{ route('posts.show', {id: post.id}) }}" class="btn btn-green-outline btn-sm rounded-pill px-3">
                                     <i class="bi bi-eye me-1"></i>{{ t('posts.my.view') }}
                                 </a>
                             {% endif %}
 
                             {% for status in statuses %}
                                 {% if status.value != post.status %}
-                                    <form method="POST" action="/my-posts/{{ post.id }}/status" class="d-inline">
+                                    <form method="POST" action="{{ route('posts.status.update', {id: post.id}) }}" class="d-inline">
                                         {{ csrf_field() }}
                                         <input type="hidden" name="status" value="{{ status.value }}">
                                         <button type="submit" class="btn btn-green-outline btn-sm rounded-pill px-3">
@@ -91,15 +91,15 @@
         <nav aria-label="My posts pagination" class="mt-5 pt-3">
             <ul class="pagination justify-content-center gap-2">
                 <li class="page-item {{ not meta.has_prev ? 'disabled' }}">
-                    <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm" style="width: 40px; height: 40px;" href="{% if meta.has_prev %}?status={{ activeStatus }}&page={{ meta.current_page - 1 }}{% else %}#{% endif %}"><i class="bi bi-chevron-left"></i></a>
+                    <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm" style="width: 40px; height: 40px;" href="{% if meta.has_prev %}{{ route('posts.mine', {status: activeStatus, page: meta.current_page - 1}) }}{% else %}#{% endif %}"><i class="bi bi-chevron-left"></i></a>
                 </li>
                 {% for p in 1..meta.total_pages %}
                     <li class="page-item {{ p == meta.current_page ? 'active' }}">
-                        <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm {% if p == meta.current_page %}bg-success text-white fw-bold{% else %}text-dark fw-medium{% endif %}" style="width: 40px; height: 40px;" href="?status={{ activeStatus }}&page={{ p }}">{{ p }}</a>
+                        <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm {% if p == meta.current_page %}bg-success text-white fw-bold{% else %}text-dark fw-medium{% endif %}" style="width: 40px; height: 40px;" href="{{ route('posts.mine', {status: activeStatus, page: p}) }}">{{ p }}</a>
                     </li>
                 {% endfor %}
                 <li class="page-item {{ not meta.has_next ? 'disabled' }}">
-                    <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm" style="width: 40px; height: 40px;" href="{% if meta.has_next %}?status={{ activeStatus }}&page={{ meta.current_page + 1 }}{% else %}#{% endif %}"><i class="bi bi-chevron-right"></i></a>
+                    <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm" style="width: 40px; height: 40px;" href="{% if meta.has_next %}{{ route('posts.mine', {status: activeStatus, page: meta.current_page + 1}) }}{% else %}#{% endif %}"><i class="bi bi-chevron-right"></i></a>
                 </li>
             </ul>
         </nav>

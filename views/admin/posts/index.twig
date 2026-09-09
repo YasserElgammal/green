@@ -13,13 +13,13 @@
             <h2>{{ t('admin.posts_heading') }}</h2>
             <p>{{ t('admin.posts_intro') }}</p>
         </div>
-        <a href="/admin/posts/create" class="btn admin-btn-primary"><i class="bi bi-pencil-square"></i> {{ t('admin.create_post_action') }}</a>
+        <a href="{{ route('admin.posts.create') }}" class="btn admin-btn-primary"><i class="bi bi-pencil-square"></i> {{ t('admin.create_post_action') }}</a>
     </section>
 
     <section class="admin-panel">
         <div class="admin-panel-header">
             <div><h3>{{ t('admin.list_posts') }}</h3><p>{{ t('admin.posts_list_help') }}</p></div>
-            <form method="GET" action="/admin/posts" class="admin-table-search">
+            <form method="GET" action="{{ route('admin.posts.index') }}" class="admin-table-search">
                 <i class="bi bi-search"></i>
                 <input type="search" name="search" value="{{ search }}" placeholder="{{ t('admin.search_posts') }}" aria-label="{{ t('admin.search_posts') }}">
                 <select name="status" class="admin-inline-select" aria-label="{{ t('admin.filter_status') }}">
@@ -30,7 +30,7 @@
                 </select>
                 <button class="btn admin-btn-primary" type="submit">{{ t('admin.search') }}</button>
                 {% if search or status %}
-                    <a class="btn admin-btn-secondary admin-search-reset" href="/admin/posts"><i class="bi bi-x-lg"></i> {{ t('admin.clear') }}</a>
+                    <a class="btn admin-btn-secondary admin-search-reset" href="{{ route('admin.posts.index') }}"><i class="bi bi-x-lg"></i> {{ t('admin.clear') }}</a>
                 {% endif %}
             </form>
         </div>
@@ -51,8 +51,8 @@
                             <td>{{ post.created_at|default(t('admin.recently')) }}</td>
                             <td>
                                 <div class="admin-row-actions">
-                                    <a class="btn admin-action-btn" href="/admin/posts/{{ post.id }}/edit" aria-label="{{ t('admin.edit_post_action') }}"><i class="bi bi-pencil"></i></a>
-                                    <form method="POST" action="/admin/posts/{{ post.id }}/delete" onsubmit="return confirm('{{ t('admin.delete_post_confirm') }}');">
+                                    <a class="btn admin-action-btn" href="{{ route('admin.posts.edit', {id: post.id}) }}" aria-label="{{ t('admin.edit_post_action') }}"><i class="bi bi-pencil"></i></a>
+                                    <form method="POST" action="{{ route('admin.posts.delete', {id: post.id}) }}" onsubmit="return confirm('{{ t('admin.delete_post_confirm') }}');">
                                         {{ csrf_field() }}
                                         <button class="btn admin-action-btn admin-action-danger" type="submit" aria-label="{{ t('admin.delete_post_action') }}"><i class="bi bi-trash"></i></button>
                                     </form>

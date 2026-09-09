@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.6.0] - 2026-09-10
+
+### Added
+- Add names to the skeleton's web routes and use the Twig `route()` function for internal links and form actions.
+
 ## [2.5.1] - 2026-09-09
 
 ### Added

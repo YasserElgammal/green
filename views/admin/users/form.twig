@@ -15,7 +15,7 @@
                 <p>{{ is_edit ? t('admin.edit_password_help') : t('admin.required_help') }}</p>
             </div>
         </div>
-        <form class="admin-form" method="POST" action="{{ is_edit ? '/admin/users/' ~ user.id : '/admin/users' }}">
+        <form class="admin-form" method="POST" action="{{ is_edit ? route('admin.users.update', {id: user.id}) : route('admin.users.store') }}">
             {{ csrf_field() }}
             <div>
                 <label for="name">{{ t('admin.name') }} <span aria-label="{{ t('admin.required') }}">*</span></label>
@@ -34,7 +34,7 @@
                 <span>{{ t('admin.is_admin') }}</span>
             </label>
             <div class="admin-form-actions">
-                <a href="/admin/users" class="btn admin-btn-secondary">{{ t('admin.cancel') }}</a>
+                <a href="{{ route('admin.users.index') }}" class="btn admin-btn-secondary">{{ t('admin.cancel') }}</a>
                 <button class="btn admin-btn-primary" type="submit"><i class="bi bi-check2"></i> {{ t('admin.save_user') }}</button>
             </div>
         </form>

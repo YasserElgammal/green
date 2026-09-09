@@ -22,7 +22,7 @@
     <div class="tab-content pt-4" id="profileTabContent">
         <!-- Profile Info Tab -->
         <div class="tab-pane fade show active" id="info" role="tabpanel" aria-labelledby="info-tab">
-            <form action="/profile" method="POST" enctype="multipart/form-data" class="row g-3">
+            <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="row g-3">
                 {{ csrf_field() }}
                 <div class="col-md-6">
                     <label class="form-label-custom" for="name">{{ t('profile.name') }}</label>
@@ -54,7 +54,7 @@
         </div>
         <!-- Change Password Tab -->
         <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
-            <form action="/profile/password" method="POST" class="row g-3">
+            <form action="{{ route('profile.password.update') }}" method="POST" class="row g-3">
                 {{ csrf_field() }}
                 <div class="col-12">
                     <label class="form-label-custom" for="current_password">{{ t('profile.current_password') }}</label>
@@ -89,7 +89,7 @@
                 <h4 class="alert-heading">{{ t('profile.delete_confirm_title') }}</h4>
                 <p>{{ t('profile.delete_confirm_msg') }}</p>
             </div>
-            <form action="/profile/delete" method="POST" class="row g-3">
+            <form action="{{ route('profile.delete') }}" method="POST" class="row g-3">
                 {{ csrf_field() }}
                 <div class="col-12">
                     <label class="form-label-custom" for="delete_password">{{ t('profile.current_password') }}</label>

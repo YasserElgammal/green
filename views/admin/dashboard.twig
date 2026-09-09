@@ -14,8 +14,8 @@
             <p>{{ t('admin.dashboard_intro') }}</p>
         </div>
         <div class="admin-header-actions">
-            <a href="/admin/users/create" class="btn admin-btn-primary"><i class="bi bi-person-plus"></i> {{ t('admin.new_user') }}</a>
-            <a href="/admin/posts/create" class="btn admin-btn-secondary"><i class="bi bi-pencil-square"></i> {{ t('admin.new_post') }}</a>
+            <a href="{{ route('admin.users.create') }}" class="btn admin-btn-primary"><i class="bi bi-person-plus"></i> {{ t('admin.new_user') }}</a>
+            <a href="{{ route('admin.posts.create') }}" class="btn admin-btn-secondary"><i class="bi bi-pencil-square"></i> {{ t('admin.new_post') }}</a>
         </div>
     </section>
 

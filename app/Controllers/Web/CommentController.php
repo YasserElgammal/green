@@ -9,7 +9,7 @@ use YasserElgammal\Green\Routing\Route;
 
 class CommentController
 {
-    #[Route('POST', '/posts/{postId}/comments')]
+    #[Route('POST', '/posts/{postId}/comments', name: 'comments.store')]
     public function store(int $postId, Request $request)
     {
         if (!session()->has('user_id')) {
@@ -43,7 +43,7 @@ class CommentController
         return redirect("/posts/{$postId}");
     }
 
-    #[Route('POST', '/comments/{commentId}/like')]
+    #[Route('POST', '/comments/{commentId}/like', name: 'comments.like')]
     public function like(int $commentId, Request $request)
     {
         if (!session()->has('user_id')) {
