@@ -11,7 +11,7 @@ use YasserElgammal\Green\Routing\Route;
 
 class PostController extends BaseAdminController
 {
-    #[Route('GET', '/admin/posts', [AdminMiddleware::class])]
+    #[Route('GET', '/admin/posts', [AdminMiddleware::class], name: 'admin.posts.index')]
     public function index()
     {
         $search = $this->query('search');
@@ -49,7 +49,7 @@ class PostController extends BaseAdminController
         ]);
     }
 
-    #[Route('GET', '/admin/posts/create', [AdminMiddleware::class])]
+    #[Route('GET', '/admin/posts/create', [AdminMiddleware::class], name: 'admin.posts.create')]
     public function create()
     {
         return view('admin/posts/form', [
@@ -60,7 +60,7 @@ class PostController extends BaseAdminController
         ]);
     }
 
-    #[Route('POST', '/admin/posts', [AdminMiddleware::class])]
+    #[Route('POST', '/admin/posts', [AdminMiddleware::class], name: 'admin.posts.store')]
     public function store(AdminPostPayload $payload)
     {
         $data = $payload->validated();
@@ -76,7 +76,7 @@ class PostController extends BaseAdminController
         return redirect('/admin/posts');
     }
 
-    #[Route('GET', '/admin/posts/{id}/edit', [AdminMiddleware::class])]
+    #[Route('GET', '/admin/posts/{id}/edit', [AdminMiddleware::class], name: 'admin.posts.edit')]
     public function edit(int $id)
     {
         $post = (new PostTable())->fetchById($id);
@@ -94,7 +94,7 @@ class PostController extends BaseAdminController
         ]);
     }
 
-    #[Route('POST', '/admin/posts/{id}', [AdminMiddleware::class])]
+    #[Route('POST', '/admin/posts/{id}', [AdminMiddleware::class], name: 'admin.posts.update')]
     public function update(int $id, AdminPostPayload $payload)
     {
         $data = $payload->validated();
@@ -110,7 +110,7 @@ class PostController extends BaseAdminController
         return redirect('/admin/posts');
     }
 
-    #[Route('POST', '/admin/posts/{id}/delete', [AdminMiddleware::class])]
+    #[Route('POST', '/admin/posts/{id}/delete', [AdminMiddleware::class], name: 'admin.posts.delete')]
     public function delete(int $id)
     {
         (new PostTable())->deleteById($id);

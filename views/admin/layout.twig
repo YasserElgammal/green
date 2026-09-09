@@ -25,7 +25,7 @@
     <div class="admin-shell">
         <aside class="admin-sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="adminSidebar" aria-labelledby="adminSidebarLabel">
             <div class="admin-sidebar-header">
-                <a href="/admin" class="admin-brand" id="adminSidebarLabel">
+                <a href="{{ route('admin.dashboard') }}" class="admin-brand" id="adminSidebarLabel">
                     <span class="admin-brand-mark">G</span>
                     <span><strong>Green</strong><small>Framework</small></span>
                 </a>
@@ -33,11 +33,11 @@
             </div>
 
             <nav class="admin-nav" aria-label="{{ t('admin.admin_navigation') }}">
-                <a href="/admin" class="admin-nav-link {{ admin_section|default('dashboard') == 'dashboard' ? 'active' }}"><i class="bi bi-grid-1x2-fill"></i><span>{{ t('admin.dashboard') }}</span></a>
-                <a href="/admin/users" class="admin-nav-link {{ admin_section|default('') == 'users' ? 'active' }}"><i class="bi bi-people"></i><span>{{ t('admin.users') }}</span></a>
-                <a href="/admin/posts" class="admin-nav-link {{ admin_section|default('') == 'posts' ? 'active' }}"><i class="bi bi-file-earmark-text"></i><span>{{ t('admin.posts') }}</span></a>
-                <a href="/admin/comments" class="admin-nav-link {{ admin_section|default('') == 'comments' ? 'active' }}"><i class="bi bi-chat-left-text"></i><span>{{ t('admin.comments') }}</span></a>
-                <a href="/admin/statistics" class="admin-nav-link {{ admin_section|default('') == 'statistics' ? 'active' }}"><i class="bi bi-bar-chart-line"></i><span>{{ t('admin.statistics') }}</span></a>
+                <a href="{{ route('admin.dashboard') }}" class="admin-nav-link {{ admin_section|default('dashboard') == 'dashboard' ? 'active' }}"><i class="bi bi-grid-1x2-fill"></i><span>{{ t('admin.dashboard') }}</span></a>
+                <a href="{{ route('admin.users.index') }}" class="admin-nav-link {{ admin_section|default('') == 'users' ? 'active' }}"><i class="bi bi-people"></i><span>{{ t('admin.users') }}</span></a>
+                <a href="{{ route('admin.posts.index') }}" class="admin-nav-link {{ admin_section|default('') == 'posts' ? 'active' }}"><i class="bi bi-file-earmark-text"></i><span>{{ t('admin.posts') }}</span></a>
+                <a href="{{ route('admin.comments.index') }}" class="admin-nav-link {{ admin_section|default('') == 'comments' ? 'active' }}"><i class="bi bi-chat-left-text"></i><span>{{ t('admin.comments') }}</span></a>
+                <a href="{{ route('admin.statistics') }}" class="admin-nav-link {{ admin_section|default('') == 'statistics' ? 'active' }}"><i class="bi bi-bar-chart-line"></i><span>{{ t('admin.statistics') }}</span></a>
             </nav>
 
             <div class="admin-sidebar-card">
@@ -55,8 +55,8 @@
                     <div>
                         <nav aria-label="{{ t('admin.breadcrumb') }}">
                             <ol class="breadcrumb admin-breadcrumb mb-1">
-                                <li class="breadcrumb-item"><a href="/">Green</a></li>
-                                <li class="breadcrumb-item"><a href="/admin">{{ t('admin.admin') }}</a></li>
+                                <li class="breadcrumb-item"><a href="{{ route('home') }}">Green</a></li>
+                                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">{{ t('admin.admin') }}</a></li>
                                 <li class="breadcrumb-item active" aria-current="page">{% block breadcrumb %}{{ t('admin.dashboard') }}{% endblock %}</li>
                             </ol>
                         </nav>
@@ -65,7 +65,7 @@
                 </div>
 
                 <div class="admin-topbar-actions">
-                    <a class="admin-icon-btn" href="/" aria-label="{{ t('admin.view_site') }}"><i class="bi bi-globe2"></i></a>
+                    <a class="admin-icon-btn" href="{{ route('home') }}" aria-label="{{ t('admin.view_site') }}"><i class="bi bi-globe2"></i></a>
                     <div class="dropdown theme-toggle">
                         <button
                             class="admin-icon-btn dropdown-toggle"
@@ -97,18 +97,18 @@
                             </span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow admin-user-menu">
-                            <li><a class="dropdown-item" href="/profile"><i class="bi bi-person"></i>{{ t('admin.profile') }}</a></li>
-                            <li><a class="dropdown-item" href="/admin"><i class="bi bi-sliders"></i>{{ t('admin.dashboard') }}</a></li>
+                            <li><a class="dropdown-item" href="{{ route('profile.show') }}"><i class="bi bi-person"></i>{{ t('admin.profile') }}</a></li>
+                            <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}"><i class="bi bi-sliders"></i>{{ t('admin.dashboard') }}</a></li>
                             <li><hr class="dropdown-divider"></li>
                             {% if session().has('user_id') %}
                                 <li>
-                                    <form action="/logout" method="POST">
+                                    <form action="{{ route('logout') }}" method="POST">
                                         {{ csrf_field() }}
                                         <button class="dropdown-item" type="submit"><i class="bi bi-box-arrow-right"></i>{{ t('admin.logout') }}</button>
                                     </form>
                                 </li>
                             {% else %}
-                                <li><a class="dropdown-item" href="/login"><i class="bi bi-box-arrow-in-right"></i>{{ t('admin.login') }}</a></li>
+                                <li><a class="dropdown-item" href="{{ route('login.form') }}"><i class="bi bi-box-arrow-in-right"></i>{{ t('admin.login') }}</a></li>
                             {% endif %}
                         </ul>
                     </div>

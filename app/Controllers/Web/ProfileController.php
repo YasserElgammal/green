@@ -20,7 +20,7 @@ class ProfileController
         $this->profileService = new ProfileService();
     }
 
-    #[Route('GET', '/profile', [SessionAuthMiddleware::class])]
+    #[Route('GET', '/profile', [SessionAuthMiddleware::class], name: 'profile.show')]
     public function index(Request $request): string
     {
         return view('profile/index', [
@@ -28,7 +28,7 @@ class ProfileController
         ]);
     }
 
-    #[Route('POST', '/profile', [SessionAuthMiddleware::class])]
+    #[Route('POST', '/profile', [SessionAuthMiddleware::class], name: 'profile.update')]
     public function update(UpdateProfilePayload $payload): mixed
     {
         $user = $payload->getAttribute('user');
@@ -57,7 +57,7 @@ class ProfileController
         return redirect('/profile');
     }
 
-    #[Route('POST', '/profile/password', [SessionAuthMiddleware::class])]
+    #[Route('POST', '/profile/password', [SessionAuthMiddleware::class], name: 'profile.password.update')]
     public function changePassword(ChangePasswordPayload $payload): mixed
     {
         $user = $payload->getAttribute('user');
@@ -78,7 +78,7 @@ class ProfileController
         return redirect('/profile');
     }
 
-    #[Route('POST', '/profile/delete', [SessionAuthMiddleware::class])]
+    #[Route('POST', '/profile/delete', [SessionAuthMiddleware::class], name: 'profile.delete')]
     public function deleteAccount(DeleteAccountPayload $payload): mixed
     {
         $user = $payload->getAttribute('user');

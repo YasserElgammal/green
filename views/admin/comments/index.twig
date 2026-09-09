@@ -18,12 +18,12 @@
     <section class="admin-panel">
         <div class="admin-panel-header">
             <div><h3>{{ t('admin.list_comments') }}</h3><p>{{ t('admin.comments_list_help') }}</p></div>
-            <form method="GET" action="/admin/comments" class="admin-table-search">
+            <form method="GET" action="{{ route('admin.comments.index') }}" class="admin-table-search">
                 <i class="bi bi-search"></i>
                 <input type="search" name="search" value="{{ search }}" placeholder="{{ t('admin.search_comments') }}" aria-label="{{ t('admin.search_comments') }}">
                 <button class="btn admin-btn-primary" type="submit">{{ t('admin.search') }}</button>
                 {% if search %}
-                    <a class="btn admin-btn-secondary admin-search-reset" href="/admin/comments"><i class="bi bi-x-lg"></i> {{ t('admin.clear') }}</a>
+                    <a class="btn admin-btn-secondary admin-search-reset" href="{{ route('admin.comments.index') }}"><i class="bi bi-x-lg"></i> {{ t('admin.clear') }}</a>
                 {% endif %}
             </form>
         </div>
@@ -43,9 +43,9 @@
                             <td>{{ comment.created_at|default(t('admin.recently')) }}</td>
                             <td>
                                 <div class="admin-row-actions">
-                                    <a class="btn admin-action-btn" href="/admin/comments/{{ comment.id }}" aria-label="{{ t('admin.view_comment_action') }}"><i class="bi bi-eye"></i></a>
-                                    <a class="btn admin-action-btn" href="/admin/comments/{{ comment.id }}/edit" aria-label="{{ t('admin.edit_comment_action') }}"><i class="bi bi-pencil"></i></a>
-                                    <form method="POST" action="/admin/comments/{{ comment.id }}/delete" onsubmit="return confirm('{{ t('admin.delete_comment_confirm') }}');">
+                                    <a class="btn admin-action-btn" href="{{ route('admin.comments.show', {id: comment.id}) }}" aria-label="{{ t('admin.view_comment_action') }}"><i class="bi bi-eye"></i></a>
+                                    <a class="btn admin-action-btn" href="{{ route('admin.comments.edit', {id: comment.id}) }}" aria-label="{{ t('admin.edit_comment_action') }}"><i class="bi bi-pencil"></i></a>
+                                    <form method="POST" action="{{ route('admin.comments.delete', {id: comment.id}) }}" onsubmit="return confirm('{{ t('admin.delete_comment_confirm') }}');">
                                         {{ csrf_field() }}
                                         <button class="btn admin-action-btn admin-action-danger" type="submit" aria-label="{{ t('admin.delete_comment_action') }}"><i class="bi bi-trash"></i></button>
                                     </form>

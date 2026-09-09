@@ -13,7 +13,7 @@
                             <i class="bi bi-pencil-square text-success fs-4 me-2"></i>
                             <h5 class="mb-0 fw-bold">{{ t('posts.index.create_post') }}</h5>
                         </div>
-                        <form action="/posts" method="POST" enctype="multipart/form-data">
+                        <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data">
                             {{ csrf_field() }}
                             <div class="mb-3">
                                 <input type="text" name="title" class="form-control rounded-4 shadow-sm border-0" id="postTitle" placeholder="{{ t('posts.index.post_title') }}" aria-label="{{ t('posts.index.post_title') }}" required>
@@ -58,7 +58,7 @@
                         </div>
                         <h4 class="fw-bold mb-3">{{ t('posts.index.login_to_join') }}</h4>
                         <p class="text-muted mb-4 fw-medium">Join our growing community to share your thoughts and ideas with the world.</p>
-                        <a href="/login" class="btn btn-green w-100 rounded-pill py-2 shadow-sm">{{ t('posts.index.log_in') }}</a>
+                        <a href="{{ route('login.form') }}" class="btn btn-green w-100 rounded-pill py-2 shadow-sm">{{ t('posts.index.log_in') }}</a>
                     </div>
                 {% endif %}
             </div>
@@ -87,7 +87,7 @@
 
                             <div class="p-4 d-flex flex-column flex-grow-1 bg-white bg-opacity-50">
                                 <h4 class="mb-3 fw-bold" style="line-height: 1.4;">
-                                    <a href="/posts/{{ post.id }}" class="text-decoration-none" style="color: var(--text-main); transition: color 0.2s ease;" onmouseover="this.style.color='var(--green-primary)'" onmouseout="this.style.color='var(--text-main)'">
+                                    <a href="{{ route('posts.show', {id: post.id}) }}" class="text-decoration-none" style="color: var(--text-main); transition: color 0.2s ease;" onmouseover="this.style.color='var(--green-primary)'" onmouseout="this.style.color='var(--text-main)'">
                                         {{ post.title }}
                                     </a>
                                 </h4>
@@ -103,7 +103,7 @@
                                 <p class="text-muted mb-4 flex-grow-1" style="font-size: 0.95rem; line-height: 1.6;">
                                     {{ post.body|length > 110 ? post.body|slice(0, 110) ~ '...' : post.body }}
                                 </p>
-                                <a href="/posts/{{ post.id }}" class="btn btn-green-outline w-100 rounded-pill py-2 mt-auto shadow-sm">
+                                <a href="{{ route('posts.show', {id: post.id}) }}" class="btn btn-green-outline w-100 rounded-pill py-2 mt-auto shadow-sm">
                                     {{ t('posts.index.read_more') }} <i class="bi bi-arrow-right ms-1"></i>
                                 </a>
                             </div>
@@ -124,15 +124,15 @@
                 <nav aria-label="Posts pagination" class="mt-5 pt-3">
                     <ul class="pagination justify-content-center gap-2">
                         <li class="page-item {{ not meta.has_prev ? 'disabled' }}">
-                            <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm" style="width: 40px; height: 40px;" href="{% if meta.has_prev %}?page={{ meta.current_page - 1 }}&order={{ order }}{% else %}#{% endif %}"><i class="bi bi-chevron-left"></i></a>
+                            <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm" style="width: 40px; height: 40px;" href="{% if meta.has_prev %}{{ route('posts.index', {page: meta.current_page - 1, order: order}) }}{% else %}#{% endif %}"><i class="bi bi-chevron-left"></i></a>
                         </li>
                         {% for p in 1..meta.total_pages %}
                             <li class="page-item {{ p == meta.current_page ? 'active' }}">
-                                <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm {% if p == meta.current_page %}bg-success text-white fw-bold{% else %}text-dark fw-medium{% endif %}" style="width: 40px; height: 40px;" href="?page={{ p }}&order={{ order }}">{{ p }}</a>
+                                <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm {% if p == meta.current_page %}bg-success text-white fw-bold{% else %}text-dark fw-medium{% endif %}" style="width: 40px; height: 40px;" href="{{ route('posts.index', {page: p, order: order}) }}">{{ p }}</a>
                             </li>
                         {% endfor %}
                         <li class="page-item {{ not meta.has_next ? 'disabled' }}">
-                            <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm" style="width: 40px; height: 40px;" href="{% if meta.has_next %}?page={{ meta.current_page + 1 }}&order={{ order }}{% else %}#{% endif %}"><i class="bi bi-chevron-right"></i></a>
+                            <a class="page-link rounded-circle d-flex justify-content-center align-items-center border-0 shadow-sm" style="width: 40px; height: 40px;" href="{% if meta.has_next %}{{ route('posts.index', {page: meta.current_page + 1, order: order}) }}{% else %}#{% endif %}"><i class="bi bi-chevron-right"></i></a>
                         </li>
                     </ul>
                 </nav>

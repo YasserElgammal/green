@@ -10,7 +10,7 @@ use YasserElgammal\Green\Routing\Route;
 
 class UserController extends BaseAdminController
 {
-    #[Route('GET', '/admin/users', [AdminMiddleware::class])]
+    #[Route('GET', '/admin/users', [AdminMiddleware::class], name: 'admin.users.index')]
     public function index()
     {
         $search = $this->query('search');
@@ -41,13 +41,13 @@ class UserController extends BaseAdminController
         ]);
     }
 
-    #[Route('GET', '/admin/users/create', [AdminMiddleware::class])]
+    #[Route('GET', '/admin/users/create', [AdminMiddleware::class], name: 'admin.users.create')]
     public function create()
     {
         return view('admin/users/form', ['user' => null, 'mode' => 'create']);
     }
 
-    #[Route('POST', '/admin/users', [AdminMiddleware::class])]
+    #[Route('POST', '/admin/users', [AdminMiddleware::class], name: 'admin.users.store')]
     public function store(AdminStoreUserPayload $payload)
     {
         $data = $payload->validated();
@@ -75,7 +75,7 @@ class UserController extends BaseAdminController
         return redirect('/admin/users');
     }
 
-    #[Route('GET', '/admin/users/{id}/edit', [AdminMiddleware::class])]
+    #[Route('GET', '/admin/users/{id}/edit', [AdminMiddleware::class], name: 'admin.users.edit')]
     public function edit(int $id)
     {
         $user = (new UserTable())->fetchById($id);
@@ -88,7 +88,7 @@ class UserController extends BaseAdminController
         return view('admin/users/form', ['user' => $user, 'mode' => 'edit']);
     }
 
-    #[Route('POST', '/admin/users/{id}', [AdminMiddleware::class])]
+    #[Route('POST', '/admin/users/{id}', [AdminMiddleware::class], name: 'admin.users.update')]
     public function update(int $id, AdminUpdateUserPayload $payload)
     {
         $data = $payload->validated();
@@ -121,7 +121,7 @@ class UserController extends BaseAdminController
         return redirect('/admin/users');
     }
 
-    #[Route('POST', '/admin/users/{id}/toggle-admin', [AdminMiddleware::class])]
+    #[Route('POST', '/admin/users/{id}/toggle-admin', [AdminMiddleware::class], name: 'admin.users.toggle-admin')]
     public function toggleAdmin(int $id)
     {
         $users = new UserTable();
@@ -144,7 +144,7 @@ class UserController extends BaseAdminController
         return redirect('/admin/users');
     }
 
-    #[Route('POST', '/admin/users/{id}/delete', [AdminMiddleware::class])]
+    #[Route('POST', '/admin/users/{id}/delete', [AdminMiddleware::class], name: 'admin.users.delete')]
     public function delete(int $id)
     {
         $users = new UserTable();

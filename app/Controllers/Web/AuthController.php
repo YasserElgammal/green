@@ -11,13 +11,13 @@ use YasserElgammal\Green\Routing\Route;
 
 class AuthController
 {
-    #[Route('GET', '/register', [GuestMiddleware::class])]
+    #[Route('GET', '/register', [GuestMiddleware::class], name: 'register.form')]
     public function showRegister()
     {
         return view('auth/register');
     }
 
-    #[Route('POST', '/register', [GuestMiddleware::class])]
+    #[Route('POST', '/register', [GuestMiddleware::class], name: 'register.store')]
     public function register(RegisterPayload $payload)
     {
         $data = $payload->validated();
@@ -52,13 +52,13 @@ class AuthController
         return !$users->exists();
     }
 
-    #[Route('GET', '/login', [GuestMiddleware::class])]
+    #[Route('GET', '/login', [GuestMiddleware::class], name: 'login.form')]
     public function showLogin()
     {
         return view('auth/login');
     }
 
-    #[Route('POST', '/login', [GuestMiddleware::class])]
+    #[Route('POST', '/login', [GuestMiddleware::class], name: 'login.store')]
     public function login(Request $request)
     {
         $email = $request->input('email');
@@ -83,7 +83,7 @@ class AuthController
         return redirect('/');
     }
 
-    #[Route('POST', '/logout')]
+    #[Route('POST', '/logout', name: 'logout')]
     public function logout()
     {
         auth()->logout();

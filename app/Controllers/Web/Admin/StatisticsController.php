@@ -10,7 +10,7 @@ use YasserElgammal\Green\Routing\Route;
 
 class StatisticsController extends BaseAdminController
 {
-    #[Route('GET', '/admin/statistics', [AdminMiddleware::class])]
+    #[Route('GET', '/admin/statistics', [AdminMiddleware::class], name: 'admin.statistics')]
     public function statistics()
     {
         return view('admin/statistics', [

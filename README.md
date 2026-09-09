@@ -26,7 +26,11 @@ class PostController {
 }
 ```
 
-Pass route middleware as an array; add multiple middleware classes in the order they should run. Generate named route URLs with `route('posts.show', ['id' => 1])`.
+Pass route middleware as an array; add multiple middleware classes in the order they should run. Generate named route URLs in PHP with `route('posts.show', ['id' => 1])`, or directly in Twig:
+
+```twig
+<a href="{{ route('posts.show', {id: post.id}) }}">View post</a>
+```
 
 ### 3. Database Access
 ```php

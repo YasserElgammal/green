@@ -10,7 +10,7 @@ use YasserElgammal\Green\Drive\Drive;
 
 class PostController
 {
-    #[Route('GET', '/posts')]
+    #[Route('GET', '/posts', name: 'posts.index')]
     public function index()
     {
         $order = in_array($_GET['order'] ?? '', ['ASC', 'DESC']) ? $_GET['order'] : 'DESC';
@@ -32,7 +32,7 @@ class PostController
         ]);
     }
 
-    #[Route('GET', '/my-posts')]
+    #[Route('GET', '/my-posts', name: 'posts.mine')]
     public function myPosts()
     {
         if (!session()->has('user_id')) {
@@ -60,7 +60,7 @@ class PostController
         ]);
     }
 
-    #[Route('GET', '/posts/{id}')]
+    #[Route('GET', '/posts/{id}', name: 'posts.show')]
     public function show(int $id)
     {
         $postsTable = new PostTable();
@@ -76,7 +76,7 @@ class PostController
         return view('posts/show', ['post' => $post]);
     }
 
-    #[Route('POST', '/posts')]
+    #[Route('POST', '/posts', name: 'posts.store')]
     public function store(Request $request)
     {
         if (!session()->has('user_id')) {
@@ -116,7 +116,7 @@ class PostController
         return redirect($status === PostStatus::Draft ? '/my-posts?status=draft' : '/posts');
     }
 
-    #[Route('POST', '/my-posts/{id}/status')]
+    #[Route('POST', '/my-posts/{id}/status', name: 'posts.status.update')]
     public function updateStatus(int $id, Request $request)
     {
         if (!session()->has('user_id')) {

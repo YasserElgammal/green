@@ -8,7 +8,7 @@ use YasserElgammal\Green\Translation\TranslatorManager;
 
 class LangController
 {
-    #[Route('GET', '/lang/{locale}')]
+    #[Route('GET', '/lang/{locale}', name: 'locale.switch')]
     public function switch(string $locale): RedirectResponse
     {
         // Define allowed locales

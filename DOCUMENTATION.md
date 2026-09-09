@@ -80,13 +80,19 @@ public function show(int $id): array
 }
 ```
 
-The Router stores named routes and `UrlGenerator` builds URLs for them. Use the `route()` helper from controllers, views, or services:
+The Router stores named routes and `UrlGenerator` builds URLs for them. Use the `route()` helper from controllers or services:
 
 ```php
 $url = route('users.show', ['id' => 1]); // /users/1
 ```
 
 Route parameters in `{braces}` are replaced from the parameter array. Extra parameters are appended as a query string.
+
+The same helper is available directly in Twig. Twig parameters use mapping syntax:
+
+```twig
+<a href="{{ route('users.show', {id: user.id}) }}">View user</a>
+```
 
 ### 2.3 Routing Internals
 
