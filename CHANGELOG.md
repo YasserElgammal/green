@@ -10,8 +10,6 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Raise the PHP requirement from `^8.2` to `^8.3`.
-- Load console commands from the global `green.commands` registry and remove duplicate registrations.
-- Use `green-core` from `dev-main` through a symlinked local path repository for development.
 
 ## [2.5.0] - 2026-09-02
 
