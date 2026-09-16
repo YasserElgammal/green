@@ -459,7 +459,7 @@ $postsTable->includeCount(['comments', 'likes'])
            ->fetchAll();
 ```
 
-### 3.6 CRUD Operations
+### 3.7 CRUD Operations
 
 Green provides a streamlined way to perform Create, Read, Update, and Delete operations via the `Table` class.
 
@@ -496,6 +496,62 @@ $postsTable->update($id, [
 #### Delete
 ```php
 $postsTable->delete($id);
+```
+
+### 3.8 Database Observers
+
+Observers allow you to hook into the lifecycle of models (`creating`, `created`, `updating`, `updated`, `deleting`, `deleted`, `saving`, `saved`) to cleanly separate side effects from your core business logic.
+
+#### Generating an Observer
+
+Use the console to scaffold an observer class:
+
+```bash
+php green create:observer UserObserver
+```
+
+By default, the generator infers the model from the name (`User`). You can also specify it explicitly:
+
+```bash
+php green create:observer UserAuditObserver --model=User
+```
+
+#### Registering Observers
+
+Observers are automatically discovered and bound to models using the `#[ObservesModel]` attribute. You don't need to manually register them in a service provider.
+
+```php
+namespace App\Observers;
+
+use YasserElgammal\Green\Database\Observer;
+use YasserElgammal\Green\Database\Attributes\ObservesModel;
+use App\Models\User;
+use App\Tables\AuditTable;
+
+#[ObservesModel(User::class)]
+class UserObserver extends Observer
+{
+    // Observers are resolved from the application container,
+    // so you can use dependency injection in the constructor!
+    public function __construct(private AuditTable $audits) {}
+
+    public function creating(User $model): bool
+    {
+        // Return false to halt the database insert operation
+        if (empty($model->email)) {
+            return false; 
+        }
+        return true;
+    }
+
+    public function created(User $model): void
+    {
+        $this->audits->insert([
+            'action' => 'user_created',
+            'user_id' => $model->id,
+        ]);
+    }
+}
 ```
 
 ---
