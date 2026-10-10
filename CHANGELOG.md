@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.0] - 2026-10-10
+
+### Added
+- Add a dedicated login payload for shared web and API credential validation.
+- Add JWT configuration and persistent refresh-token support for API authentication.
+- Add focused payload, service, transformer, middleware, controller, and end-to-end user-flow tests.
+- Document polymorphic `morphTo`, `morphMany`, and `morphOne` relations with model aliases.
+
+### Changed
+- Refocus the starter application on registration, login, logout, and profile management across web and API routes.
+- Simplify authentication and profile services, controllers, payloads, transformers, views, and localized messages.
+- Use named routes throughout the remaining web authentication and profile flows.
+- Update the application bootstrap for the current Green Core application and configuration APIs.
+
+### Removed
+- Remove the bundled blog, comments, likes, roles, administration dashboard, and their routes, migrations, seeders, views, translations, and tests.
+
 ## [2.6.0] - 2026-09-10
 
 ### Added
