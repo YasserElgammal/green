@@ -3,91 +3,72 @@
 namespace App\Controllers\Web;
 
 use App\Middleware\GuestMiddleware;
+use App\Middleware\SessionAuthMiddleware;
+use App\Payloads\LoginPayload;
 use App\Payloads\RegisterPayload;
 use App\Tables\UserTable;
-use YasserElgammal\Green\Http\Request;
-use YasserElgammal\Green\Http\Response;
 use YasserElgammal\Green\Routing\Route;
 
 class AuthController
 {
     #[Route('GET', '/register', [GuestMiddleware::class], name: 'register.form')]
-    public function showRegister()
+    public function showRegister(): string
     {
         return view('auth/register');
     }
 
     #[Route('POST', '/register', [GuestMiddleware::class], name: 'register.store')]
-    public function register(RegisterPayload $payload)
+    public function register(RegisterPayload $payload): mixed
     {
         $data = $payload->validated();
-        
-        $name = $data['name'];
-        $email = $data['email'];
-        $password = $data['password'];
-
         $users = new UserTable();
-        
-        // Check if email exists
-        if ($users->fetchFirst('email', $email)) {
+
+        if ($users->fetchFirst('email', $data['email'])) {
             session()->flash('error', 'Email already in use.');
-            return redirect('/register');
+            return redirect(route('register.form'));
         }
 
         $user = $users->insert([
-            'name' => $name,
-            'email' => $email,
-            'password' => password_hash($password, PASSWORD_DEFAULT),
-            'is_admin' => $this->isFirstRegisteredUser($users) ? 1 : 0,
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => password_hash($data['password'], PASSWORD_DEFAULT),
         ]);
 
         auth()->login($user);
         session()->flash('success', 'Registration successful!');
 
-        return redirect('/');
-    }
-
-    private function isFirstRegisteredUser(UserTable $users): bool
-    {
-        return !$users->exists();
+        return redirect(route('profile.show'));
     }
 
     #[Route('GET', '/login', [GuestMiddleware::class], name: 'login.form')]
-    public function showLogin()
+    public function showLogin(): string
     {
         return view('auth/login');
     }
 
     #[Route('POST', '/login', [GuestMiddleware::class], name: 'login.store')]
-    public function login(Request $request)
+    public function login(LoginPayload $payload): mixed
     {
-        $email = $request->input('email');
-        $password = $request->input('password');
+        $credentials = $payload->validated();
+        $user = (new UserTable())->fetchFirst('email', $credentials['email']);
 
-        if (!$email || !$password) {
-            session()->flash('error', 'Email and password are required.');
-            return redirect('/login');
-        }
-
-        $users = new UserTable();
-        $user = $users->fetchFirst('email', $email);
-
-        if (!$user || !isset($user->password) || !password_verify($password, $user->password)) {
-            session()->flash('error', 'Invalid credentials.');
-            return redirect('/login');
+        if (!$user || !password_verify($credentials['password'], $user->password)) {
+            session()->flash('error', 'The email or password is incorrect.');
+            return redirect(route('login.form'));
         }
 
         auth()->login($user);
-        session()->flash('success', 'Logged in successfully!');
+        session()->flash('success', 'Welcome back, ' . $user->name . '.');
 
-        return redirect('/');
+        return redirect(route('profile.show'));
     }
 
-    #[Route('POST', '/logout', name: 'logout')]
-    public function logout()
+    #[Route('POST', '/logout', [SessionAuthMiddleware::class], name: 'logout')]
+    public function logout(): mixed
     {
         auth()->logout();
-        session()->flash('success', 'Logged out successfully!');
-        return redirect('/');
+        session()->flash('success', 'You have been logged out.');
+
+        return redirect(route('login.form'));
     }
 }

@@ -4,8 +4,8 @@ namespace App\Controllers\Web;
 
 use App\Middleware\SessionAuthMiddleware;
 use App\Payloads\ChangePasswordPayload;
-use App\Payloads\UpdateProfilePayload;
 use App\Payloads\DeleteAccountPayload;
+use App\Payloads\UpdateProfilePayload;
 use App\Services\ProfileService;
 use App\Tables\UserTable;
 use YasserElgammal\Green\Http\Request;
@@ -13,19 +13,14 @@ use YasserElgammal\Green\Routing\Route;
 
 class ProfileController
 {
-    private ProfileService $profileService;
-
-    public function __construct()
+    public function __construct(private readonly ProfileService $profiles = new ProfileService())
     {
-        $this->profileService = new ProfileService();
     }
 
     #[Route('GET', '/profile', [SessionAuthMiddleware::class], name: 'profile.show')]
-    public function index(Request $request): string
+    public function show(Request $request): string
     {
-        return view('profile/index', [
-            'user' => $request->getAttribute('user')
-        ]);
+        return view('profile/show', ['user' => $request->getAttribute('user')]);
     }
 
     #[Route('POST', '/profile', [SessionAuthMiddleware::class], name: 'profile.update')]
@@ -33,28 +28,19 @@ class ProfileController
     {
         $user = $payload->getAttribute('user');
         $data = $payload->validated();
+        $users = new UserTable();
+        $existing = $users->fetchFirst('email', $data['email']);
 
-        // Unique email check
-        $usersTable = new UserTable();
-        $existing = $usersTable->fetchFirst('email', $data['email']);
-        if ($existing && $existing->id !== $user->id) {
-            session()->flash('error', t('profile.error_email_in_use') ?: 'Email already in use.');
-            return redirect('/profile');
+        if ($existing && (int) $existing->id !== (int) $user->id) {
+            session()->flash('errors', ['email' => ['That email address is already in use.']]);
+            return redirect(route('profile.show'));
         }
 
-        // Handle uploaded avatar if present
-        $avatarFile = $_FILES['avatar'] ?? null;
-
-        $avatarPath = $this->profileService->updateProfile($user->id, $data, $avatarFile);
-        if ($avatarPath) {
-            session()->put('user_avatar', $avatarPath);
-        }
-
-        // Update name in session if changed
+        $users->update($user->id, $data);
         session()->put('user_name', $data['name']);
-        
-        session()->flash('success', t('profile.success_updated') ?: 'Profile updated successfully.');
-        return redirect('/profile');
+        session()->flash('success', 'Profile updated.');
+
+        return redirect(route('profile.show'));
     }
 
     #[Route('POST', '/profile/password', [SessionAuthMiddleware::class], name: 'profile.password.update')]
@@ -63,38 +49,27 @@ class ProfileController
         $user = $payload->getAttribute('user');
         $data = $payload->validated();
 
-        $success = $this->profileService->changePassword(
-            $user->id,
-            $data['current_password'],
-            $data['password']
-        );
-
-        if (!$success) {
-            session()->flash('error', t('profile.error_current_password') ?: 'The provided current password does not match our records.');
-            return redirect('/profile');
+        if (!$this->profiles->changePassword($user->id, $data['current_password'], $data['password'])) {
+            session()->flash('errors', ['current_password' => ['The current password is incorrect.']]);
+            return redirect(route('profile.show'));
         }
 
-        session()->flash('success', t('profile.success_password') ?: 'Password changed successfully.');
-        return redirect('/profile');
+        session()->flash('success', 'Password changed successfully.');
+        return redirect(route('profile.show'));
     }
 
     #[Route('POST', '/profile/delete', [SessionAuthMiddleware::class], name: 'profile.delete')]
-    public function deleteAccount(DeleteAccountPayload $payload): mixed
+    public function delete(DeleteAccountPayload $payload): mixed
     {
         $user = $payload->getAttribute('user');
-        $data = $payload->validated();
 
-        $success = $this->profileService->deleteAccount($user->id, $data['password']);
-
-        if (!$success) {
-            session()->flash('error', t('profile.error_current_password') ?: 'The provided current password does not match our records.');
-            return redirect('/profile');
+        if (!$this->profiles->deleteAccount($user->id, $payload->validated()['password'])) {
+            session()->flash('errors', ['delete_password' => ['The current password is incorrect.']]);
+            return redirect(route('profile.show'));
         }
 
-        // Invalidate the authenticated session and rotate its identifier.
-        session()->invalidate();
-        session()->flash('success', t('profile.success_deleted') ?: 'Your account has been deleted permanently.');
-
-        return redirect('/');
+        auth()->logout();
+        session()->flash('success', 'Your account has been deleted.');
+        return redirect(route('home'));
     }
 }

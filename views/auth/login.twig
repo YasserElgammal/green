@@ -65,10 +65,12 @@
                 <button type="submit" class="btn btn-green rounded-pill w-100 py-2.5 fw-bold shadow-sm transition-all">{{ t('auth.login.submit') }}</button>
             </form>
 
-            <!-- Bottom Redirect -->
             <div class="mt-4 text-center">
                 <small class="text-muted">
-                    {{ t('auth.login.no_account') }} <a href="{{ route('register.form') }}" class="text-success fw-semibold text-decoration-none hover-underline">{{ t('auth.login.register_here') }}</a>
+                    {{ t('auth.login.no_account') }}
+                    <a href="{{ route('register.form') }}" class="text-success fw-semibold text-decoration-none">
+                        {{ t('auth.login.register_here') }}
+                    </a>
                 </small>
             </div>
         </div>

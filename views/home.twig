@@ -6,66 +6,32 @@
     <div class="row w-100 align-items-center justify-content-center text-center animate-fade-in-up">
         <div class="col-lg-10 col-xl-8">
 
-            <h1 class="display-2 fw-bolder text-dark mb-4" style="letter-spacing: -1px; line-height: 1.1;">
-                {{ t('home.welcome') }}
-            </h1>
-            
-            <p class="lead text-muted mb-5 fs-4 mx-auto" style="max-width: 700px; line-height: 1.6;">
-                {{ t('home.description') }}
-            </p>
+            <h1 class="display-2 fw-bolder text-dark mb-4" style="letter-spacing: -1px; line-height: 1.1;">{{ t('home.welcome') }}</h1>
+            <p class="lead text-muted mb-5 fs-4 mx-auto" style="max-width: 700px; line-height: 1.6;">{{ t('home.description') }}</p>
 
             <div class="d-flex gap-3 flex-wrap justify-content-center mb-5">
+                <span class="badge bg-white text-success border border-success rounded-pill px-4 py-2 fs-6 fw-medium shadow-sm"><i class="bi bi-signpost-split me-1"></i> Attribute Routing</span>
                 <span class="badge bg-white text-success border border-success rounded-pill px-4 py-2 fs-6 fw-medium shadow-sm"><i class="bi bi-database me-1"></i> Table Gateway DB</span>
-                <span class="badge bg-white text-success border border-success rounded-pill px-4 py-2 fs-6 fw-medium shadow-sm"><i class="bi bi-filetype-html me-1"></i> Twig Templating</span>
-                <span class="badge bg-white text-success border border-success rounded-pill px-4 py-2 fs-6 fw-medium shadow-sm"><i class="bi bi-hdd-network me-1"></i> Drive Storage</span>
-                <span class="badge bg-white text-success border border-success rounded-pill px-4 py-2 fs-6 fw-medium shadow-sm"><i class="bi bi-bug me-1"></i> Error Kernel</span>
-            </div>
-            
-            <div class="d-flex gap-3 justify-content-center mt-2">
-                <a href="{{ route('posts.index') }}" class="btn btn-green rounded-pill px-5 py-3 fs-5 shadow-sm border-0 d-inline-flex align-items-center" style="transition: transform 0.3s ease;">
-                    <i class="bi bi-rocket-takeoff-fill me-2 fs-4"></i> {{ t('home.explore_blog') }}
-                </a>
-                <a href="https://github.com/YasserElgammal/green" target="_blank" class="btn btn-github-custom rounded-pill px-5 py-3 fs-5 bg-white text-dark border shadow-sm d-inline-flex align-items-center" style="transition: all 0.3s ease;">
-                    <i class="bi bi-github me-2 fs-4"></i> {{ t('home.view_on_github') }}
-                </a>
+                <span class="badge bg-white text-success border border-success rounded-pill px-4 py-2 fs-6 fw-medium shadow-sm"><i class="bi bi-filetype-html me-1"></i> Twig Templates</span>
+                <span class="badge bg-white text-success border border-success rounded-pill px-4 py-2 fs-6 fw-medium shadow-sm"><i class="bi bi-shield-check me-1"></i> Session Auth</span>
             </div>
 
+            <div class="d-flex gap-3 flex-wrap justify-content-center mt-2">
+                {% if session().has('user_id') %}
+                    <a href="{{ route('profile.show') }}" class="btn btn-green rounded-pill px-5 py-3 fs-5 shadow-sm border-0 d-inline-flex align-items-center"><i class="bi bi-person-circle me-2 fs-4"></i> View profile</a>
+                {% else %}
+                    <a href="{{ route('login.form') }}" class="btn btn-green rounded-pill px-5 py-3 fs-5 shadow-sm border-0 d-inline-flex align-items-center"><i class="bi bi-box-arrow-in-right me-2 fs-4"></i> {{ t('layout.login') }}</a>
+                {% endif %}
+                <a href="https://github.com/YasserElgammal/green" target="_blank" rel="noopener" class="btn btn-github-custom rounded-pill px-5 py-3 fs-5 bg-white text-dark border shadow-sm d-inline-flex align-items-center"><i class="bi bi-github me-2 fs-4"></i> {{ t('home.view_on_github') }}</a>
+            </div>
         </div>
     </div>
 
     <style>
-        /* Prevent scrolling by fitting the main container exactly between header and footer */
-        main.container {
-            margin-top: 0 !important;
-            margin-bottom: 0 !important;
-            height: calc(100vh - 140px); /* 100vh minus header (~70px) and footer (~70px) */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-        
-        .animate-fade-in-up {
-            animation: fadeInUp 0.8s ease-out forwards;
-        }
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* Custom hover for GitHub button */
-        .btn-github-custom:hover {
-            background-color: #24292e !important;
-            color: #ffffff !important;
-            border-color: #24292e !important;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
-        }
+        main.container { margin-top: 0 !important; margin-bottom: 0 !important; min-height: calc(100vh - 140px); display: flex; align-items: center; justify-content: center; }
+        .animate-fade-in-up { animation: fadeInUp .8s ease-out forwards; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-github-custom { transition: all .3s ease; }
+        .btn-github-custom:hover { background-color: #24292e !important; color: #fff !important; border-color: #24292e !important; transform: translateY(-2px); }
     </style>
 {% endblock %}

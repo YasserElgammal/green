@@ -20,10 +20,7 @@ if (!function_exists('auth')) {
 if (!function_exists('api')) {
     function api(): ApiResponder
     {
-        static $responder = null;
-        if ($responder === null) {
-            $responder = new ApiResponder();
-        }
-        return $responder;
+        static $instance = null;
+        return $instance ??= new ApiResponder();
     }
 }

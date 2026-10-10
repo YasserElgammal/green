@@ -409,10 +409,55 @@ protected function relations(): array
 The legacy `$relations` array format is still supported for backward compatibility. Relation DTOs are preferred because they provide explicit types, named constructor arguments for custom keys, and work with nested IQL validation.
 
 #### Supported Relation Types:
-- `belongsTo`
-- `hasOne`
-- `hasMany`
-- `manyToMany` (requires a pivot table)
+- `belongsTo` — e.g. `new BelongsTo(User::class)`
+- `hasOne` — e.g. `new HasOne(Profile::class)`
+- `hasMany` — e.g. `new HasMany(Comment::class)`
+- `manyToMany` (requires pivot) — e.g. `new ManyToMany(Role::class, 'user_role')`
+- `morphTo` (Polymorphic parent) — e.g. `new MorphTo('commentable', models: [Post::class, Video::class])`
+- `morphMany` (Polymorphic children) — e.g. `new MorphMany(Comment::class, 'commentable')`
+- `morphOne` (Polymorphic single child) — e.g. `new MorphOne(Image::class, 'imageable')`
+
+#### Polymorphic Relations
+Polymorphic relations allow a model to belong to more than one other type of model on a single association.
+
+1. **Declare the alias on each Model** using `#[MorphAlias]`:
+```php
+use YasserElgammal\Green\Database\Attributes\MorphAlias;
+
+#[MorphAlias('post')]
+class Post extends Model
+{
+    protected string $table = 'posts';
+}
+
+#[MorphAlias('video')]
+class Video extends Model
+{
+    protected string $table = 'videos';
+}
+```
+
+2. **Define the inverse (`morphTo`)** on the Table that holds the type+id columns:
+```php
+use YasserElgammal\Green\Database\Relations\MorphTo;
+
+// CommentTable — reads #[MorphAlias] from each model automatically
+'commentable' => new MorphTo('commentable', models: [Post::class, Video::class]),
+```
+
+3. **Define the children (`morphMany` or `morphOne`)** on the parent Table:
+```php
+use YasserElgammal\Green\Database\Relations\MorphMany;
+use YasserElgammal\Green\Database\Relations\MorphOne;
+
+// PostTable — reads #[MorphAlias('post')] from Post automatically
+'comments' => new MorphMany(Comment::class, 'commentable'),
+'image'    => new MorphOne(Image::class, 'imageable'),
+```
+
+Column names default to `{morphName}_type` and `{morphName}_id` (e.g. `commentable_type`, `commentable_id`). Custom columns can be overridden via `typeColumn:` and `idColumn:` named arguments.
+
+> **Override:** If you need a different alias at runtime, `MorphMap::register(['custom_alias' => Post::class])` takes priority over the attribute.
 
 #### Eager Loading (Include)
 To avoid N+1 query problems, use the `include()` method. It supports dot-notation for nested relations.
