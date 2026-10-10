@@ -3,10 +3,11 @@
 namespace Tests\Api\Controllers;
 
 use App\Controllers\Api\AuthController;
+use App\Payloads\LoginPayload;
 use App\Payloads\RegisterPayload;
 use App\Tables\UserTable;
-use YasserElgammal\Green\Http\Request;
 use Tests\TestCase;
+use YasserElgammal\Green\Http\Request;
 
 class AuthControllerTest extends TestCase
 {
@@ -18,82 +19,83 @@ class AuthControllerTest extends TestCase
         $this->controller = new AuthController();
     }
 
-    public function testLogin(): void
+    public function testUserCanRegister(): void
     {
-        $this->seed();
+        $payload = new RegisterPayload(new Request([], [
+            'name' => 'New User',
+            'email' => 'new@example.com',
+            'password' => 'password123',
+        ]));
 
-        $request = new Request([], [
-            'email' => 'test@example.com',
+        $response = $this->controller->register($payload);
+        $data = $this->json($response->getContent());
+
+        $this->assertSame(201, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertSame('new@example.com', $data['data']['user']['email']);
+        $this->assertNotNull((new UserTable())->fetchFirst('email', 'new@example.com'));
+    }
+
+    public function testUserCanLoginAndReceiveTokens(): void
+    {
+        $this->createUser();
+        $payload = new LoginPayload(new Request([], [
+            'email' => 'user@example.com',
             'password' => 'password',
-        ]);
+        ]));
 
-        $response = $this->controller->login($request);
+        $response = $this->controller->login($payload);
+        $data = $this->json($response->getContent());
 
-        $this->assertEquals(200, $response->getStatusCode());
-
-        $data = json_decode($response->getContent(), true);
+        $this->assertSame(200, $response->getStatusCode());
         $this->assertTrue($data['success']);
         $this->assertArrayHasKey('access_token', $data['data']);
         $this->assertArrayHasKey('refresh_token', $data['data']);
-        $this->assertEquals('Bearer', $data['data']['token_type']);
+        $this->assertSame('Bearer', $data['data']['token_type']);
     }
 
-    public function testLoginFails(): void
+    public function testLoginRejectsInvalidCredentials(): void
     {
-        $this->seed();
+        $this->createUser();
+        $payload = new LoginPayload(new Request([], [
+            'email' => 'user@example.com',
+            'password' => 'wrong-password',
+        ]));
 
-        $request = new Request([], [
-            'email' => 'test@example.com',
-            'password' => 'wrong',
-        ]);
+        $response = $this->controller->login($payload);
 
-        $response = $this->controller->login($request);
-
-        $this->assertEquals(401, $response->getStatusCode());
+        $this->assertSame(401, $response->getStatusCode());
+        $this->assertFalse($this->json($response->getContent())['success']);
     }
 
-    public function testRegister(): void
+    public function testRefreshRotatesTokens(): void
     {
-        $request = new Request([], [
-            'name' => 'New User',
-            'email' => 'new@example.com',
-            'password' => '123456',
-        ]);
+        $user = $this->createUser();
+        $refreshToken = auth()->issueRefreshToken($user);
 
-        $payload = new RegisterPayload($request);
+        $response = $this->controller->refresh(new Request([], [
+            'refresh_token' => $refreshToken,
+        ]));
+        $data = $this->json($response->getContent());
 
-        $response = $this->controller->register($payload);
-
-        $this->assertEquals(201, $response->getStatusCode());
-
-        $data = json_decode((string) $response->getContent(), true);
-
+        $this->assertSame(200, $response->getStatusCode());
         $this->assertTrue($data['success']);
-        $this->assertEquals('User registered successfully!', $data['message']);
-        $this->assertEquals('New User', $data['data']['user']['name']);
-        $this->assertEquals('new@example.com', $data['data']['user']['email']);
+        $this->assertArrayHasKey('access_token', $data['data']);
+        $this->assertNotSame($refreshToken, $data['data']['refresh_token']);
     }
 
-    public function testFirstRegisteredUserIsAdmin(): void
+    public function testRefreshRejectsInvalidToken(): void
     {
-        $firstPayload = new RegisterPayload(new Request([], [
-            'name' => 'First User',
-            'email' => 'first@example.com',
-            'password' => '123456',
+        $response = $this->controller->refresh(new Request([], [
+            'refresh_token' => 'invalid-token',
         ]));
 
-        $secondPayload = new RegisterPayload(new Request([], [
-            'name' => 'Second User',
-            'email' => 'second@example.com',
-            'password' => '123456',
-        ]));
+        $this->assertSame(401, $response->getStatusCode());
+        $this->assertFalse($this->json($response->getContent())['success']);
+    }
 
-        $this->controller->register($firstPayload);
-        $this->controller->register($secondPayload);
-
-        $users = new UserTable();
-
-        $this->assertSame(1, (int) $users->fetchFirst('email', 'first@example.com')->is_admin);
-        $this->assertSame(0, (int) $users->fetchFirst('email', 'second@example.com')->is_admin);
+    private function json(string $content): array
+    {
+        return json_decode($content, true, flags: JSON_THROW_ON_ERROR);
     }
 }

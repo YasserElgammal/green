@@ -5,13 +5,13 @@ namespace App\Payloads;
 use Respect\Validation\Validator as v;
 use YasserElgammal\Green\Http\Payload;
 
-class UpdateProfilePayload extends Payload
+class LoginPayload extends Payload
 {
     public function rules(): array
     {
         return [
-            'name' => v::stringType()->length(2, 100)->notEmpty(),
-            'email' => v::email()->length(7, 255)->notEmpty(),
+            'email' => v::email()->notEmpty(),
+            'password' => v::stringType()->notEmpty(),
         ];
     }
 }

@@ -11,27 +11,20 @@ $dotenv->safeLoad();
 use YasserElgammal\Green\Application;
 use YasserElgammal\Green\Config\Typed\ApplicationConfig;
 use YasserElgammal\Green\Http\Request;
-use YasserElgammal\Green\View\View;
 use YasserElgammal\Green\Http\Middleware\CsrfMiddleware;
 use YasserElgammal\Green\Security\Csrf\CsrfConfig;
+use App\Middleware\{LocaleMiddleware, LoggingMiddleware, TrimStringsMiddleware, ValidateSessionUserMiddleware, ValidationExceptionMiddleware};
 use App\Exceptions\{ApiExceptionHandler, ErrorStatusResolver, ErrorViewResolver, Handler, WebExceptionHandler};
-use App\Middleware\{LoggingMiddleware, LocaleMiddleware, TrimStringsMiddleware, ValidateSessionUserMiddleware, ValidationExceptionMiddleware};
 
-$app = new Application();
+$app = new Application(basePath: BASE_PATH);
 
 $statusResolver = new ErrorStatusResolver();
-$viewResolver = new ErrorViewResolver();
 $debug = $app->make(ApplicationConfig::class)->debug;
 $handler = new Handler(
     new ApiExceptionHandler($statusResolver, $debug),
-    new WebExceptionHandler(
-        $statusResolver,
-        $viewResolver,
-        $debug,
-    )
+    new WebExceptionHandler($statusResolver, new ErrorViewResolver(), $debug),
 );
 
-// Bind the skeleton's custom ExceptionHandler to the framework's container
 $app->instance(\YasserElgammal\Green\Exceptions\ExceptionHandler::class, $handler);
 
 // Add global middleware

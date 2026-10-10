@@ -4,8 +4,8 @@ namespace App\Controllers\Api;
 
 use App\Middleware\TokenAuthMiddleware;
 use App\Payloads\ChangePasswordPayload;
-use App\Payloads\UpdateProfilePayload;
 use App\Payloads\DeleteAccountPayload;
+use App\Payloads\UpdateProfilePayload;
 use App\Services\ProfileService;
 use App\Tables\UserTable;
 use App\Transformers\UserTransformer;
@@ -15,20 +15,14 @@ use YasserElgammal\Green\Routing\Route;
 
 class ProfileController
 {
-    private ProfileService $profileService;
-
-    public function __construct()
+    public function __construct(private readonly ProfileService $profiles = new ProfileService())
     {
-        $this->profileService = new ProfileService();
     }
 
     #[Route('GET', '/api/profile', [TokenAuthMiddleware::class])]
     public function show(Request $request): JsonResponse
     {
-        return api()->item(
-            $request->getAttribute('user'),
-            new UserTransformer()
-        );
+        return api()->item($request->getAttribute('user'), new UserTransformer());
     }
 
     #[Route('PUT', '/api/profile', [TokenAuthMiddleware::class])]
@@ -36,43 +30,20 @@ class ProfileController
     {
         $user = $payload->getAttribute('user');
         $data = $payload->validated();
+        $users = new UserTable();
+        $existing = $users->fetchFirst('email', $data['email']);
 
-        $usersTable = new UserTable();
-        $existing = $usersTable->fetchFirst('email', $data['email']);
-        if ($existing && $existing->id !== $user->id) {
-            return api()->fieldError('email', 'Email already in use.', 422);
+        if ($existing && (int) $existing->id !== (int) $user->id) {
+            return api()->fieldError('email', 'That email address is already in use.');
         }
 
-        // Standard PUT request typically doesn't contain files, but check files just in case
-        $avatarFile = $_FILES['avatar'] ?? null;
+        $users->update($user->id, $data);
 
-        $this->profileService->updateProfile($user->id, $data, $avatarFile);
-
-        $updatedUser = $usersTable->fetchById($user->id);
-
-        return api()->item($updatedUser, new UserTransformer(), 'Profile updated successfully.');
-    }
-
-    #[Route('POST', '/api/profile', [TokenAuthMiddleware::class])]
-    public function updateWithPost(UpdateProfilePayload $payload): JsonResponse
-    {
-        // For API clients uploading avatars via multipart/form-data POST
-        $user = $payload->getAttribute('user');
-        $data = $payload->validated();
-
-        $usersTable = new UserTable();
-        $existing = $usersTable->fetchFirst('email', $data['email']);
-        if ($existing && $existing->id !== $user->id) {
-            return api()->fieldError('email', 'Email already in use.', 422);
-        }
-
-        $avatarFile = $_FILES['avatar'] ?? null;
-
-        $this->profileService->updateProfile($user->id, $data, $avatarFile);
-
-        $updatedUser = $usersTable->fetchById($user->id);
-
-        return api()->item($updatedUser, new UserTransformer(), 'Profile updated successfully.');
+        return api()->item(
+            $users->fetchByIdOrFail($user->id),
+            new UserTransformer(),
+            'Profile updated.',
+        );
     }
 
     #[Route('PUT', '/api/profile/password', [TokenAuthMiddleware::class])]
@@ -81,33 +52,21 @@ class ProfileController
         $user = $payload->getAttribute('user');
         $data = $payload->validated();
 
-        $success = $this->profileService->changePassword(
-            $user->id,
-            $data['current_password'],
-            $data['password']
-        );
-
-        if (!$success) {
-            return api()->fieldError('current_password', 'The provided current password does not match our records.', 422);
+        if (!$this->profiles->changePassword($user->id, $data['current_password'], $data['password'])) {
+            return api()->fieldError('current_password', 'The current password is incorrect.');
         }
 
         return api()->success('Password changed successfully.');
     }
 
     #[Route('DELETE', '/api/profile', [TokenAuthMiddleware::class])]
-    public function destroy(DeleteAccountPayload $payload): JsonResponse
+    public function delete(DeleteAccountPayload $payload): JsonResponse
     {
         $user = $payload->getAttribute('user');
-        $data = $payload->validated();
 
-        $success = $this->profileService->deleteAccount($user->id, $data['password']);
-
-        if (!$success) {
-            return api()->fieldError('password', 'The provided current password does not match our records.', 422);
+        if (!$this->profiles->deleteAccount($user->id, $payload->validated()['password'])) {
+            return api()->fieldError('password', 'The current password is incorrect.');
         }
-
-        // Clear web session if any exists
-        session()->flush();
 
         return api()->success('Account deleted successfully.');
     }

@@ -2,20 +2,20 @@
 
 namespace Tests;
 
-use PHPUnit\Framework\TestCase as BaseTestCase;
-use YasserElgammal\Green\Database\Database;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
+use PHPUnit\Framework\TestCase as PhpUnitTestCase;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 use YasserElgammal\Green\Application;
+use YasserElgammal\Green\Database\Database;
 use YasserElgammal\Green\ErrorHandling\GreenErrorKernel;
 use YasserElgammal\Green\Session\SessionManager;
 
-abstract class TestCase extends BaseTestCase
+abstract class TestCase extends PhpUnitTestCase
 {
     protected Application $app;
-    protected ?Connection $connection = null;
+    protected Connection $connection;
 
     protected function setUp(): void
     {
@@ -25,139 +25,38 @@ abstract class TestCase extends BaseTestCase
             define('BASE_PATH', dirname(__DIR__));
         }
 
-        $this->app = new Application();
+        $_ENV['JWT_SECRET'] = 'test-secret-that-is-at-least-thirty-two-characters';
+        $_ENV['JWT_TTL'] = 3600;
+
+        $this->app = new Application(basePath: BASE_PATH);
         $app = $this->app;
         require BASE_PATH . '/routes/web.php';
+        require BASE_PATH . '/routes/api.php';
+
         $this->app->instance(
             SessionManager::class,
             new SessionManager(new Session(new MockArraySessionStorage())),
         );
 
-        // 1. Setup Environment
-        $_ENV['JWT_SECRET'] = 'test-secret-key-that-is-long-enough-32-chars-for-hs256';
-        $_ENV['JWT_TTL'] = 3600;
         auth()->logout();
-
-        // 2. Setup in-memory SQLite connection
-        $connectionParams = [
-            'driver' => 'pdo_sqlite',
-            'memory' => true,
-        ];
-        
-        $this->connection = DriverManager::getConnection($connectionParams);
-        
-        // 2. Inject into the framework's Database singleton
+        $this->connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]);
         Database::setConnection($this->connection);
-
-        // 3. Create schema (SQLite compatible)
-        $this->createSchema();
+        $this->connection->executeStatement('CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, password TEXT NOT NULL, refresh_token TEXT UNIQUE, created_at DATETIME, updated_at DATETIME)');
     }
 
     protected function tearDown(): void
     {
         $this->app->make(GreenErrorKernel::class)->unregister();
-
-        // Reset the singleton connection
         Database::setConnection(null);
-        $this->connection = null;
-
         parent::tearDown();
     }
 
-    private function createSchema(): void
+    protected function createUser(string $email = 'user@example.com'): object
     {
-        // Users
-        $this->connection->executeStatement("
-            CREATE TABLE users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                email TEXT NOT NULL UNIQUE,
-                password TEXT NOT NULL,
-                is_admin INTEGER NOT NULL DEFAULT 0,
-                avatar TEXT,
-                refresh_token TEXT,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        ");
-
-        // Posts
-        $this->connection->executeStatement("
-            CREATE TABLE posts (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                title TEXT NOT NULL,
-                status TEXT NOT NULL DEFAULT 'draft',
-                body TEXT NOT NULL,
-                image TEXT,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-            )
-        ");
-
-        // Roles
-        $this->connection->executeStatement("
-            CREATE TABLE roles (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL UNIQUE,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        ");
-
-        // User Roles pivot
-        $this->connection->executeStatement("
-            CREATE TABLE user_roles (
-                user_id INTEGER NOT NULL,
-                role_id INTEGER NOT NULL,
-                PRIMARY KEY (user_id, role_id),
-                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-                FOREIGN KEY (role_id) REFERENCES roles (id) ON DELETE CASCADE
-            )
-        ");
-
-        // Comments
-        $this->connection->executeStatement("
-            CREATE TABLE comments (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                post_id INTEGER NOT NULL,
-                user_id INTEGER NOT NULL,
-                content TEXT NOT NULL,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE,
-                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-            )
-        ");
-
-        // Likes
-        $this->connection->executeStatement("
-            CREATE TABLE likes (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                comment_id INTEGER,
-                post_id INTEGER,
-                user_id INTEGER NOT NULL,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (comment_id) REFERENCES comments (id) ON DELETE CASCADE,
-                FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE,
-                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-            )
-        ");
-    }
-
-    protected function seed(): void
-    {
-        $password = password_hash('password', PASSWORD_DEFAULT);
-        $this->connection->insert('users', ['name' => 'Test User', 'email' => 'test@example.com', 'password' => $password]);
-        $this->connection->insert('users', ['name' => 'Admin User', 'email' => 'admin@example.com', 'password' => $password, 'is_admin' => 1]);
-        
-        $this->connection->insert('posts', [
-            'user_id' => 1,
-            'title'   => 'Test Post',
-            'status'  => 'published',
-            'body'    => 'This is a test post body.'
+        return (new \App\Tables\UserTable())->insert([
+            'name' => 'Demo User',
+            'email' => $email,
+            'password' => password_hash('password', PASSWORD_DEFAULT),
         ]);
     }
 }

@@ -1,0 +1,92 @@
+{% extends "layout.twig" %}
+
+{% block title %}{{ t('profile.title') }}{% endblock %}
+
+{% block content %}
+{% set formErrors = session().getFlash('errors') %}
+<div class="row justify-content-center my-4">
+    <div class="col-lg-8">
+        <div class="glass-card p-4 p-md-5 border-0 shadow-lg position-relative overflow-hidden">
+            <div class="position-absolute top-0 start-0 w-100" style="height: 5px; background: linear-gradient(90deg, var(--green-primary), var(--green-dark));"></div>
+            <div class="d-flex align-items-center mb-4">
+                <div class="auth-icon-container mb-0 me-3"><i class="bi bi-person-fill"></i></div>
+                <div>
+                    <h2 class="fw-bold mb-1">{{ t('profile.title') }}</h2>
+                    <p class="text-muted mb-0">{{ t('profile.profile_info_sub') }}</p>
+                </div>
+            </div>
+
+            <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+                <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-info" type="button">{{ t('profile.profile_info') }}</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-password" type="button">{{ t('profile.change_password') }}</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link text-danger" data-bs-toggle="tab" data-bs-target="#profile-delete" type="button">{{ t('profile.delete_account') }}</button></li>
+            </ul>
+
+            <div class="tab-content pt-4">
+                <div class="tab-pane fade show active" id="profile-info">
+                    <form action="{{ route('profile.update') }}" method="POST" class="row g-3">
+                        {{ csrf_field() }}
+                        <div class="col-12">
+                            <label class="form-label-custom" for="name">{{ t('profile.name') }}</label>
+                            <input type="text" class="form-control form-control-custom {% if formErrors.name %}is-invalid{% endif %}" id="name" name="name" value="{{ user.name }}" required>
+                            {% if formErrors.name %}<div class="invalid-feedback d-block fw-medium mt-1">{{ formErrors.name[0] }}</div>{% endif %}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label-custom" for="email">{{ t('profile.email') }}</label>
+                            <input type="email" class="form-control form-control-custom {% if formErrors.email %}is-invalid{% endif %}" id="email" name="email" value="{{ user.email }}" required>
+                            {% if formErrors.email %}<div class="invalid-feedback d-block fw-medium mt-1">{{ formErrors.email[0] }}</div>{% endif %}
+                        </div>
+                        <div class="col-12 pt-2"><button type="submit" class="btn btn-green rounded-pill px-4"><i class="bi bi-check-lg me-1"></i>{{ t('profile.save') }}</button></div>
+                    </form>
+                </div>
+
+                <div class="tab-pane fade" id="profile-password">
+                    <form action="{{ route('profile.password.update') }}" method="POST" class="row g-3">
+                        {{ csrf_field() }}
+                        <div class="col-12">
+                            <label class="form-label-custom" for="current_password">{{ t('profile.current_password') }}</label>
+                            <input type="password" class="form-control form-control-custom {% if formErrors.current_password %}is-invalid{% endif %}" id="current_password" name="current_password" required>
+                            {% if formErrors.current_password %}<div class="invalid-feedback d-block fw-medium mt-1">{{ formErrors.current_password[0] }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6"><label class="form-label-custom" for="password">{{ t('profile.new_password') }}</label><input type="password" class="form-control form-control-custom {% if formErrors.password %}is-invalid{% endif %}" id="password" name="password" minlength="8" required>{% if formErrors.password %}<div class="invalid-feedback d-block fw-medium mt-1">{{ formErrors.password[0] }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label-custom" for="confirm_password">{{ t('profile.confirm_password') }}</label><input type="password" class="form-control form-control-custom {% if formErrors.confirm_password %}is-invalid{% endif %}" id="confirm_password" name="confirm_password" minlength="8" required>{% if formErrors.confirm_password %}<div class="invalid-feedback d-block fw-medium mt-1">{{ formErrors.confirm_password[0] }}</div>{% endif %}</div>
+                        <div class="col-12 pt-2"><button type="submit" class="btn btn-green rounded-pill px-4"><i class="bi bi-key me-1"></i>{{ t('profile.change_password') }}</button></div>
+                    </form>
+                </div>
+
+                <div class="tab-pane fade" id="profile-delete">
+                    <div class="alert alert-danger border-0 rounded-4"><h4 class="alert-heading">{{ t('profile.delete_confirm_title') }}</h4><p class="mb-0">{{ t('profile.delete_confirm_msg') }}</p></div>
+                    <form action="{{ route('profile.delete') }}" method="POST" class="row g-3">
+                        {{ csrf_field() }}
+                        <div class="col-12">
+                            <label class="form-label-custom" for="delete_password">{{ t('profile.current_password') }}</label>
+                            <input type="password" class="form-control form-control-custom {% if formErrors.delete_password %}is-invalid{% endif %}" id="delete_password" name="password" required>
+                            {% if formErrors.delete_password %}<div class="invalid-feedback d-block fw-medium mt-1">{{ formErrors.delete_password[0] }}</div>{% endif %}
+                        </div>
+                        <div class="col-12 pt-2"><button type="submit" class="btn btn-danger rounded-pill px-4"><i class="bi bi-trash me-1"></i>{{ t('profile.delete_permanently') }}</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var activeTabId = localStorage.getItem('profileActiveTab');
+    if (activeTabId) {
+        var tabNode = document.querySelector('button[data-bs-target="' + activeTabId + '"]');
+        if (tabNode) {
+            var tab = new bootstrap.Tab(tabNode);
+            tab.show();
+        }
+    }
+
+    var tabElements = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    tabElements.forEach(function(btn) {
+        btn.addEventListener('shown.bs.tab', function(e) {
+            localStorage.setItem('profileActiveTab', e.target.getAttribute('data-bs-target'));
+        });
+    });
+});
+</script>
+{% endblock %}

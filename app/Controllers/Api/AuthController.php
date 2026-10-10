@@ -2,6 +2,7 @@
 
 namespace App\Controllers\Api;
 
+use App\Payloads\LoginPayload;
 use App\Payloads\RegisterPayload;
 use App\Tables\UserTable;
 use YasserElgammal\Green\Http\JsonResponse;
@@ -11,15 +12,13 @@ use YasserElgammal\Green\Routing\Route;
 class AuthController
 {
     #[Route('POST', '/api/login')]
-    public function login(Request $request): JsonResponse
+    public function login(LoginPayload $payload): JsonResponse
     {
-        $users = new UserTable();
-        $user  = $users->fetchFirst('email', $request->input('email'));
+        $credentials = $payload->validated();
+        $user = (new UserTable())->fetchFirst('email', $credentials['email']);
 
-        if (!$user || !password_verify((string) $request->input('password'), $user->password)) {
-            return api()->error('Unauthorized.', [
-                'credentials' => ['The provided credentials are invalid.'],
-            ], 401);
+        if (!$user || !password_verify($credentials['password'], $user->password)) {
+            return api()->error('The email or password is incorrect.', [], 401);
         }
 
         $token = auth()->issueToken($user);
@@ -29,7 +28,7 @@ class AuthController
             'access_token' => $token,
             'refresh_token' => $refreshToken,
             'token_type' => 'Bearer',
-            'expires_in' => (int) ($_ENV['JWT_TTL'] ?? 3600),
+            'expires_in' => (int) config('jwt.ttl', 3600),
         ]);
     }
 
@@ -48,15 +47,14 @@ class AuthController
             return api()->fieldError('refresh_token', 'Invalid refresh token.', 401);
         }
 
-        // Issue new tokens (rotate refresh token for security)
-        $newAccessToken  = auth()->issueToken($user);
+        $newAccessToken = auth()->issueToken($user);
         $newRefreshToken = auth()->issueRefreshToken($user);
 
         return api()->success('Token refreshed successfully.', [
             'access_token' => $newAccessToken,
             'refresh_token' => $newRefreshToken,
             'token_type' => 'Bearer',
-            'expires_in' => (int) ($_ENV['JWT_TTL'] ?? 3600),
+            'expires_in' => (int) config('jwt.ttl', 3600),
         ]);
     }
 
@@ -70,10 +68,9 @@ class AuthController
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => password_hash($data['password'], PASSWORD_DEFAULT),
-            'is_admin' => $this->isFirstRegisteredUser($users) ? 1 : 0,
         ]);
 
-        //TODO send verification email
+        // TODO: Send verification email.
 
         return api()->success('User registered successfully!', [
             'user' => [
@@ -83,8 +80,4 @@ class AuthController
         ], 201);
     }
 
-    private function isFirstRegisteredUser(UserTable $users): bool
-    {
-        return !$users->exists();
-    }
 }
