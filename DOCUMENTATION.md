@@ -1819,7 +1819,7 @@ The file driver clears PHP's file stat cache after deletion, so `has()` reflects
 
 ---
 
-## 📡 16. Events & Signals
+## 📡 16. Signals
 
 The `SignalDispatcher` provides a small decoupled event system for application signals.
 
@@ -1932,3 +1932,167 @@ Use the console generators to create authorization classes:
 php green create:authorizer User
 php green create:policy User
 ```
+
+---
+
+## 18. Queues
+
+Green queues let slow work, such as sending email, run outside the HTTP request. Jobs explicitly implement `JobInterface` and are dispatched through the container-managed `QueueManager`.
+
+### 18.1 Create a Job
+
+Jobs are serialized when they are queued, so store simple values such as IDs or email addresses on the job. Resolve any required application services inside `handle()` instead of placing service objects in the constructor.
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Jobs;
+
+use App\Services\WelcomeEmailService;
+use YasserElgammal\Green\Queue\Contracts\JobInterface;
+
+final class SendWelcomeEmail implements JobInterface
+{
+    public function __construct(
+        private readonly string $email,
+        private readonly string $name,
+    ) {}
+
+    public function handle(): void
+    {
+        app(WelcomeEmailService::class)->send(
+            email: $this->email,
+            name: $this->name,
+        );
+    }
+
+    public function maxAttempts(): int
+    {
+        return 3;
+    }
+
+    public function retryDelay(): int
+    {
+        return 60;
+    }
+}
+```
+
+If `handle()` throws, the worker releases the job back to the queue after `retryDelay()` seconds. Once `maxAttempts()` is reached, the job is removed.
+
+### 18.2 Dispatch the Job
+
+Inject `QueueManager` into a controller or service and pass the job to `dispatch()`. The second argument is the queue name; the optional third argument is the configured connection name.
+
+```php
+<?php
+
+namespace App\Controllers\Api;
+
+use App\Jobs\SendWelcomeEmail;
+use YasserElgammal\Green\Queue\QueueManager;
+
+final class RegistrationController
+{
+    public function __construct(private readonly QueueManager $queue) {}
+
+    public function store(): array
+    {
+        // Create the user first...
+        $user = ['name' => 'Lara', 'email' => 'lara@example.com'];
+
+        $jobId = $this->queue->dispatch(
+            new SendWelcomeEmail($user['email'], $user['name']),
+            queue: 'emails',
+            connection: 'database',
+        );
+
+        return ['queued' => true, 'job_id' => $jobId];
+    }
+}
+```
+
+Omit `connection: 'database'` to use the default connection. The `sync` connection runs the job immediately and does not require a worker; it is useful during development and testing.
+
+### 18.3 Select the Queue Connection
+
+The built-in connections are `sync` and `database`. Set the default in `.env`:
+
+```env
+# Run jobs immediately
+QUEUE_CONNECTION=sync
+
+# Or store jobs for a background worker
+# QUEUE_CONNECTION=database
+```
+
+The database connection uses the application's default database and the `queue_jobs` table.
+
+### 18.4 Create the Queue Table
+
+For the `database` connection, create a migration containing the queue schema:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use YasserElgammal\Green\Database\Migrations\Migration;
+use YasserElgammal\Green\Database\Schema\Blueprint;
+use YasserElgammal\Green\Database\Schema\Schema;
+
+class CreateQueueJobsTable extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('queue_jobs', function (Blueprint $table): void {
+            $table->id();
+            $table->string('queue', 255);
+            $table->text('payload');
+            $table->integer('attempts');
+            $table->timestamp('available_at');
+            $table->timestamp('reserved_at')->nullable();
+            $table->timestamp('created_at');
+            $table->index(['queue', 'available_at']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('queue_jobs');
+    }
+}
+```
+
+Then run the migration:
+
+```bash
+php green migrate
+```
+
+### 18.5 Run the Worker
+
+Process the `emails` queue with the database connection:
+
+```bash
+php green queue:work --queue=emails --connection=database
+```
+
+Worker options:
+
+| Option | Description | Default |
+| :--- | :--- | :--- |
+| `--queue` | Queue name to process. | `default` |
+| `--connection` | Configured queue connection; omitted uses the default. | Default connection |
+| `--sleep` | Seconds to wait when the queue is empty. | `3` |
+| `--max-jobs` | Stop after this many processed jobs; `0` runs continuously. | `0` |
+
+For example, process at most 100 email jobs and wait one second when the queue is empty:
+
+```bash
+php green queue:work --queue=emails --connection=database --sleep=1 --max-jobs=100
+```
+
+In production, keep the worker alive with a process supervisor and restart it after deploying code that changes a serialized job class.

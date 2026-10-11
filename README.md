@@ -75,8 +75,9 @@ The framework is divided into several powerful subsystems. Please refer to the *
 - **[Include Query Language](DOCUMENTATION.md#-12-include-query-language-iql)**: Advanced relation loading with limits, ordering, filtering, and column selection.
 - **[Connect](DOCUMENTATION.md#13-connect-external-http-apis)**: Outgoing HTTP requests for third-party APIs and services.
 - **[Cache](DOCUMENTATION.md#-15-cache-management)**: Cache manager, stores, drivers, and remember().
-- **[Events & Signals](DOCUMENTATION.md#-16-events--signals)**: Signal dispatcher, listeners, and event generators.
+- **[Signals](DOCUMENTATION.md#-16-signals)**: Signal dispatcher, listeners, and event generators.
 - **[Authorization](DOCUMENTATION.md#-17-authorization-gate--policies)**: Authorizer, policies, and controller `PolicyAttribute` checks.
+- **[Queues](DOCUMENTATION.md#18-queues)**: Create jobs, dispatch background work, configure retries, and run workers.
 
 ---
 
