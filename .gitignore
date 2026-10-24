@@ -5,6 +5,8 @@
 
 # Vendor directory
 /vendor/
+/vendor-jwt-dev/
+/vendor-session-dev/
 
 # Node modules & Frontend
 /node_modules/
@@ -46,3 +48,4 @@ database.sqlite
 
 # Composer
 composer.lock
+composer.*-dev.lock

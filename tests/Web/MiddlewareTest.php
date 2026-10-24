@@ -5,7 +5,6 @@ namespace Tests\Web;
 use App\Middleware\GuestMiddleware;
 use App\Middleware\LocaleMiddleware;
 use App\Middleware\SessionAuthMiddleware;
-use App\Middleware\TokenAuthMiddleware;
 use App\Middleware\TrimStringsMiddleware;
 use App\Middleware\ValidateSessionUserMiddleware;
 use App\Middleware\ValidationExceptionMiddleware;
@@ -14,18 +13,19 @@ use YasserElgammal\Green\Http\RedirectResponse;
 use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\Http\Response;
 use YasserElgammal\Green\Http\ValidationException;
+use YasserElgammal\Green\Auth\AuthenticationException;
 
 class MiddlewareTest extends TestCase
 {
     public function testGuestIsRedirectedFromProfile(): void
     {
-        $response = (new SessionAuthMiddleware())->handle(new Request(), fn () => new Response('ok'));
-        $this->assertInstanceOf(RedirectResponse::class, $response);
+        $this->expectException(AuthenticationException::class);
+        (new SessionAuthMiddleware())->handle(new Request(), fn () => new Response('ok'));
     }
 
     public function testAuthenticatedUserIsRedirectedFromLogin(): void
     {
-        auth()->login($this->createUser());
+        auth_service()->login($this->createUser());
         $response = (new GuestMiddleware())->handle(new Request(), fn () => new Response('ok'));
         $this->assertInstanceOf(RedirectResponse::class, $response);
     }
@@ -82,30 +82,10 @@ class MiddlewareTest extends TestCase
         $this->assertSame($expected, (new ValidationExceptionMiddleware())->handle(new Request(), fn () => $expected));
     }
 
-    public function testTokenMiddlewareRejectsMissingAndInvalidTokens(): void
-    {
-        $middleware = new TokenAuthMiddleware();
-        $missing = $middleware->handle(new Request(), fn () => new Response('unreachable'));
-        $invalid = $middleware->handle(new Request(server: ['HTTP_AUTHORIZATION' => 'Bearer invalid']), fn () => new Response('unreachable'));
-        $this->assertSame(401, $missing->getStatusCode());
-        $this->assertSame(401, $invalid->getStatusCode());
-    }
-
-    public function testTokenMiddlewareAttachesTheAuthenticatedUser(): void
-    {
-        $user = $this->createUser();
-        $request = new Request(server: ['HTTP_AUTHORIZATION' => 'Bearer ' . auth()->issueToken($user)]);
-        $response = (new TokenAuthMiddleware())->handle($request, function (Request $request) use ($user): Response {
-            $this->assertSame($user->id, $request->getAttribute('user')->id);
-            return new Response('ok');
-        });
-        $this->assertSame('ok', $response->getContent());
-    }
-
     public function testValidateSessionUserMiddlewareAllowsAValidLoginToContinue(): void
     {
         $user = $this->createUser();
-        auth()->login($user);
+        auth_service()->login($user);
         $response = (new ValidateSessionUserMiddleware())->handle(new Request(), fn () => new Response('ok'));
         $this->assertSame('ok', $response->getContent());
         $this->assertSame($user->id, auth()->user()->id);

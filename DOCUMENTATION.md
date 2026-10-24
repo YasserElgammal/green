@@ -2,6 +2,193 @@
 
 Welcome to the official technical reference for the **Green PHP Framework**. This document provides a deep dive into the architecture, components, and best practices for building modern web applications and APIs.
 
+## Green Auth
+
+Authentication resolves the identity of one request:
+
+```text
+Request -> Authenticator -> Current identity -> Controller -> Authorizer
+```
+
+Web requests use the application `SessionAuthenticator` by default. JWT is an
+optional Composer adapter: `yasser-elgammal/green-auth-jwt`. API auth/profile
+routes are registered only when `auth.jwt.enabled` is explicitly enabled.
+The application implements `IdentityResolverInterface` in `UserIdentityResolver`;
+the adapter package has no dependency on the User model or UserTable.
+
+Session identities use a key derived automatically from the model's short class
+name. `SessionIdentityKey::forModel(User::class)` produces
+`auth.user.user_id`; another model uses the same
+`auth.{model}.{model}_id` convention, such as
+`auth.admin.admin_id`, `auth.customer.customer_id`, or
+`auth.partner.partner_id`.
+
+Use `auth()->user()`, `auth()->id()`, `auth()->check()`, `auth()->guest()`, and
+`$request->user()`. The two user methods return the identical resolved object.
+Resolution is cached on the request, and the active request is detached after
+every dispatch, including exceptional dispatches.
+Nested dispatch restores the outer request. A single `Application` instance
+supports sequential and synchronous nested requests; interleaved dispatch from
+different PHP Fibers is rejected because the Container is not Fiber-scoped.
+
+Identity identifiers come from Green `Model::getPrimaryKeyValue()` or a
+conventional integer/string `id` property. Other objects remain valid identities
+and return `null` from `auth()->id()`.
+
+The global session resolver also supports public web routes. Existing
+`SessionAuthMiddleware` and `TokenAuthMiddleware` enforce protected routes; API
+failures are HTTP 401 and web failures redirect to `/login`. Invalid supplied
+bearer credentials never fall back to a session.
+
+```php
+#[Route('GET', '/profile', [SessionAuthMiddleware::class])]
+public function show(Request $request): mixed
+{
+    return $request->user();
+}
+
+#[Route('GET', '/api/profile', [TokenAuthMiddleware::class])]
+public function apiProfile(Request $request): mixed
+{
+    return $request->user();
+}
+```
+
+The first authenticator to resolve a request determines its identity. A later
+middleware using another authenticator fails with 401, even if the first result
+was anonymous. Public web requests use the optional session resolver; API routes
+select JWT explicitly. Protected routes never accept a manually assigned user
+attribute as proof of authentication.
+
+Login and logout remain workflows in `auth_service()`. Optional JWT issuance and
+refresh workflows use `app(App\Services\JwtTokenService::class)` instead.
+Session login regenerates the ID and logout invalidates it.
+Calls such as `auth()->login($user)` migrate to `auth_service()->login($user)`.
+Successful login updates the current request identity immediately, including
+when it was previously resolved as anonymous; logout immediately clears it.
+
+JWT authentication uses the optional package's `JwtService`, configured algorithm, expiration
+and not-before validation, plus optional issuer/audience checks. Custom methods
+implement Core's `Authenticator` contract and compose the generic `Authenticate`
+middleware. Future Green Keys integration therefore needs no Core redesign.
+
+Access JWTs now require `token_type: access`; JWTs issued before this change
+must be reissued. A refresh token is a distinct `green_refresh_` secret, stored
+only as its SHA-256 hash in the package-owned `refresh_tokens` table.
+The package owns the repository, manager, command, and migration template;
+the application supplies its identity resolver. Publish the table migration
+with `php green jwt:install-refresh`, review it, then run
+`php green migrate` yourself before setting `AUTH_JWT_REFRESH_TOKENS=true`.
+The publish command never runs schema changes or overwrites an existing migration.
+The historical users refresh columns and their data are retained but are no
+longer read. Clients with legacy refresh tokens must log in again; no data is
+imported or deleted automatically. Each device gets an independent row, scoped
+by modelable_type and modelable_id. Configure jwt.refresh_owner_type for the
+application resolver. Rotation revokes the old row and inserts its replacement
+in one transaction; replay returns 401. Changing a password or deleting an
+account revokes all of that owner's refresh tokens. Access JWTs remain valid until exp
+even after logout or password change; immediate access-token revocation is not
+implemented.
+
+Login, registration, and refresh routes use Green's existing `throttle`
+middleware. Its guest key uses the server-provided `REMOTE_ADDR`, not an
+untrusted forwarded header. Behind a reverse proxy, configure the web server to
+provide a trusted client address and a shared rate-limit store for all workers.
+
+`config/session.php` sets HttpOnly and SameSite=Lax cookies; Secure defaults to
+true when `APP_ENV=production` and false for local development. Set the cookie
+path, domain, lifetime, SameSite value, and an explicit Secure override through
+the corresponding `SESSION_*` environment values. Keep HTTPS enabled in
+production. Existing flash messages and CSRF continue using `SessionManager`.
+
+Applications can implement the one-method `Authenticator` contract and compose
+it with `YasserElgammal\Green\Http\Middleware\Authenticate`. Core does not
+require a special user model, guard, or user provider.
+
+```php
+final class KeyAuthenticator implements \YasserElgammal\Green\Auth\Authenticator
+{
+    public function authenticate(\YasserElgammal\Green\Http\Request $request): ?object
+    {
+        // Validate credentials and return the application identity or null.
+    }
+}
+```
+
+Authentication answers who is making the request. `Authorizer` separately asks
+whether that identity may act; authentication failures are 401 and authorization
+failures are 403.
+
+### Optional JWT installation and migration
+
+Two isolated Composer profiles are provided for this local extraction. In
+PowerShell, select a profile for install, then clear COMPOSER afterwards:
+
+```powershell
+$env:COMPOSER = 'composer.session-dev.json'
+composer install
+Remove-Item Env:COMPOSER
+$env:GREEN_TEST_VENDOR = 'vendor-session-dev'
+php vendor-session-dev/bin/phpunit
+Remove-Item Env:GREEN_TEST_VENDOR
+
+$env:COMPOSER = 'composer.jwt-dev.json'
+composer install
+Remove-Item Env:COMPOSER
+$env:GREEN_TEST_VENDOR = 'vendor-jwt-dev'
+php vendor-jwt-dev/bin/phpunit -c phpunit-jwt.xml
+Remove-Item Env:GREEN_TEST_VENDOR
+```
+
+These profiles use the real local `dev-main` checkout through path repositories
+and isolated vendor directories; the release composer.json constraint is not
+changed. For application runtime with a development profile, point the entry
+point's Composer require to that profile's vendor/autoload.php. Production
+installations use the normal vendor directory after compatible releases exist.
+
+The sibling package is development source, not a published release. For local
+development, add a Composer path repository pointing to `../green-auth-jwt` and
+require `yasser-elgammal/green-auth-jwt` with a development constraint appropriate
+to that checkout. The package's own `composer install` uses the sibling Core path.
+Coordinate the Core breaking release and package constraints before publishing;
+the skeleton's existing Core constraint has deliberately not been changed to a
+fictional version.
+
+After installing, set `AUTH_JWT_ENABLED=true` and configure `JWT_SECRET` for HMAC,
+or `JWT_VERIFICATION_KEY` and optional `JWT_SIGNING_KEY` for RSA. HMAC requires
+32/48/64 bytes for HS256/384/512 respectively; use cryptographically random key
+material. RSA requires a matching private/public pair with at least 2048 bits;
+verification-only deployments omit the signing key. Unsupported algorithms fail
+configuration. `JwtIntegrationServiceProvider` explicitly registers the adapter
+only when enabled; missing installation fails clearly.
+
+Migrate imports from `YasserElgammal\Green\Security\Jwt` to
+`YasserElgammal\Green\AuthJwt`. Session AuthService no longer composes JWT traits.
+RefreshTokenManager and RefreshTokenRepository are provided by the package;
+multiple device credentials are supported without altering the users schema.
+The table stores id, modelable_id, modelable_type, token_hash, expires_at,
+revoked_at, last_used_at, device_name, created_at, and updated_at.
+
+Tests: `vendor/bin/phpunit` runs the Session-default suite. Run
+`vendor/bin/phpunit -c phpunit-jwt.xml` for optional JWT integration. The latter
+bootstrap can load the sibling package's Composer loader for local development;
+production uses the application's Composer installation.
+
+Green Key or OAuth2 integrations implement `Authenticator`, register their own
+provider and resolver, then select middleware explicitly:
+
+```php
+$router->aliasMiddleware('auth.green-key', fn () => new Authenticate(
+    app(GreenKeyAuthenticator::class), context: 'green-key',
+));
+```
+
+Both `Auth::resolve()` and `synchronizeUser()` accept an optional context string;
+different contexts using the same adapter class cannot replace each other's
+identity. A composite adapter, if needed, must define its credential selection
+and rejection rules explicitly. OAuth2 server/client storage is owned by its
+future package; Laravel Passport is not assumed compatible.
+
 ---
 
 ## 🏗️ 1. Core Architecture

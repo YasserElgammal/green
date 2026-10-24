@@ -1,15 +1,15 @@
 <?php
 
-namespace Tests\Api\Controllers;
+namespace Tests\Jwt\Api\Controllers;
 
 use App\Controllers\Api\AuthController;
 use App\Payloads\LoginPayload;
 use App\Payloads\RegisterPayload;
 use App\Tables\UserTable;
-use Tests\TestCase;
+use Tests\JwtTestCase;
 use YasserElgammal\Green\Http\Request;
 
-class AuthControllerTest extends TestCase
+class AuthControllerTest extends JwtTestCase
 {
     private AuthController $controller;
 
@@ -71,7 +71,7 @@ class AuthControllerTest extends TestCase
     public function testRefreshRotatesTokens(): void
     {
         $user = $this->createUser();
-        $refreshToken = auth()->issueRefreshToken($user);
+        $refreshToken = app(\App\Services\JwtTokenService::class)->issueRefreshToken($user);
 
         $response = $this->controller->refresh(new Request([], [
             'refresh_token' => $refreshToken,
@@ -82,6 +82,10 @@ class AuthControllerTest extends TestCase
         $this->assertTrue($data['success']);
         $this->assertArrayHasKey('access_token', $data['data']);
         $this->assertNotSame($refreshToken, $data['data']['refresh_token']);
+        $this->assertNull(app(\App\Services\JwtTokenService::class)->verifyRefreshToken($refreshToken));
+        $this->assertSame(401, $this->controller->refresh(new Request([], [
+            'refresh_token' => $refreshToken,
+        ]))->getStatusCode());
     }
 
     public function testRefreshRejectsInvalidToken(): void
@@ -92,6 +96,42 @@ class AuthControllerTest extends TestCase
 
         $this->assertSame(401, $response->getStatusCode());
         $this->assertFalse($this->json($response->getContent())['success']);
+    }
+
+    public function testRefreshRejectsAnAccessToken(): void
+    {
+        $user = $this->createUser();
+        $response = $this->controller->refresh(new Request([], [
+            'refresh_token' => app(\App\Services\JwtTokenService::class)->issueToken($user),
+        ]));
+
+        $this->assertSame(401, $response->getStatusCode());
+    }
+
+    public function testRefreshRejectsArrayInputWithoutServerError(): void
+    {
+        $response = $this->controller->refresh(new Request([], [
+            'refresh_token' => ['unexpected'],
+        ]));
+
+        $this->assertSame(422, $response->getStatusCode());
+    }
+
+    public function testRefreshTokenIsHashedAndExpires(): void
+    {
+        $user = $this->createUser();
+        $plainToken = app(\App\Services\JwtTokenService::class)->issueRefreshToken($user);
+        $stored = $this->connection->fetchAssociative('SELECT * FROM refresh_tokens WHERE modelable_id = ?', [(string) $user->id]);
+
+        $this->assertStringStartsWith('green_refresh_', $plainToken);
+        $this->assertNotSame($plainToken, $stored['token_hash']);
+        $this->assertSame(hash('sha256', $plainToken), $stored['token_hash']);
+
+        $this->connection->update('refresh_tokens', [
+            'expires_at' => gmdate('Y-m-d H:i:s', time() - 1),
+        ], ['id' => $stored['id']]);
+
+        $this->assertNull(app(\App\Services\JwtTokenService::class)->verifyRefreshToken($plainToken));
     }
 
     private function json(string $content): array

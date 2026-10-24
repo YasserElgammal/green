@@ -11,7 +11,7 @@ use YasserElgammal\Green\Routing\Route;
 
 class AuthController
 {
-    #[Route('POST', '/api/login')]
+    #[Route('POST', '/api/login', ['throttle:5,1,auth-login'])]
     public function login(LoginPayload $payload): JsonResponse
     {
         $credentials = $payload->validated();
@@ -21,8 +21,10 @@ class AuthController
             return api()->error('The email or password is incorrect.', [], 401);
         }
 
-        $token = auth()->issueToken($user);
-        $refreshToken = auth()->issueRefreshToken($user);
+        $token = app(\App\Services\JwtTokenService::class)->issueToken($user);
+        $refreshToken = config('auth.jwt.refresh_tokens', false)
+            ? app(\App\Services\JwtTokenService::class)->issueRefreshToken($user)
+            : null;
 
         return api()->success('Login successful.', [
             'access_token' => $token,
@@ -32,23 +34,26 @@ class AuthController
         ]);
     }
 
-    #[Route('POST', '/api/refresh')]
+    #[Route('POST', '/api/refresh', ['throttle:10,1,auth-refresh'])]
     public function refresh(Request $request): JsonResponse
     {
+        if (!config('auth.jwt.refresh_tokens', false)) {
+            return api()->error('Refresh tokens are not enabled.', [], 404);
+        }
         $refreshToken = $request->input('refresh_token');
 
-        if (!$refreshToken) {
+        if (!is_string($refreshToken) || $refreshToken === '') {
             return api()->fieldError('refresh_token', 'Refresh token is required.', 422);
         }
 
-        $user = auth()->verifyRefreshToken($refreshToken);
+        $rotated = app(\App\Services\JwtTokenService::class)->rotateRefreshToken($refreshToken);
 
-        if (!$user) {
+        if ($rotated === null) {
             return api()->fieldError('refresh_token', 'Invalid refresh token.', 401);
         }
 
-        $newAccessToken = auth()->issueToken($user);
-        $newRefreshToken = auth()->issueRefreshToken($user);
+        $newAccessToken = app(\App\Services\JwtTokenService::class)->issueToken($rotated['user']);
+        $newRefreshToken = $rotated['refresh_token'];
 
         return api()->success('Token refreshed successfully.', [
             'access_token' => $newAccessToken,
@@ -58,7 +63,7 @@ class AuthController
         ]);
     }
 
-    #[Route('POST', '/api/register')]
+    #[Route('POST', '/api/register', ['throttle:5,1,auth-register'])]
     public function register(RegisterPayload $payload): JsonResponse
     {
         $data = $payload->validated();

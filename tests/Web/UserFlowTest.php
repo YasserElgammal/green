@@ -25,7 +25,7 @@ class UserFlowTest extends TestCase
             'password' => 'password',
         ]));
         $this->assertInstanceOf(RedirectResponse::class, $auth->login($login));
-        $this->assertSame(1, (int) session()->get('user_id'));
+        $this->assertSame(1, (int) session()->get('auth.user.user_id'));
 
         $request = new Request([], [
             'name' => 'Updated User',
@@ -39,7 +39,7 @@ class UserFlowTest extends TestCase
         $this->assertSame('Updated User', session()->get('user_name'));
 
         $this->assertInstanceOf(RedirectResponse::class, $auth->logout());
-        $this->assertFalse(session()->has('user_id'));
+        $this->assertFalse(session()->has('auth.user.user_id'));
     }
 
     public function testProfileRejectsAnEmailUsedByAnotherUser(): void
@@ -74,7 +74,7 @@ class UserFlowTest extends TestCase
     public function testUserCanDeleteAccount(): void
     {
         $user = $this->createUser();
-        auth()->login($user);
+        auth_service()->login($user);
         $request = new Request([], ['password' => 'password']);
         $request->setAttribute('user', $user);
 
@@ -82,6 +82,6 @@ class UserFlowTest extends TestCase
 
         $this->assertInstanceOf(RedirectResponse::class, $response);
         $this->assertNull((new UserTable())->fetchById($user->id));
-        $this->assertFalse(session()->has('user_id'));
+        $this->assertFalse(session()->has('auth.user.user_id'));
     }
 }

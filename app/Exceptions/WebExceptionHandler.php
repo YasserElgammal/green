@@ -4,6 +4,7 @@ namespace App\Exceptions;
 
 use App\Exceptions\Contracts\ErrorResponderInterface;
 use Throwable;
+use YasserElgammal\Green\Auth\AuthenticationException;
 use YasserElgammal\Green\Exceptions\ExceptionHandler;
 use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\Http\Response;
@@ -41,6 +42,10 @@ class WebExceptionHandler extends ExceptionHandler implements ErrorResponderInte
 
     protected function renderHtml(Throwable $e, int $statusCode, bool $isDebug, string $traceId): Response
     {
+        if ($e instanceof AuthenticationException) {
+            return redirect('/login');
+        }
+
         if ($e instanceof ValidationException && $isDebug === false) {
             $errors = $e->getErrors();
             $firstError = reset($errors)[0] ?? 'The given data was invalid.';

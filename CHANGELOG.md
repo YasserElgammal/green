@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.1.0] - 2026-10-24
+
+### Changed
+- Decouple JWT authentication into the standalone `yasser-elgammal/green-auth-jwt` package; the skeleton defaults to Session authentication.
+- Move JWT issuance and refresh workflows out of `AuthService` into dedicated `JwtTokenService` and `green-auth-jwt` adapters.
+- Delegate refresh token schema, persistence, rotation, and revocation to `green-auth-jwt`; `jwt:install-refresh` publishes the package-owned migration.
+- Support multi-device refresh tokens and revoke active tokens on password changes or account deletion without altering legacy schema.
+- Consolidate development dependencies into a single, clean `composer.json` and unified `vendor/` directory.
+- Unify the test suite under a single `phpunit.xml`, automatically running all tests when `green-auth-jwt` is installed and gracefully skipping JWT tests when absent.
+
+### Security
+- Resolve web and API identities through explicit `SessionAuthenticator` and `JwtAuthenticator` adapters conforming to Green Core's `Authenticator` contract.
+- Automatically derive model-scoped session identity keys (`auth.{model}.{model}_id`) to prevent cross-context session collisions.
+- Store refresh tokens as SHA-256 hashes with atomic rotation, replay detection, and typed access JWT enforcement (`token_type=access`).
+- Throttle authentication endpoints with IP/client address-based rate limiting on guest routes.
+- Enforce secure cookie defaults for sessions (`HttpOnly`, `SameSite=Lax`, and production `Secure`).
+
+### Added
+- Add `php green jwt:install-refresh` console command to publish the optional refresh token migration into `database/migrations/`.
+- Comprehensive test coverage for session authentication, JWT integration, token rotation, and cookie/middleware boundaries.
+- Document authentication architecture, migration steps, and multi-authenticator setup in `DOCUMENTATION.md`.
+
 ## [3.0.0] - 2026-10-10
 
 ### Added

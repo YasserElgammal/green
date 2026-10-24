@@ -5,6 +5,7 @@ namespace Tests\Services;
 use App\Services\ProfileService;
 use App\Tables\UserTable;
 use App\Transformers\UserTransformer;
+use YasserElgammal\Green\Http\Request;
 use Tests\TestCase;
 
 class ServiceAndTransformerTest extends TestCase
@@ -12,22 +13,14 @@ class ServiceAndTransformerTest extends TestCase
     public function testAuthServiceManagesSessionAuthentication(): void
     {
         $user = $this->createUser();
-        auth()->login($user);
+        auth_service()->login($user);
+        $request = new Request();
+        auth()->resolve($request, app(\App\Auth\SessionAuthenticator::class));
         $this->assertTrue(auth()->check());
         $this->assertFalse(auth()->guest());
-        $this->assertSame($user->id, session()->get('user_id'));
-        auth()->logout();
-        $this->assertTrue(auth()->guest());
-        $this->assertNull(session()->get('user_id'));
-    }
-
-    public function testAuthServiceIssuesAndResolvesJwt(): void
-    {
-        $user = $this->createUser();
-        $resolved = auth()->resolveFromJwt(auth()->issueToken($user));
-        $this->assertNotNull($resolved);
-        $this->assertSame($user->id, $resolved->id);
-        $this->assertNull(auth()->resolveFromJwt('not-a-token'));
+        $this->assertSame($user->id, session()->get('auth.user.user_id'));
+        auth_service()->logout();
+        $this->assertNull(session()->get('auth.user.user_id'));
     }
 
     public function testProfileServiceChangesPasswordAndDeletesAccount(): void

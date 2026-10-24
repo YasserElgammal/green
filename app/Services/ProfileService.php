@@ -21,7 +21,10 @@ class ProfileService
             return false;
         }
 
-        $this->users->update($userId, ['password' => $this->passwords->hash($newPassword)]);
+        \YasserElgammal\Green\Database\Database::getConnection()->transactional(function () use ($userId, $newPassword): void {
+            $this->users->update($userId, ['password' => $this->passwords->hash($newPassword)]);
+            $this->revokeRefreshTokens($userId);
+        });
         return true;
     }
 
@@ -33,7 +36,17 @@ class ProfileService
             return false;
         }
 
-        $this->users->deleteById($userId);
+        \YasserElgammal\Green\Database\Database::getConnection()->transactional(function () use ($userId): void {
+            $this->revokeRefreshTokens($userId);
+            $this->users->deleteById($userId);
+        });
         return true;
+    }
+
+    private function revokeRefreshTokens(int $userId): void
+    {
+        if (config('auth.jwt.enabled', false) && config('auth.jwt.refresh_tokens', false)) {
+            app(\YasserElgammal\Green\AuthJwt\Refresh\RefreshTokenManager::class)->revokeForOwner($userId);
+        }
     }
 }

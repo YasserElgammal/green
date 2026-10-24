@@ -4,16 +4,16 @@ use App\Services\AuthService;
 use App\Support\ApiResponder;
 
 if (!function_exists('auth')) {
-    /**
-     * Get the global AuthService instance.
-     */
-    function auth(): AuthService
+    function auth(): \YasserElgammal\Green\Auth\Auth
     {
-        static $instance = null;
-        if ($instance === null) {
-            $instance = new AuthService();
-        }
-        return $instance;
+        return app(\YasserElgammal\Green\Auth\Auth::class);
+    }
+}
+
+if (!function_exists('auth_service')) {
+    function auth_service(): AuthService
+    {
+        return app(AuthService::class);
     }
 }
 

@@ -17,7 +17,7 @@ class AuthController
         return view('auth/register');
     }
 
-    #[Route('POST', '/register', [GuestMiddleware::class], name: 'register.store')]
+    #[Route('POST', '/register', [GuestMiddleware::class, 'throttle:5,1,auth-register'], name: 'register.store')]
     public function register(RegisterPayload $payload): mixed
     {
         $data = $payload->validated();
@@ -34,7 +34,7 @@ class AuthController
             'password' => password_hash($data['password'], PASSWORD_DEFAULT),
         ]);
 
-        auth()->login($user);
+        auth_service()->login($user);
         session()->flash('success', 'Registration successful!');
 
         return redirect(route('profile.show'));
@@ -46,7 +46,7 @@ class AuthController
         return view('auth/login');
     }
 
-    #[Route('POST', '/login', [GuestMiddleware::class], name: 'login.store')]
+    #[Route('POST', '/login', [GuestMiddleware::class, 'throttle:5,1,auth-login'], name: 'login.store')]
     public function login(LoginPayload $payload): mixed
     {
         $credentials = $payload->validated();
@@ -57,7 +57,7 @@ class AuthController
             return redirect(route('login.form'));
         }
 
-        auth()->login($user);
+        auth_service()->login($user);
         session()->flash('success', 'Welcome back, ' . $user->name . '.');
 
         return redirect(route('profile.show'));
@@ -66,7 +66,7 @@ class AuthController
     #[Route('POST', '/logout', [SessionAuthMiddleware::class], name: 'logout')]
     public function logout(): mixed
     {
-        auth()->logout();
+        auth_service()->logout();
         session()->flash('success', 'You have been logged out.');
 
         return redirect(route('login.form'));

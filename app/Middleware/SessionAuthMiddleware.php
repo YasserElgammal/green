@@ -2,6 +2,8 @@
 
 namespace App\Middleware;
 
+use App\Auth\SessionAuthenticator;
+use YasserElgammal\Green\Auth\AuthenticationException;
 use YasserElgammal\Green\Http\Request;
 use YasserElgammal\Green\Http\Response;
 use YasserElgammal\Green\Middleware\MiddlewareInterface;
@@ -10,11 +12,9 @@ class SessionAuthMiddleware implements MiddlewareInterface
 {
     public function handle(Request $request, callable $next): Response
     {
-        if (auth()->guest()) {
-            return redirect('/login');
+        if (auth()->resolve($request, app(SessionAuthenticator::class)) === null) {
+            throw new AuthenticationException();
         }
-
-        $request->setAttribute('user', auth()->user());
 
         return $next($request);
     }

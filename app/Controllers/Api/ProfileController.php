@@ -22,13 +22,13 @@ class ProfileController
     #[Route('GET', '/api/profile', [TokenAuthMiddleware::class])]
     public function show(Request $request): JsonResponse
     {
-        return api()->item($request->getAttribute('user'), new UserTransformer());
+        return api()->item($request->user(), new UserTransformer());
     }
 
     #[Route('PUT', '/api/profile', [TokenAuthMiddleware::class])]
     public function update(UpdateProfilePayload $payload): JsonResponse
     {
-        $user = $payload->getAttribute('user');
+        $user = $payload->user();
         $data = $payload->validated();
         $users = new UserTable();
         $existing = $users->fetchFirst('email', $data['email']);
@@ -49,7 +49,7 @@ class ProfileController
     #[Route('PUT', '/api/profile/password', [TokenAuthMiddleware::class])]
     public function changePassword(ChangePasswordPayload $payload): JsonResponse
     {
-        $user = $payload->getAttribute('user');
+        $user = $payload->user();
         $data = $payload->validated();
 
         if (!$this->profiles->changePassword($user->id, $data['current_password'], $data['password'])) {
@@ -62,7 +62,7 @@ class ProfileController
     #[Route('DELETE', '/api/profile', [TokenAuthMiddleware::class])]
     public function delete(DeleteAccountPayload $payload): JsonResponse
     {
-        $user = $payload->getAttribute('user');
+        $user = $payload->user();
 
         if (!$this->profiles->deleteAccount($user->id, $payload->validated()['password'])) {
             return api()->fieldError('password', 'The current password is incorrect.');

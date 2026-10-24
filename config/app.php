@@ -10,6 +10,7 @@ return [
     | this array to grant expanded functionality to your applications.
     */
     'providers' => [
-        // \App\Providers\AppServiceProvider::class,
+        \App\Providers\AuthServiceProvider::class,
+        \App\Providers\JwtIntegrationServiceProvider::class,
     ],
 ];

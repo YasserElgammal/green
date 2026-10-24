@@ -20,13 +20,13 @@ class ProfileController
     #[Route('GET', '/profile', [SessionAuthMiddleware::class], name: 'profile.show')]
     public function show(Request $request): string
     {
-        return view('profile/show', ['user' => $request->getAttribute('user')]);
+        return view('profile/show', ['user' => $request->user()]);
     }
 
     #[Route('POST', '/profile', [SessionAuthMiddleware::class], name: 'profile.update')]
     public function update(UpdateProfilePayload $payload): mixed
     {
-        $user = $payload->getAttribute('user');
+        $user = $payload->user();
         $data = $payload->validated();
         $users = new UserTable();
         $existing = $users->fetchFirst('email', $data['email']);
@@ -46,7 +46,7 @@ class ProfileController
     #[Route('POST', '/profile/password', [SessionAuthMiddleware::class], name: 'profile.password.update')]
     public function changePassword(ChangePasswordPayload $payload): mixed
     {
-        $user = $payload->getAttribute('user');
+        $user = $payload->user();
         $data = $payload->validated();
 
         if (!$this->profiles->changePassword($user->id, $data['current_password'], $data['password'])) {
@@ -61,14 +61,14 @@ class ProfileController
     #[Route('POST', '/profile/delete', [SessionAuthMiddleware::class], name: 'profile.delete')]
     public function delete(DeleteAccountPayload $payload): mixed
     {
-        $user = $payload->getAttribute('user');
+        $user = $payload->user();
 
         if (!$this->profiles->deleteAccount($user->id, $payload->validated()['password'])) {
             session()->flash('errors', ['delete_password' => ['The current password is incorrect.']]);
             return redirect(route('profile.show'));
         }
 
-        auth()->logout();
+        auth_service()->logout();
         session()->flash('success', 'Your account has been deleted.');
         return redirect(route('home'));
     }
